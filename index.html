@@ -1,16 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
 
+<label for="attacks">attacks</label>
 <input type="text" id="attacks"/> 
+
+<label for="tohit">hit</label>
 <input type="text" id="tohit"/> 
+
+<label for="towound">wound</label>
 <input type="text" id="towound"/> 
+
+<label for="rend">rend</label>
 <input type="text" id="rend"/> 
+
+<label for="damage">damage</label>
 <input type="text" id="damage"/> 
+
+<label for="tosave">save</label>
 <input type="text" id="tosave"/> 
 
-<button onclick="onClick()"></button>
+</br>
+</br>
 
-<font size="1">
+<label for="hitmod">hit+</label>
+<input type="text" id="hitmod"/> 
+
+<label for="woundmod">wound+</label>
+<input type="text" id="woundmod"/> 
+
+<label for="savemod">save+</label>
+<input type="text" id="savemod"/> 
+
+</br>
+</br>
+<button onclick="onClick()" style="font-size : 12px; width: 80px; height: 40px;">Sigmulate</button>
+
+
+<font size="3">
 	<p id="scriptOutput"></p>	
 </font>
 
@@ -19,8 +45,13 @@
 <script type="text/javascript">
 	function onClick()
 	{
-		var d=parseInt( document.getElementById('attacks').value )
-		document.getElementById("scriptOutput").innerText = fancyResolve(d);
+		let a=parseInt( document.getElementById('attacks').value )
+		let h=parseInt( document.getElementById('tohit').value )
+		let w=parseInt( document.getElementById('towound').value )
+		let r=parseInt( document.getElementById('rend').value )
+		let d=parseInt( document.getElementById('damage').value )
+		let s=parseInt( document.getElementById('tosave').value )
+		document.getElementById("scriptOutput").innerText = fancyResolve(a,h,w,r,d,s);
 	}
 </script>
 
