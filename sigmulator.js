@@ -67,7 +67,7 @@ let Attack = {
 		for (let a = 0; a < this.attacks; a++) this.hits += this.rollToHit();
 		for (let h = 0; h < this.hits; h++) this.wounds += this.rollToWound();
 		for (let w = 0; w < this.wounds; w++) this.saves += this.rollToSave();
-		for (let s = 0; s < this.saves; s++) this.damageDone += this.rollDamage();
+		for (let s = 0; s < (this.wounds - this.saves); s++) this.damageDone += this.rollDamage();
 		let retVal = this.damageDone;
 		this.hits = 0;
 		this.wounds = 0;
@@ -108,7 +108,6 @@ function fancyPrint(d) {
 	let retString = "";
 	for (let i = 0; i < d.length; i++)
 	{
-		if (d[i] == 100) continue;
 		let damage = pad(i, 2);
 		let lines = Array(d[i]+1).join("|");
 		let percent = d[i].toString();
