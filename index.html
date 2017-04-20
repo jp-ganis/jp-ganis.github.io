@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<input type="text" id="attacks"/> 
+<input type="text" id="tohit"/> 
+<input type="text" id="towound"/> 
+<input type="text" id="rend"/> 
+<input type="text" id="damage"/> 
+<input type="text" id="tosave"/> 
+
+<button onclick="onClick()"></button>
+
+<font size="1">
+	<p id="scriptOutput"></p>	
+</font>
+
+
+<script src="sigmulator.js"></script>
+<script type="text/javascript">
+	function onClick()
+	{
+		var text=document.getElementById('attacks').value;
+		document.getElementById("scriptOutput").innerText = fancyResolve(text);
+	}
+</script>
+
+
+</html>
