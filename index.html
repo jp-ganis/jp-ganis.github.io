@@ -51,7 +51,10 @@
 		let r=parseInt( document.getElementById('rend').value )
 		let d=parseInt( document.getElementById('damage').value )
 		let s=parseInt( document.getElementById('tosave').value )
-		document.getElementById("scriptOutput").innerText = fancyResolve(a,h,w,r,d,s);
+		let hm=parseInt( document.getElementById('hitmod').value )
+		let wm=parseInt( document.getElementById('woundmod').value )
+		let sm=parseInt( document.getElementById('savemod').value )
+		document.getElementById("scriptOutput").innerText = fancyResolve(a,h,w,r,d,s,hm,wm,sm);
 	}
 </script>
 

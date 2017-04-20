@@ -40,18 +40,21 @@ let Attack = {
 	// checked rolls
 	rollToHit: function() {
 		let h = this.hitRoll();
+		if (h == 1) return 0;
 		if (h >= this.toHit) return 1;
 		else if (this.hitRerolls.indexOf(h) >= 0 && d6() >= this.toHit) return 1;
 		return 0;
 	},
 	rollToWound: function() {
 		let w = this.woundRoll();
+		if (w == 1) return 0;
 		if (w >= this.toWound) return 1;
 		else if (this.woundRerolls.indexOf(w) >= 0 && d6() >= this.toWound) return 1;
 		return 0;
 	},
 	rollToSave: function() {
 		let s = this.saveRoll();
+		if (s == 1) return 0;
 		if (s >= this.toSave + Math.abs(this.rend)) return 1;
 		else if (this.saveRerolls.indexOf(s) >= 0 && d6() >= this.Save) return 1;
 		return 0;
@@ -106,7 +109,7 @@ function pad(num, size) {
 // fancyPrint
 function fancyPrint(d) {
 	let retString = "";
-	for (let i = 0; i < d.length; i++)
+	for (let i = 1; i < d.length; i++)
 	{
 		let damage = pad(i, 2);
 		let lines = Array(d[i]+1).join("|");
@@ -122,13 +125,23 @@ function fancyPrint(d) {
 	return retString;
 }
 
-function fancyResolve(a, h, w, r, d, s)
+function nanIsZero(n)
 {
-	Attack.attacks = a;
-	Attack.toHit = h;
-	Attack.toWound = w;
-	Attack.rend = r;
-	Attack.damage = d;
-	Attack.toSave = s;
+	if (isNaN(n)) return 0;
+	return n;
+}
+
+function fancyResolve(a, h, w, r, d, s, hm, wm, sm)
+{
+	Attack.attacks = nanIsZero(a);
+	Attack.toHit = nanIsZero(h);
+	Attack.toWound = nanIsZero(w);
+	Attack.rend = nanIsZero(r);
+	Attack.damage = nanIsZero(d);
+	Attack.toSave = nanIsZero(s);
+	Attack.hitModifier = nanIsZero(hm);
+	Attack.woundModifer = nanIsZero(wm);
+	Attack.saveModifier = nanIsZero(sm);
+	console.log(Attack.saveModifier)
 	return fancyPrint(atLeast(Attack));
 }
