@@ -2,47 +2,50 @@
 <html lang="en">
 
 <body>
+    <label for="models">models</label>
+    <input type="text" id="models" size="1" />
+
     <label for="attacks">attacks</label>
-    <input type="text" id="attacks" />
+    <input type="text" id="attacks" size="1" />
 
     <label for="tohit">hit</label>
-    <input type="text" id="tohit" />
+    <input type="text" id="tohit" size="1" />
 
     <label for="towound">wound</label>
-    <input type="text" id="towound" />
+    <input type="text" id="towound" size="1" />
 
     <label for="rend">rend</label>
-    <input type="text" id="rend" />
+    <input type="text" id="rend" size="1" />
 
     <label for="damage">damage</label>
-    <input type="text" id="damage" />
+    <input type="text" id="damage" size="1" />
 
     <label for="tosave">save</label>
-    <input type="text" id="tosave" />
+    <input type="text" id="tosave" size="1" />
 
     <br />
     <br />
 
     <label for="hitmod">hit+</label>
-    <input type="text" id="hitmod" />
+    <input type="text" id="hitmod" size="1" />
 
     <label for="woundmod">wound+</label>
-    <input type="text" id="woundmod" />
+    <input type="text" id="woundmod" size="1" />
 
     <label for="savemod">save+</label>
-    <input type="text" id="savemod" />
+    <input type="text" id="savemod" size="1" />
 
     <label for="hrr">hit RR</label>
-    <input type="text" id="hrr" />
+    <input type="text" id="hrr" size="1" />
 
     <label for="wrr">wound RR</label>
-    <input type="text" id="wrr" />
+    <input type="text" id="wrr" size="1" />
 
     <label for="srr">save RR</label>
-    <input type="text" id="srr" />
+    <input type="text" id="srr" size="1" />
 
     <label for="ward">ward save</label>
-    <input type="text" id="ward" />
+    <input type="text" id="ward" size="1" />
 
     <br />
     <br />
@@ -70,7 +73,8 @@
             let wrr = document.getElementById('wrr').value;
             let srr = document.getElementById('srr').value;
             let ward = parseInt(document.getElementById('ward').value);
-            document.getElementById("scriptOutput").innerText = fancyResolve(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward);
+            let models = parseInt(document.getElementById('models').value);
+            document.getElementById("scriptOutput").innerText = fancyResolve(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, models);
         }
     </script>
 

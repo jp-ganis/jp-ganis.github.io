@@ -38,7 +38,6 @@ let Attack = {
         if (this.saveRerolls.indexOf(roll) >= 0) return d6();
         return roll;
     },
-
 	damageRoll: function () {
 		switch(this.damage) {
 			case 8:
@@ -158,21 +157,22 @@ function nanIsZero(n) {
 }
 
 
-function fancyResolve(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward)
+function fancyResolve(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, models)
 {
     Attack.attacks = nanIsZero(a);
+    if (models) Attack.attacks *= models;
 
 	Attack.toHit = nanIsMax(h);
     Attack.toWound = nanIsMax(w);
-    Attack.rend = nanIsZero(r);
 	Attack.damage = nanIsMax(d);
     Attack.toSave = nanIsMax(s);
+    Attack.wardSave = nanIsMax(ward);
 
+    Attack.rend = nanIsZero(r);
     Attack.hitModifier = nanIsZero(hm);
     Attack.woundModifer = nanIsZero(wm);
     Attack.saveModifier = nanIsZero(sm);
 
-    Attack.wardSave = nanIsMax(ward);
 
     if (hrr) Attack.hitRerolls = hrr.split(",").map(Number);
     else Attack.hitRerolls = [];
