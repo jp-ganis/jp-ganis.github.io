@@ -145,26 +145,34 @@ function fancyPrint(d) {
 	return retString;
 }
 
-function nanIsZero(n)
+function nanIsMax(n)
 {
     if (isNaN(n)) return 99;
     if (n) return n;
 	return 99;
 }
+function nanIsZero(n) {
+    if (isNaN(n)) return 0;
+    if (n) return n;
+    return 0;
+}
 
 
 function fancyResolve(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward)
 {
-	Attack.attacks = nanIsZero(a);
-	Attack.toHit = nanIsZero(h);
-	Attack.toWound = nanIsZero(w);
-	Attack.rend = nanIsZero(r);
-	Attack.damage = nanIsZero(d);
-	Attack.toSave = nanIsZero(s);
-	Attack.hitModifier = nanIsZero(hm);
-	Attack.woundModifer = nanIsZero(wm);
+    Attack.attacks = nanIsZero(a);
+
+	Attack.toHit = nanIsMax(h);
+    Attack.toWound = nanIsMax(w);
+    Attack.rend = nanIsZero(r);
+	Attack.damage = nanIsMax(d);
+    Attack.toSave = nanIsMax(s);
+
+    Attack.hitModifier = nanIsZero(hm);
+    Attack.woundModifer = nanIsZero(wm);
     Attack.saveModifier = nanIsZero(sm);
-    Attack.wardSave = nanIsZero(ward);
+
+    Attack.wardSave = nanIsMax(ward);
 
     if (hrr) Attack.hitRerolls = hrr.split(",").map(Number);
     else Attack.hitRerolls = [];
