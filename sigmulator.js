@@ -21,9 +21,24 @@ let Attack = {
 	saveModifier: 0,
 	
 	//basic rolls
-	hitRoll: function () { return d6() + this.hitModifier; },
-	woundRoll: function () { return d6() + this.woundModifier; },
-	saveRoll: function () { return d6() + this.saveModifier; },
+    hitRoll: function () {
+        let roll = d6();
+        if (this.hitRerolls.indexOf(roll) >= 0) return d6();
+        return roll;
+    },
+
+    woundRoll: function () {
+        let roll = d6();
+        if (this.woundRerolls.indexOf(roll) >= 0) return d6();
+        return roll;
+    },
+
+    saveRoll: function () {
+        let roll = d6();
+        if (this.saveRerolls.indexOf(roll) >= 0) return d6();
+        return roll;
+    },
+
 	damageRoll: function () {
 		switch(this.damage) {
 			case 8:
@@ -40,23 +55,20 @@ let Attack = {
 	// checked rolls
 	rollToHit: function() {
 		let h = this.hitRoll();
-		if (h == 1) return 0;
-		if (h >= this.toHit) return 1;
-		else if (this.hitRerolls.indexOf(h) >= 0 && d6() >= this.toHit) return 1;
+        if (h == 1) return 0;
+        if (h + this.hitModifier >= this.toHit) return 1;
 		return 0;
 	},
 	rollToWound: function() {
 		let w = this.woundRoll();
-		if (w == 1) return 0;
-		if (w >= this.toWound) return 1;
-		else if (this.woundRerolls.indexOf(w) >= 0 && d6() >= this.toWound) return 1;
+        if (w == 1) return 0;
+        if (w + this.woundModifer >= this.toWound) return 1;
 		return 0;
 	},
 	rollToSave: function() {
 		let s = this.saveRoll();
-		if (s == 1) return 0;
-		if (s >= this.toSave + Math.abs(this.rend)) return 1;
-		else if (this.saveRerolls.indexOf(s) >= 0 && d6() >= this.Save) return 1;
+        if (s == 1) return 0;
+        if (s + this.saveModifier - Math.abs(this.rend) >= this.toSave) return 1;
 		return 0;
 	},
 	rollDamage: function() {
