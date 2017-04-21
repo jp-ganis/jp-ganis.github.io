@@ -188,6 +188,11 @@ function pad(num, size) {
 	return s;
 }
 
+function rerollsMatch(arr1, arr2)
+{
+    return JSON.stringify(arr1.sort()) === JSON.stringify(arr2.sort());
+}
+
 // fancyPrint
 function fancyPrint(d) {
 	let retString = "";
@@ -207,41 +212,223 @@ function fancyPrint(d) {
 	return retString;
 }
 
+function getSymbols()
+{
+    symbols = ["|", ")", "]", ">", "}"];
+    return symbols;
+}
+
+
+// comparative processing
+function getCompareString(a, b)
+{
+    let symbols = getSymbols();
+    let aString = "";
+    let bString = "";
+
+    // attacks
+    if (a.attacks != b.attacks)
+    {
+        aString = aString.concat(a.attacks);
+        aString = aString.concat(" attacks ");
+        bString = bString.concat(b.attacks);
+        bString = bString.concat(" attacks ");
+    }
+
+    // toHit
+    if (a.toHit != b.toHit) {
+        aString = aString.concat(a.toHit);
+        aString = aString.concat(" to hit ");
+        bString = bString.concat(b.toHit);
+        bString = bString.concat(" to hit ");
+    }
+
+    // toWound
+    if (a.toWound != b.toWound) {
+        aString = aString.concat(a.toWound);
+        aString = aString.concat(" to wound ");
+        bString = bString.concat(b.toWound);
+        bString = bString.concat(" to wound ");
+    }
+
+    // rend
+    if (a.rend != b.rend) {
+        aString = aString.concat(a.rend);
+        aString = aString.concat(" rend ");
+        bString = bString.concat(b.rend);
+        bString = bString.concat(" rend ");
+    }
+
+    // damage
+    if (a.toSave != b.toSave) {
+        aString = aString.concat(a.toSave);
+        aString = aString.concat(" to save ");
+        bString = bString.concat(b.toSave);
+        bString = bString.concat(" to save ");
+    }
+
+    // ward save
+    if (a.wardSave != b.wardSave) {
+        aString = aString.concat(a.wardSave);
+        aString = aString.concat(" ward ");
+        bString = bString.concat(b.wardSave);
+        bString = bString.concat(" ward ");
+    }
+
+    // mortal ward save
+    if (a.mortalWardSave != b.mortalWardSave) {
+        aString = aString.concat(a.mortalWardSave);
+        aString = aString.concat(" mortal ward ");
+        bString = bString.concat(b.mortalWardSave);
+        bString = bString.concat(" mortal ward ");
+    }
+
+    // hit mod
+    if (a.hitModifier != b.hitModifier) {
+        aString = aString.concat(a.hitModifier);
+        aString = aString.concat(" hit mod ");
+        bString = bString.concat(b.hitModifier);
+        bString = bString.concat(" hit mod ");
+    }
+
+    // wound mod
+    if (a.woundModifier != b.woundModifier) {
+        aString = aString.concat(a.woundModifier);
+        aString = aString.concat(" wound mod ");
+        bString = bString.concat(b.woundModifier);
+        bString = bString.concat(" wound mod ");
+    }
+
+    // save mod
+    if (a.saveModifier != b.saveModifier) {
+        aString = aString.concat(a.saveModifier);
+        aString = aString.concat(" save mod ");
+        bString = bString.concat(b.saveModifier);
+        bString = bString.concat(" save mod ");
+    }
+    
+    // hit rerolls
+    if (a.hitRerolls != b.hitRerolls) {
+        aString = aString.concat(" rerolling ");
+        aString = aString.concat(a.hitRerolls);
+        aString = aString.concat(" to hit ");
+        bString = bString.concat(" rerolling ");
+        bString = bString.concat(a.hitRerolls);
+        bString = bString.concat(" to hit ");
+    }
+
+    // wound rerolls
+    if (a.woundRerolls != b.woundRerolls) {
+        aString = aString.concat(" rerolling ");
+        aString = aString.concat(a.woundRerolls);
+        aString = aString.concat(" to wound ");
+        bString = bString.concat(" rerolling ");
+        bString = bString.concat(a.woundRerolls);
+        bString = bString.concat(" to wound ");
+    }
+
+    // save rerolls
+    if (a.saveRerolls != b.saveRerolls) {
+        aString = aString.concat(" rerolling ");
+        aString = aString.concat(a.saveRerolls);
+        aString = aString.concat(" to save ");
+        bString = bString.concat(" rerolling ");
+        bString = bString.concat(a.saveRerolls);
+        bString = bString.concat(" to save ");
+    }
+
+    // mw on hit
+    if (a.mwOnHit != b.mwOnHit) {
+        aString = aString.concat(" mw on hits of ");
+        aString = aString.concat(a.mwOnHit);
+        bString = bString.concat(" mw on hits of ");
+        bString = bString.concat(b.mwOnHit);
+    }
+    // dmg on hit
+    if (a.extraDamageOnHit != b.extraDamageOnHit) {
+        aString = aString.concat(" extra damage on hits of ");
+        aString = aString.concat(a.extraDamageOnHit);
+        bString = bString.concat(" extra damage on hits of ");
+        bString = bString.concat(b.extraDamageOnHit);
+    }
+    // hits on hit
+    if (a.extraHitsOnHit != b.extraHitsOnHit) {
+        aString = aString.concat(" extra hits on hits of ");
+        aString = aString.concat(a.extraHitsOnHit);
+        bString = bString.concat(" extra hits on hits of ");
+        bString = bString.concat(b.extraHitsOnHit);
+    }
+    // attacks on hit
+    if (a.extraAttacksOnHit != b.extraAttacksOnHit) {
+        aString = aString.concat(" extra attacks on hits of ");
+        aString = aString.concat(a.extraAttacksOnHit);
+        bString = bString.concat(" extra attacks on hits of ");
+        bString = bString.concat(b.extraAttacksOnHit);
+    }
+    // mw on Wound
+    if (a.mwOnWound != b.mwOnWound) {
+        aString = aString.concat(" mw on Wounds of ");
+        aString = aString.concat(a.mwOnWound);
+        bString = bString.concat(" mw on Wounds of ");
+        bString = bString.concat(b.mwOnWound);
+    }
+    // dmg on Wound
+    if (a.extraDamageOnWound != b.extraDamageOnWound) {
+        aString = aString.concat(" extra damage on Wounds of ");
+        aString = aString.concat(a.extraDamageOnWound);
+        bString = bString.concat(" extra damage on Wounds of ");
+        bString = bString.concat(b.extraDamageOnWound);
+    }
+    // attacks on Wound
+    if (a.extraAttacksOnWound != b.extraAttacksOnWound) {
+        aString = aString.concat(" extra attacks on Wounds of ");
+        aString = aString.concat(a.extraAttacksOnWound);
+        bString = bString.concat(" extra attacks on Wounds of ");
+        bString = bString.concat(b.extraAttacksOnWound);
+    }
+
+    aString = aString.concat(" vs ");
+    aString = aString.concat(bString);
+    return aString;
+
+}
+
+
 // comparative print
 function multiPrint() {
-    let symbols = ["|", ")", "]"];
+    let symbols = getSymbols();
     let retString = "";
     let damages = [].slice.call(arguments).sort(function (a, b) { return a.length - b.length; })
 
     // foreach damage value in the biggest damage array
-    for (let i = 1; i < damages[damages.length-1].length; i++)
-    {
+    for (let i = 1; i < damages[damages.length - 1].length; i++) {
         let damage = pad(i, 2);
         let total = 0; // total lines used
-        let percents = []; 
+        let percents = [];
         retString = retString.concat(damage);
         retString = retString.concat(" ");
 
         // foreach damage array
-        for (let j = 0; j < damages.length; j++)
-        {
+        for (let j = 0; j < damages.length; j++) {
             if (damages[j].length < i) continue;
             let d = damages[j];
 
             let numLines = (d[i] + 1) - total;
             if (!numLines || numLines <= 0) continue;
             total += d[i] + 1;
-            
+
             let lines = Array(numLines).join(symbols[j]);
             retString = retString.concat(lines);
 
             let percent = d[i].toString();
             percents.push(percent);
+            percents.push(symbols[j]);
         }
         retString = retString.concat(" ");
 
-        for (let p = 0; p < percents.length; p++) {
+        for (let p = 0; p < percents.length; p += 2) {
             retString = retString.concat(percents[p]);
+            retString = retString.concat(percents[p + 1]);
             retString = retString.concat("% ");
         }
 
@@ -319,9 +506,9 @@ function newAttack(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, mwOnly, mo
             break;
     }
 
-    if (hrr) Attack.hitRerolls = hrr.split(",").map(Number);
-    if (wrr) Attack.woundRerolls = wrr.split(",").map(Number);
-    if (srr) Attack.saveRerolls = srr.split(",").map(Number);
+    if (hrr) Attack.hitRerolls = hrr.split(/[ ,]+/).map(Number);
+    if (wrr) Attack.woundRerolls = wrr.split(/[ ,]+/).map(Number);
+    if (srr) Attack.saveRerolls = srr.split(/[ ,]+/).map(Number);
 
     return Attack;
 }
