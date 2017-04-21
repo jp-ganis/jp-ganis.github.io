@@ -3,25 +3,25 @@
 
 <body>
     <label for="models">models</label>
-    <input type="text" id="models" size="1" />
+    <input type="text" id="models" size="1" value="10" />
 
     <label for="attacks">attacks</label>
-    <input type="text" id="attacks" size="1" />
+    <input type="text" id="attacks" size="1" value="1" />
 
     <label for="tohit">hit</label>
-    <input type="text" id="tohit" size="1" />
+    <input type="text" id="tohit" size="1" value="4" />
 
     <label for="towound">wound</label>
-    <input type="text" id="towound" size="1" />
+    <input type="text" id="towound" size="1" value="4" />
 
     <label for="rend">rend</label>
-    <input type="text" id="rend" size="1" />
+    <input type="text" id="rend" size="1" value="0" />
 
     <label for="damage">damage</label>
-    <input type="text" id="damage" size="1" />
+    <input type="text" id="damage" size="1" value="1" />
 
     <label for="tosave">save</label>
-    <input type="text" id="tosave" size="1" />
+    <input type="text" id="tosave" size="1" value="4" />
 
     <br />
     <br />
@@ -50,6 +50,27 @@
 
     <br />
     <br />
+
+    <select id="procType">
+        <option value="mwOnHit">+MW on hit</option>
+        <option value="dmgOnHit">+Damage on hit</option>
+        <option value="hitsOnHit">+Hits on hit</option>
+        <option value="attacksOnHit">+Attacks on hit</option>
+
+        <option value="mwOnWound">+MW on wound</option>
+        <option value="dmgOnWound">+Damage on wound</option>
+        <option value="attacksOnWound">+Attacks on wound</option>
+    </select>
+
+    <label for="procRoll">Roll</label>
+    <input type="text" id="procRoll" size="1" />
+
+    <label for="procValue">Value</label>
+    <input type="text" id="procValue" size="1" />
+
+    <br />
+    <br />
+
     <button onclick="onClick()" style="font-size : 12px; width: 80px; height: 40px;">Sigmulate</button>
 
 
@@ -76,7 +97,12 @@
             let ward = parseInt(document.getElementById('ward').value);
             let models = parseInt(document.getElementById('models').value);
             let mwOnly = document.getElementById('mwOnly').checked;
-            document.getElementById("scriptOutput").innerText = fancyResolve(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, mwOnly, models);
+
+            let procType = document.getElementById('procType').value;
+            let procRoll = parseInt(document.getElementById('procRoll').value);
+            let procValue = parseInt(document.getElementById('procValue').value);
+
+            document.getElementById("scriptOutput").innerText = fancyResolve(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, mwOnly, models, procType, procRoll, procValue);
         }
     </script>
 

@@ -38,16 +38,43 @@ function createAttack() {
             if (this.saveRerolls.indexOf(roll) >= 0) return d6();
             return roll;
         },
-        damageRoll: function () {
-            switch (this.damage) {
-                case 8:
-                    return d6();
-                    break;
-                case 7:
-                    return d3();
-                    break;
-                default:
-                    return this.damage;
+        damageRoll: function (inDamage) {
+            if (inDamage == 8) return d6();
+            else if (inDamage == 7) return d3();
+            return inDamage;
+        },
+
+        // proc effects
+        extraMwDamage: null,
+        extraDamage: null,
+        extraHits: null,
+        extraAttacks: null,
+
+        extraMwOnHit: null,
+        extraDamageOnHit: null,
+        extraHitsOnHit: null,
+        extraAttacksOnHit: null,
+
+        extraMwOnWound: null,
+        extraDamageOnWound: null,
+        extraAttacksOnWound: null,
+
+        checkForHitProcs: function (roll)
+        {
+            if (this.extraMwOnHit && roll >= this.extraMwOnHit) {
+                this.mortalDamageDone += this.damageRoll(this.extraMwDamage);
+                this.hits--;
+            }
+            if (this.extraDamageOnHit && roll >= this.extraDamageOnHit) this.damageProc = this.damageroll(this.extraDamage);
+            if (this.extraHitsOnHit && roll >= this.extraHitsOnHit) this.hits += this.extraHits();
+            if (this.extraAttacksOnHit && roll >= this.extraAttacksOnHit) this.hits += this.rollToHit();
+        },
+        checkForWoundProcs: function (roll) {
+            if (this.extraMwOnWound && roll >= this.extraMwOnWound) this.mortalDamageDone += this.damageRoll(this.extraMwDamage);
+            if (this.extraDamageOnWound && roll >= this.extraDamageOnWound) this.damageProc = this.damageroll(this.extraDamage);
+            if (this.extraAttacksOnHit && roll >= this.extraAttacksOnHit) {
+                let h = this.rollToHit();
+                if (h > 0) this.wounds += this.rollToWound();
             }
         },
 
@@ -55,7 +82,9 @@ function createAttack() {
         rollToHit: function () {
             let h = this.hitRoll();
             if (h == 1) return 0;
-            if (h + this.hitModifier >= this.toHit) return 1;
+            h += this.hitModifier;
+            this.checkForHitProcs(h);
+            if (h >= this.toHit) return 1;
             return 0;
         },
         rollToWound: function () {
@@ -71,7 +100,9 @@ function createAttack() {
             return 0;
         },
         rollDamage: function () {
-            let d = this.damageRoll() + this.damageProc;
+            if (this.damageProc > 0) d = this.damageProc;
+            else d = this.damageRoll(this.damage);
+
             this.damageProc = 0;
             return d;
         },
@@ -91,17 +122,17 @@ function createAttack() {
             for (let w = 0; w < this.wounds; w++) this.saves += this.rollToSave();
             for (let s = 0; s < (this.wounds - this.saves); s++) {
                 let localDamage = this.rollDamage();
-
                 for (let w = 0; w < localDamage; w++) localDamage -= this.rollToWard();
-                for (let w = 0; w < this.mortalDamageDone; w++) this.mortalDamageDone -= this.rollToMortalWard();
-
-                this.damageDone += localDamage + this.mortalDamageDone;
+                this.damageDone += localDamage;
             }
-            let retVal = this.damageDone;
+            for (let w = 0; w < this.mortalDamageDone; w++) this.mortalDamageDone -= this.rollToMortalWard();
+
+            let retVal = this.damageDone + this.mortalDamageDone;
             this.hits = 0;
             this.wounds = 0;
             this.saves = 0;
             this.damageDone = 0;
+            this.mortalDamageDone = 0;
             return retVal;
         },
     }
@@ -112,20 +143,20 @@ function createAttack() {
 // at least function
 function atLeast(attack) {
 	let iterations=15000;
-	d = [];
-	e = [];
+	let d = [];
+	let e = [];
 	for (let a = 0; a < 500; a++) d[a] = 0;
 	for (let i = 0; i < iterations; i++)
 	{
-		dmg = attack.resolve();
-		for (let j = 0; j < dmg; j++) d[j]++;
-	}
+        dmg = attack.resolve();
+        for (let j = 0; j < dmg; j++) d[j]++;
+    }
 	for (let i = 0; i < d.length; i++)
 	{
 		d[i] = Math.floor(d[i]/iterations*100);
 		if (d[i] == 0) continue;
 		e[i] = d[i];
-	}
+    }
 	return e;
 }
 function pad(num, size) {
@@ -139,8 +170,8 @@ function fancyPrint(d) {
 	let retString = "";
 	for (let i = 1; i < d.length; i++)
 	{
-		let damage = pad(i, 2);
-		let lines = Array(d[i]+1).join("|");
+        let damage = pad(i, 2);
+        let lines = Array(d[i] + 1).join("|");
 		let percent = d[i].toString();
 		retString = retString.concat(damage);
 		retString = retString.concat(" ");
@@ -166,9 +197,9 @@ function nanIsZero(n) {
 }
 
 
-function fancyResolve(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, mwOnly, models)
+function fancyResolve(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, mwOnly, models, procType, procRoll, procValue)
 {
-    Attack =  createAttack();
+    Attack = createAttack();
 
     Attack.attacks = nanIsZero(a);
     if (models) Attack.attacks *= models;
@@ -185,7 +216,14 @@ function fancyResolve(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, mwOnly,
     Attack.woundModifer = nanIsZero(wm);
     Attack.saveModifier = nanIsZero(sm);
     
-    
+    if (procType == "mwOnHit") {
+        Attack.extraMwOnHit = procRoll;
+        Attack.extraMwDamage = procValue;
+    }
+
+    console.log(Attack.extraMwOnHit);
+    console.log(Attack.extraMwDamage);
+
     if (hrr) Attack.hitRerolls = hrr.split(",").map(Number);
     if (wrr) Attack.woundRerolls = wrr.split(",").map(Number);
     if (srr) Attack.saveRerolls = srr.split(",").map(Number);
