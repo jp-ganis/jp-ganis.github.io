@@ -143,7 +143,8 @@ function nanIsZero(n)
 	return n;
 }
 
-function fancyResolve(a, h, w, r, d, s, hm, wm, sm)
+
+function fancyResolve(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr)
 {
 	Attack.attacks = nanIsZero(a);
 	Attack.toHit = nanIsZero(h);
@@ -153,7 +154,16 @@ function fancyResolve(a, h, w, r, d, s, hm, wm, sm)
 	Attack.toSave = nanIsZero(s);
 	Attack.hitModifier = nanIsZero(hm);
 	Attack.woundModifer = nanIsZero(wm);
-	Attack.saveModifier = nanIsZero(sm);
-	console.log(Attack.saveModifier)
+    Attack.saveModifier = nanIsZero(sm);
+
+    if (hrr) Attack.hitRerolls = hrr.split(",").map(Number);
+    else Attack.hitRerolls = [];
+
+    if (wrr) Attack.woundRerolls = wrr.split(",").map(Number);
+    else Attack.woundRerolls = [];
+
+    if (srr) Attack.saveRerolls = srr.split(",").map(Number);
+    else Attack.saveRerolls = [];
+
 	return fancyPrint(atLeast(Attack));
 }

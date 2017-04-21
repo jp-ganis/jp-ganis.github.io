@@ -1,62 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<label for="attacks">attacks</label>
-<input type="text" id="attacks"/> 
+<body>
+    <label for="attacks">attacks</label>
+    <input type="text" id="attacks" />
 
-<label for="tohit">hit</label>
-<input type="text" id="tohit"/> 
+    <label for="tohit">hit</label>
+    <input type="text" id="tohit" />
 
-<label for="towound">wound</label>
-<input type="text" id="towound"/> 
+    <label for="towound">wound</label>
+    <input type="text" id="towound" />
 
-<label for="rend">rend</label>
-<input type="text" id="rend"/> 
+    <label for="rend">rend</label>
+    <input type="text" id="rend" />
 
-<label for="damage">damage</label>
-<input type="text" id="damage"/> 
+    <label for="damage">damage</label>
+    <input type="text" id="damage" />
 
-<label for="tosave">save</label>
-<input type="text" id="tosave"/> 
+    <label for="tosave">save</label>
+    <input type="text" id="tosave" />
 
-</br>
-</br>
+    <br />
+    <br />
 
-<label for="hitmod">hit+</label>
-<input type="text" id="hitmod"/> 
+    <label for="hitmod">hit+</label>
+    <input type="text" id="hitmod" />
 
-<label for="woundmod">wound+</label>
-<input type="text" id="woundmod"/> 
+    <label for="woundmod">wound+</label>
+    <input type="text" id="woundmod" />
 
-<label for="savemod">save+</label>
-<input type="text" id="savemod"/> 
+    <label for="savemod">save+</label>
+    <input type="text" id="savemod" />
 
-</br>
-</br>
-<button onclick="onClick()" style="font-size : 12px; width: 80px; height: 40px;">Sigmulate</button>
+    <label for="hrr">hit rerolls</label>
+    <input type="text" id="hrr" />
+
+    <label for="wrr">wound rerolls</label>
+    <input type="text" id="wrr" />
+
+    <label for="srr">save rerolls</label>
+    <input type="text" id="srr" />
+
+    <br />
+    <br />
+    <button onclick="onClick()" style="font-size : 12px; width: 80px; height: 40px;">Sigmulate</button>
 
 
-<font size="3">
-	<p id="scriptOutput"></p>	
-</font>
+    <font size="3">
+        <p id="scriptOutput"></p>
+    </font>
 
 
-<script src="sigmulator.js"></script>
-<script type="text/javascript">
-	function onClick()
-	{
-		let a=parseInt( document.getElementById('attacks').value )
-		let h=parseInt( document.getElementById('tohit').value )
-		let w=parseInt( document.getElementById('towound').value )
-		let r=parseInt( document.getElementById('rend').value )
-		let d=parseInt( document.getElementById('damage').value )
-		let s=parseInt( document.getElementById('tosave').value )
-		let hm=parseInt( document.getElementById('hitmod').value )
-		let wm=parseInt( document.getElementById('woundmod').value )
-		let sm=parseInt( document.getElementById('savemod').value )
-		document.getElementById("scriptOutput").innerText = fancyResolve(a,h,w,r,d,s,hm,wm,sm);
-	}
-</script>
-
+    <script src="sigmulator.js"></script>
+    <script type="text/javascript">
+        function onClick() {
+            let a = parseInt(document.getElementById('attacks').value);
+            let h = parseInt(document.getElementById('tohit').value);
+            let w = parseInt(document.getElementById('towound').value);
+            let r = parseInt(document.getElementById('rend').value);
+            let d = parseInt(document.getElementById('damage').value);
+            let s = parseInt(document.getElementById('tosave').value);
+            let hm = parseInt(document.getElementById('hitmod').value);
+            let wm = parseInt(document.getElementById('woundmod').value);
+            let sm = parseInt(document.getElementById('savemod').value);
+            let hrr = document.getElementById('hrr').value;
+            let wrr = document.getElementById('wrr').value;
+            let srr = document.getElementById('srr').value;
+            document.getElementById("scriptOutput").innerText = fancyResolve(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr);
+        }
+    </script>
+</body>
 
 </html>
