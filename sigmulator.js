@@ -75,14 +75,22 @@ let Attack = {
 		let d = this.damageRoll() + this.damageProc;
 		this.damageProc = 0;
 		return d;
-	},
+    },
+    rollToWard: function () {
+        if (d6() >= this.wardSave) return 1;
+        return 0;
+    },
 
 	// resolve
 	resolve: function() {
 		for (let a = 0; a < this.attacks; a++) this.hits += this.rollToHit();
 		for (let h = 0; h < this.hits; h++) this.wounds += this.rollToWound();
 		for (let w = 0; w < this.wounds; w++) this.saves += this.rollToSave();
-		for (let s = 0; s < (this.wounds - this.saves); s++) this.damageDone += this.rollDamage();
+        for (let s = 0; s < (this.wounds - this.saves); s++) {
+            let localDamage = this.rollDamage();
+            for (let w = 0; w < localDamage; w++) localDamage -= this.rollToWard();
+            this.damageDone += localDamage;
+        }
 		let retVal = this.damageDone;
 		this.hits = 0;
 		this.wounds = 0;
@@ -139,12 +147,13 @@ function fancyPrint(d) {
 
 function nanIsZero(n)
 {
-	if (isNaN(n)) return 0;
-	return n;
+    if (isNaN(n)) return 99;
+    if (n) return n;
+	return 99;
 }
 
 
-function fancyResolve(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr)
+function fancyResolve(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward)
 {
 	Attack.attacks = nanIsZero(a);
 	Attack.toHit = nanIsZero(h);
@@ -155,6 +164,7 @@ function fancyResolve(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr)
 	Attack.hitModifier = nanIsZero(hm);
 	Attack.woundModifer = nanIsZero(wm);
     Attack.saveModifier = nanIsZero(sm);
+    Attack.wardSave = nanIsZero(ward);
 
     if (hrr) Attack.hitRerolls = hrr.split(",").map(Number);
     else Attack.hitRerolls = [];

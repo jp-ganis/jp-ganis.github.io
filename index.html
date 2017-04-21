@@ -32,14 +32,17 @@
     <label for="savemod">save+</label>
     <input type="text" id="savemod" />
 
-    <label for="hrr">hit rerolls</label>
+    <label for="hrr">hit RR</label>
     <input type="text" id="hrr" />
 
-    <label for="wrr">wound rerolls</label>
+    <label for="wrr">wound RR</label>
     <input type="text" id="wrr" />
 
-    <label for="srr">save rerolls</label>
+    <label for="srr">save RR</label>
     <input type="text" id="srr" />
+
+    <label for="ward">ward save</label>
+    <input type="text" id="ward" />
 
     <br />
     <br />
@@ -66,7 +69,8 @@
             let hrr = document.getElementById('hrr').value;
             let wrr = document.getElementById('wrr').value;
             let srr = document.getElementById('srr').value;
-            document.getElementById("scriptOutput").innerText = fancyResolve(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr);
+            let ward = parseInt(document.getElementById('ward').value);
+            document.getElementById("scriptOutput").innerText = fancyResolve(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward);
         }
     </script>
 </body>
