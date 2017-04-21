@@ -207,6 +207,49 @@ function fancyPrint(d) {
 	return retString;
 }
 
+// comparative print
+function multiPrint() {
+    let symbols = ["|", ")", "]"];
+    let retString = "";
+    let damages = [].slice.call(arguments).sort(function (a, b) { return a.length - b.length; })
+
+    // foreach damage value in the biggest damage array
+    for (let i = 1; i < damages[damages.length-1].length; i++)
+    {
+        let damage = pad(i, 2);
+        let total = 0; // total lines used
+        let percents = []; 
+        retString = retString.concat(damage);
+        retString = retString.concat(" ");
+
+        // foreach damage array
+        for (let j = 0; j < damages.length; j++)
+        {
+            if (damages[j].length < i) continue;
+            let d = damages[j];
+
+            let numLines = (d[i] + 1) - total;
+            if (!numLines || numLines <= 0) continue;
+            total += d[i] + 1;
+            
+            let lines = Array(numLines).join(symbols[j]);
+            retString = retString.concat(lines);
+
+            let percent = d[i].toString();
+            percents.push(percent);
+        }
+        retString = retString.concat(" ");
+
+        for (let p = 0; p < percents.length; p++) {
+            retString = retString.concat(percents[p]);
+            retString = retString.concat("% ");
+        }
+
+        retString = retString.concat("\n");
+    }
+    return retString;
+}
+
 function nanIsMax(n)
 {
     if (isNaN(n)) return 99;
@@ -275,9 +318,10 @@ function fancyResolve(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, mwOnly,
             break;
     }
 
+    
     if (hrr) Attack.hitRerolls = hrr.split(",").map(Number);
     if (wrr) Attack.woundRerolls = wrr.split(",").map(Number);
     if (srr) Attack.saveRerolls = srr.split(",").map(Number);
 
-	return fancyPrint(atLeast(Attack));
+    return multiPrint(atLeast(Attack));
 }
