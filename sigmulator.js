@@ -110,7 +110,7 @@ function createAttack() {
         rollToWound: function () {
             let w = this.woundRoll();
             if (w == 1) return 0;
-            w += this.woundModifer;
+            w += this.woundModifier;
             let procWounds = this.checkForWoundProcs(w);
             if (procWounds > -1) return procWounds;
             else if (w >= this.toWound) return 1;
@@ -220,9 +220,13 @@ function getSymbols()
 
 
 // comparative processing
-function getCompareString(a, b)
+function rerollCompare(a,b)
 {
-    let symbols = getSymbols();
+	return a.sort().join(',')=== b.sort().join(',');
+}
+
+function getCompareString(a, b, aSymbol, bSymbol)
+{
     let aString = "";
     let bString = "";
 
@@ -285,30 +289,36 @@ function getCompareString(a, b)
 
     // hit mod
     if (a.hitModifier != b.hitModifier) {
+				if (a.hitModifier > 0) aString = aString.concat("+");
         aString = aString.concat(a.hitModifier);
-        aString = aString.concat(" hit mod ");
+        aString = aString.concat(" to hit ");
+				if (b.hitModifier > 0) bString = bString.concat("+");
         bString = bString.concat(b.hitModifier);
-        bString = bString.concat(" hit mod ");
+        bString = bString.concat(" to hit ");
     }
 
     // wound mod
     if (a.woundModifier != b.woundModifier) {
+				if (a.woundModifier > 0) aString = aString.concat("+");
         aString = aString.concat(a.woundModifier);
-        aString = aString.concat(" wound mod ");
+        aString = aString.concat(" to wound ");
+				if (b.woundModifier > 0) bString = bString.concat("+");
         bString = bString.concat(b.woundModifier);
-        bString = bString.concat(" wound mod ");
+        bString = bString.concat(" to wound ");
     }
 
     // save mod
     if (a.saveModifier != b.saveModifier) {
+				if (a.saveModifier > 0) aString = aString.concat("+");
         aString = aString.concat(a.saveModifier);
-        aString = aString.concat(" save mod ");
+        aString = aString.concat(" to save ");
+				if (b.saveModifier > 0) bString = bString.concat("+");
         bString = bString.concat(b.saveModifier);
-        bString = bString.concat(" save mod ");
+        bString = bString.concat(" to save ");
     }
     
     // hit rerolls
-    if (a.hitRerolls != b.hitRerolls) {
+    if (!(rerollCompare(a.hitRerolls, b.hitRerolls))) {
         aString = aString.concat(" rerolling ");
         aString = aString.concat(a.hitRerolls);
         aString = aString.concat(" to hit ");
@@ -318,7 +328,7 @@ function getCompareString(a, b)
     }
 
     // wound rerolls
-    if (a.woundRerolls != b.woundRerolls) {
+    if (!(rerollCompare(a.woundRerolls, b.woundRerolls))) {
         aString = aString.concat(" rerolling ");
         aString = aString.concat(a.woundRerolls);
         aString = aString.concat(" to wound ");
@@ -328,7 +338,7 @@ function getCompareString(a, b)
     }
 
     // save rerolls
-    if (a.saveRerolls != b.saveRerolls) {
+    if (!(rerollCompare(a.saveRerolls, b.saveRerolls))) {
         aString = aString.concat(" rerolling ");
         aString = aString.concat(a.saveRerolls);
         aString = aString.concat(" to save ");
@@ -387,18 +397,41 @@ function getCompareString(a, b)
         bString = bString.concat(b.extraAttacksOnWound);
     }
 
+		if (aString === "") return "";
+		aString = aString.concat(aSymbol);
+		bString = bString.concat(bSymbol);
     aString = aString.concat(" vs ");
     aString = aString.concat(bString);
     return aString;
-
 }
 
+function actuallyCompare(a, b)
+{
+	let symbols = getSymbols()
+	let aDamage = atLeast(a);
+	let bDamage = atLeast(b);
+	let aSymbol = symbols[0];
+	let bSymbol = symbols[1];
+
+	if (bDamage.length < aDamage.length)
+	{
+		aSymbol = symbols[1];
+		bSymbol = symbols[0];
+	}
+
+
+	let displayString = getCompareString(a, b, aSymbol, bSymbol);
+	displayString = displayString.concat("\n");
+	return displayString.concat(multiPrint(atLeast(a), atLeast(b)));
+	//let 
+}
 
 // comparative print
 function multiPrint() {
     let symbols = getSymbols();
     let retString = "";
     let damages = [].slice.call(arguments).sort(function (a, b) { return a.length - b.length; })
+		console.log(damages);
 
     // foreach damage value in the biggest damage array
     for (let i = 1; i < damages[damages.length - 1].length; i++) {
@@ -434,6 +467,7 @@ function multiPrint() {
 
         retString = retString.concat("\n");
     }
+
     return retString;
 }
 
@@ -465,7 +499,7 @@ function newAttack(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, mwOnly, mo
 
     Attack.rend = nanIsZero(r);
     Attack.hitModifier = nanIsZero(hm);
-    Attack.woundModifer = nanIsZero(wm);
+    Attack.woundModifier = nanIsZero(wm);
     Attack.saveModifier = nanIsZero(sm);
 
     switch (procType) {
