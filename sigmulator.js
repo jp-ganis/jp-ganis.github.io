@@ -1,103 +1,112 @@
 function d3() { return Math.floor(Math.random() * 3)+1 }
 function d6() { return Math.floor(Math.random() * 6)+1 }
 
-let Attack = {
-	attacks: 0,
-	toHit: 0,
-	toWound: 0,
-	toSave: 0,
-	rend: 0,
-	damage: 0,
-	hits: 0,
-	wounds: 0,
-	saves: 0,
-	hitRerolls: [],
-	woundRerolls: [],
-	saveRerolls: [],
-	damageDone: 0,
-	damageProc: 0,
-	hitModifier: 0,
-	woundModifier: 0,
-	saveModifier: 0,
-	
-	//basic rolls
-    hitRoll: function () {
-        let roll = d6();
-        if (this.hitRerolls.indexOf(roll) >= 0) return d6();
-        return roll;
-    },
+function createAttack() {
+    let Attack = {
+        attacks: 0,
+        toHit: 0,
+        toWound: 0,
+        toSave: 0,
+        rend: 0,
+        damage: 0,
+        hits: 0,
+        wounds: 0,
+        saves: 0,
+        hitRerolls: [],
+        woundRerolls: [],
+        saveRerolls: [],
+        damageDone: 0,
+        damageProc: 0,
+        hitModifier: 0,
+        woundModifier: 0,
+        saveModifier: 0,
+        mortalDamageDone: 0,
 
-    woundRoll: function () {
-        let roll = d6();
-        if (this.woundRerolls.indexOf(roll) >= 0) return d6();
-        return roll;
-    },
+        //basic rolls
+        hitRoll: function () {
+            let roll = d6();
+            if (this.hitRerolls.indexOf(roll) >= 0) return d6();
+            return roll;
+        },
+        woundRoll: function () {
+            let roll = d6();
+            if (this.woundRerolls.indexOf(roll) >= 0) return d6();
+            return roll;
+        },
+        saveRoll: function () {
+            let roll = d6();
+            if (this.saveRerolls.indexOf(roll) >= 0) return d6();
+            return roll;
+        },
+        damageRoll: function () {
+            switch (this.damage) {
+                case 8:
+                    return d6();
+                    break;
+                case 7:
+                    return d3();
+                    break;
+                default:
+                    return this.damage;
+            }
+        },
 
-    saveRoll: function () {
-        let roll = d6();
-        if (this.saveRerolls.indexOf(roll) >= 0) return d6();
-        return roll;
-    },
-	damageRoll: function () {
-		switch(this.damage) {
-			case 8:
-				return d6();
-				break;
-			case 7:
-				return d3();
-				break;
-			default:
-				return this.damage;
-		}
-	},
-	
-	// checked rolls
-	rollToHit: function() {
-		let h = this.hitRoll();
-        if (h == 1) return 0;
-        if (h + this.hitModifier >= this.toHit) return 1;
-		return 0;
-	},
-	rollToWound: function() {
-		let w = this.woundRoll();
-        if (w == 1) return 0;
-        if (w + this.woundModifer >= this.toWound) return 1;
-		return 0;
-	},
-	rollToSave: function() {
-		let s = this.saveRoll();
-        if (s == 1) return 0;
-        if (s + this.saveModifier - Math.abs(this.rend) >= this.toSave) return 1;
-		return 0;
-	},
-	rollDamage: function() {
-		let d = this.damageRoll() + this.damageProc;
-		this.damageProc = 0;
-		return d;
-    },
-    rollToWard: function () {
-        if (d6() >= this.wardSave) return 1;
-        return 0;
-    },
+        // checked rolls
+        rollToHit: function () {
+            let h = this.hitRoll();
+            if (h == 1) return 0;
+            if (h + this.hitModifier >= this.toHit) return 1;
+            return 0;
+        },
+        rollToWound: function () {
+            let w = this.woundRoll();
+            if (w == 1) return 0;
+            if (w + this.woundModifer >= this.toWound) return 1;
+            return 0;
+        },
+        rollToSave: function () {
+            let s = this.saveRoll();
+            if (s == 1) return 0;
+            if (s + this.saveModifier - Math.abs(this.rend) >= this.toSave) return 1;
+            return 0;
+        },
+        rollDamage: function () {
+            let d = this.damageRoll() + this.damageProc;
+            this.damageProc = 0;
+            return d;
+        },
+        rollToWard: function () {
+            if (d6() >= this.wardSave) return 1;
+            return 0;
+        },
+        rollToMortalWard: function () {
+            if (d6() >= this.mortalWardSave) return 1;
+            return 0;
+        },
 
-	// resolve
-	resolve: function() {
-		for (let a = 0; a < this.attacks; a++) this.hits += this.rollToHit();
-		for (let h = 0; h < this.hits; h++) this.wounds += this.rollToWound();
-		for (let w = 0; w < this.wounds; w++) this.saves += this.rollToSave();
-        for (let s = 0; s < (this.wounds - this.saves); s++) {
-            let localDamage = this.rollDamage();
-            for (let w = 0; w < localDamage; w++) localDamage -= this.rollToWard();
-            this.damageDone += localDamage;
-        }
-		let retVal = this.damageDone;
-		this.hits = 0;
-		this.wounds = 0;
-		this.saves = 0;
-		this.damageDone = 0;
-		return retVal;
-	},
+        // resolve
+        resolve: function () {
+            for (let a = 0; a < this.attacks; a++) this.hits += this.rollToHit();
+            for (let h = 0; h < this.hits; h++) this.wounds += this.rollToWound();
+            for (let w = 0; w < this.wounds; w++) this.saves += this.rollToSave();
+            for (let s = 0; s < (this.wounds - this.saves); s++) {
+                let localDamage = this.rollDamage();
 
+                for (let w = 0; w < localDamage; w++) localDamage -= this.rollToWard();
+                for (let w = 0; w < this.mortalDamageDone; w++) this.mortalDamageDone -= this.rollToMortalWard();
+
+                this.damageDone += localDamage + this.mortalDamageDone;
+            }
+            let retVal = this.damageDone;
+            this.hits = 0;
+            this.wounds = 0;
+            this.saves = 0;
+            this.damageDone = 0;
+            return retVal;
+        },
+    }
+
+    return Attack;
 }
 
 // at least function
@@ -157,8 +166,10 @@ function nanIsZero(n) {
 }
 
 
-function fancyResolve(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, models)
+function fancyResolve(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, mwOnly, models)
 {
+    Attack =  createAttack();
+
     Attack.attacks = nanIsZero(a);
     if (models) Attack.attacks *= models;
 
@@ -166,22 +177,18 @@ function fancyResolve(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, models)
     Attack.toWound = nanIsMax(w);
 	Attack.damage = nanIsMax(d);
     Attack.toSave = nanIsMax(s);
-    Attack.wardSave = nanIsMax(ward);
+    if (mwOnly) Attack.mortalWardSave = nanIsMax(ward);
+    else Attack.wardSave = nanIsMax(ward);
 
     Attack.rend = nanIsZero(r);
     Attack.hitModifier = nanIsZero(hm);
     Attack.woundModifer = nanIsZero(wm);
     Attack.saveModifier = nanIsZero(sm);
-
-
+    
+    
     if (hrr) Attack.hitRerolls = hrr.split(",").map(Number);
-    else Attack.hitRerolls = [];
-
     if (wrr) Attack.woundRerolls = wrr.split(",").map(Number);
-    else Attack.woundRerolls = [];
-
     if (srr) Attack.saveRerolls = srr.split(",").map(Number);
-    else Attack.saveRerolls = [];
 
 	return fancyPrint(atLeast(Attack));
 }

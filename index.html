@@ -46,6 +46,7 @@
 
     <label for="ward">ward save</label>
     <input type="text" id="ward" size="1" />
+    <input type="checkbox" id="mwOnly" value="mwOnlyWard">(MW only?)<br>
 
     <br />
     <br />
@@ -74,7 +75,8 @@
             let srr = document.getElementById('srr').value;
             let ward = parseInt(document.getElementById('ward').value);
             let models = parseInt(document.getElementById('models').value);
-            document.getElementById("scriptOutput").innerText = fancyResolve(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, models);
+            let mwOnly = document.getElementById('mwOnly').checked;
+            document.getElementById("scriptOutput").innerText = fancyResolve(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, mwOnly, models);
         }
     </script>
 
