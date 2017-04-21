@@ -80,11 +80,20 @@ function createAttack() {
             return -1;
         },
         checkForWoundProcs: function (roll) {
-            if (this.extraMwOnWound && roll >= this.extraMwOnWound) this.mortalDamageDone += this.damageRoll(this.extraMwDamage);
-            if (this.extraDamageOnWound && roll >= this.extraDamageOnWound) this.damageProc = this.damageRoll(this.extraDamage);
+            if (this.extraMwOnWound && roll >= this.extraMwOnWound) {
+                this.mortalDamageDone += this.damageRoll(this.extraMwDamage);
+                return 0;
+            }
+            if (this.extraDamageOnWound && roll >= this.extraDamageOnWound) {
+                this.damageProc = this.damageRoll(this.extraDamage);
+                return 1;
+            }
             if (this.extraAttacksOnHit && roll >= this.extraAttacksOnHit) {
-                let h = this.rollToHit();
-                if (h > 0) this.wounds += this.rollToWound();
+                let newHits = 0;
+                let newWounds = 1;
+                for (let h = 0; h < this.extraAttacks; h++) newHits += this.rollToHit();
+                for (let w = 0; w < newHits; w++) newWounds += this.rollToWound();
+                return newWounds;
             }
         },
 
@@ -101,7 +110,10 @@ function createAttack() {
         rollToWound: function () {
             let w = this.woundRoll();
             if (w == 1) return 0;
-            if (w + this.woundModifer >= this.toWound) return 1;
+            w += this.woundModifer;
+            let procWounds = this.checkForWoundProcs(w);
+            if (procWounds > -1) return procWounds;
+            else if (w >= this.toWound) return 1;
             return 0;
         },
         rollToSave: function () {
