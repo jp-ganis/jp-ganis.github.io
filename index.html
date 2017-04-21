@@ -2,6 +2,7 @@
 <html lang="en">
 
 <body>
+    <!-- basic -->
     <label for="models">models</label>
     <input type="text" id="models" size="3" value="10" />
 
@@ -26,6 +27,7 @@
     <br />
     <br />
 
+    <!-- mods -->
     <label for="hitmod">hit+</label>
     <input type="text" id="hitmod" size="3" />
 
@@ -51,6 +53,7 @@
     <br />
     <br />
 
+    <!-- procs -->
     <select id="procType">
         <option value="mwOnHit">+MW on hit</option>
         <option value="dmgOnHit">+Damage on hit</option>
@@ -71,17 +74,25 @@
     <br />
     <br />
 
-    <button onclick="onClick()" style="font-size : 12px; width: 80px; height: 40px;">Sigmulate</button>
+    <!-- buttons -->
+    <button onclick="onSigmulate()" style="font-size : 12px; width: 80px; height: 40px;">Sigmulate</button>
+    <button onclick="onCompare()" style="font-size : 12px; width: 80px; height: 40px;">Compare</button>
 
-
+    <!-- output -->
     <font size="3">
         <p id="scriptOutput"></p>
     </font>
 
-
+    <!-- scripts -->
     <script src="sigmulator.js"></script>
     <script type="text/javascript">
-        function onClick() {
+        let comparatives = [];
+        function onCompare()
+        {
+            onSigmulate(true);
+        }
+
+        function onSigmulate(compare = false) {
             let a = parseInt(document.getElementById('attacks').value);
             let h = parseInt(document.getElementById('tohit').value);
             let w = parseInt(document.getElementById('towound').value);
@@ -102,7 +113,16 @@
             let procRoll = parseInt(document.getElementById('procRoll').value);
             let procValue = parseInt(document.getElementById('procValue').value);
 
-            document.getElementById("scriptOutput").innerText = fancyResolve(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, mwOnly, models, procType, procRoll, procValue);
+            let attack = newAttack(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, mwOnly, models, procType, procRoll, procValue);
+
+            if (compare)
+                document.getElementById("scriptOutput").innerText = multiPrint(atLeast(attack), atLeast(comparatives[comparatives.length - 1]));
+            else {
+                document.getElementById("scriptOutput").innerText = fancyPrint(atLeast(attack));
+                comparatives = []
+            }
+
+            comparatives.push(attack);
         }
     </script>
 

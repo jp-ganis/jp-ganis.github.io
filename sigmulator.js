@@ -262,17 +262,16 @@ function nanIsZero(n) {
     return 0;
 }
 
-
-function fancyResolve(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, mwOnly, models, procType, procRoll, procValue)
+function newAttack(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, mwOnly, models, procType, procRoll, procValue)
 {
-    Attack = createAttack();
+    let Attack = createAttack();
 
     Attack.attacks = nanIsZero(a);
     if (models) Attack.attacks *= models;
 
-	Attack.toHit = nanIsMax(h);
+    Attack.toHit = nanIsMax(h);
     Attack.toWound = nanIsMax(w);
-	Attack.damage = nanIsMax(d);
+    Attack.damage = nanIsMax(d);
     Attack.toSave = nanIsMax(s);
     if (mwOnly) Attack.mortalWardSave = nanIsMax(ward);
     else Attack.wardSave = nanIsMax(ward);
@@ -282,8 +281,8 @@ function fancyResolve(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, mwOnly,
     Attack.woundModifer = nanIsZero(wm);
     Attack.saveModifier = nanIsZero(sm);
 
-    switch (procType)
-    {
+    switch (procType) {
+        // on hit
         case "mwOnHit":
             Attack.extraMwOnHit = procRoll;
             Attack.extraMwDamage = procValue;
@@ -301,6 +300,7 @@ function fancyResolve(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, mwOnly,
             Attack.extraAttacks = procValue;
             break;
 
+        // on wound
         case "mwOnWound":
             Attack.extraMwOnWound = procRoll;
             Attack.extraMwDamage = procValue;
@@ -314,14 +314,14 @@ function fancyResolve(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, mwOnly,
             Attack.extraAttacks = procValue;
             break;
 
+        // default
         default:
             break;
     }
 
-    
     if (hrr) Attack.hitRerolls = hrr.split(",").map(Number);
     if (wrr) Attack.woundRerolls = wrr.split(",").map(Number);
     if (srr) Attack.saveRerolls = srr.split(",").map(Number);
 
-    return multiPrint(atLeast(Attack));
+    return Attack;
 }
