@@ -413,25 +413,22 @@ function actuallyCompare(a, b)
 	let aSymbol = symbols[0];
 	let bSymbol = symbols[1];
 
-	if (bDamage.length < aDamage.length)
+	if (bDamage.length < aDamage.length || (bDamage.length == aDamage.length && bDamage[bDamage.length-1] < aDamage[aDamage.length-1]))
 	{
 		aSymbol = symbols[1];
 		bSymbol = symbols[0];
 	}
 
-
 	let displayString = getCompareString(a, b, aSymbol, bSymbol);
 	displayString = displayString.concat("\n");
-	return displayString.concat(multiPrint(atLeast(a), atLeast(b)));
-	//let 
+	return displayString.concat(multiPrint(aDamage, bDamage));
 }
 
 // comparative print
 function multiPrint() {
     let symbols = getSymbols();
     let retString = "";
-    let damages = [].slice.call(arguments).sort(function (a, b) { return a.length - b.length; })
-		console.log(damages);
+    let damages = [].slice.call(arguments).sort(function (a, b) { if (a.length != b.length) return a.length - b.length; return a[a.length-1] - b[b.length-1]; })
 
     // foreach damage value in the biggest damage array
     for (let i = 1; i < damages[damages.length - 1].length; i++) {
