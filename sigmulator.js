@@ -1,5 +1,18 @@
 function d3() { return Math.floor(Math.random() * 3)+1 }
-function d6() { return Math.floor(Math.random() * 6)+1 }
+function d6() { return Math.floor(Math.random() * 6) + 1 }
+
+function parseDiceNumber(d)
+{
+    if (d == -6) return d6();
+    else if (d == -3) return d3();
+    else if (d == -23) return d3() + d3();
+    else if (d == -33) return d3() + d3() + d3();
+    else if (d == -43) return d3() + d3() + d3() + d3();
+    else if (d == -26) return d6() + d6();
+    else if (d == -36) return d6() + d6() + d6();
+    else if (d == -46) return d6() + d6() + d6() + d6();
+    return d;
+}
 
 function createAttack() {
     let Attack = {
@@ -39,9 +52,7 @@ function createAttack() {
             return roll;
         },
         damageRoll: function (inDamage) {
-            if (inDamage == 8) return d6();
-            else if (inDamage == 7) return d3();
-            return inDamage;
+            return parseDiceNumber(inDamage);
         },
 
         // proc effects
@@ -485,7 +496,7 @@ function newAttack(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, mwOnly, mo
 {
     let Attack = createAttack();
 
-    Attack.attacks = nanIsZero(a);
+    Attack.attacks = parseDiceNumber(nanIsZero(a));
     if (models) Attack.attacks *= models;
 
     Attack.toHit = nanIsMax(h);

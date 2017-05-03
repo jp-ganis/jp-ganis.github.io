@@ -92,12 +92,27 @@
             onSigmulate(true);
         }
 
+        function diceParseInt(s)
+        {
+            if (s.includes("5d3")) return -53;
+            else if (s.includes("4d3")) return -43;
+            else if (s.includes("3d3")) return -33;
+            else if (s.includes("2d3")) return -23;
+            else if (s.includes("4d6")) return -46;
+            else if (s.includes("3d6")) return -36;
+            else if (s.includes("2d6")) return -26;
+            else if (s.includes("d6")) return -6;
+            else if (s.includes("d3")) return -3;
+
+            return parseInt(s);
+        }
+
         function onSigmulate(compare = false) {
-            let a = parseInt(document.getElementById('attacks').value);
+            let a = diceParseInt(document.getElementById('attacks').value);
             let h = parseInt(document.getElementById('tohit').value);
             let w = parseInt(document.getElementById('towound').value);
             let r = parseInt(document.getElementById('rend').value);
-            let d = parseInt(document.getElementById('damage').value);
+            let d = diceParseInt(document.getElementById('damage').value);
             let s = parseInt(document.getElementById('tosave').value);
             let hm = parseInt(document.getElementById('hitmod').value);
             let wm = parseInt(document.getElementById('woundmod').value);
@@ -111,7 +126,7 @@
 
             let procType = document.getElementById('procType').value;
             let procRoll = parseInt(document.getElementById('procRoll').value);
-            let procValue = parseInt(document.getElementById('procValue').value);
+            let procValue = diceParseInt(document.getElementById('procValue').value);
 
             let attack = newAttack(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, mwOnly, models, procType, procRoll, procValue);
 
