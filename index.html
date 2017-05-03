@@ -28,6 +28,9 @@
     <br />
 
     <!-- mods -->
+    <label for="attackmod">attacks+</label>
+    <input type="text" id="attackmod" size="3" />
+
     <label for="hitmod">hit+</label>
     <input type="text" id="hitmod" size="3" />
 
@@ -129,6 +132,7 @@
             let r = parseInt(document.getElementById('rend').value);
             let d = diceParseInt(document.getElementById('damage').value);
             let s = parseInt(document.getElementById('tosave').value);
+            let am = parseInt(document.getElementById('attackmod').value);
             let hm = parseInt(document.getElementById('hitmod').value);
             let wm = parseInt(document.getElementById('woundmod').value);
             let sm = parseInt(document.getElementById('savemod').value);
@@ -142,8 +146,8 @@
             let procType = document.getElementById('procType').value;
             let procRoll = parseInt(document.getElementById('procRoll').value);
             let procValue = diceParseInt(document.getElementById('procValue').value);
-
-            let attack = newAttack(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, mwOnly, models, procType, procRoll, procValue);
+            
+            let attack = newAttack(a+nanIsZero(am), h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, mwOnly, models, procType, procRoll, procValue);
 
             if (compare)
                 document.getElementById("scriptOutput").innerHTML = actuallyCompare(attack, comparatives[comparatives.length - 1]);
