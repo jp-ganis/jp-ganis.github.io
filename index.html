@@ -94,6 +94,7 @@
 
         function diceParseInt(s)
         {
+            s = s.toLowerCase();
             if (s.includes("5d3")) return -53;
             else if (s.includes("4d3")) return -43;
             else if (s.includes("3d3")) return -33;
