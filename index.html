@@ -116,9 +116,9 @@
             let attack = newAttack(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, mwOnly, models, procType, procRoll, procValue);
 
             if (compare)
-                document.getElementById("scriptOutput").innerText = actuallyCompare(attack, comparatives[comparatives.length - 1]);
+                document.getElementById("scriptOutput").innerHTML = actuallyCompare(attack, comparatives[comparatives.length - 1]);
             else {
-                document.getElementById("scriptOutput").innerText = fancyPrint(atLeast(attack));
+                document.getElementById("scriptOutput").innerHTML = fancyPrint(atLeast(attack));
                 comparatives = []
             }
 

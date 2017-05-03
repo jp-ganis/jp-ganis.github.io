@@ -195,11 +195,12 @@ function rerollsMatch(arr1, arr2)
 
 // fancyPrint
 function fancyPrint(d) {
-	let retString = "";
+    let retString = "";
+    let s = getSymbols()[0];
 	for (let i = 1; i < d.length; i++)
 	{
         let damage = pad(i, 2);
-        let lines = Array(d[i] + 1).join("|");
+        let lines = Array(d[i] + 1).join(s);
 		let percent = d[i].toString();
 		retString = retString.concat(damage);
 		retString = retString.concat(" ");
@@ -207,14 +208,14 @@ function fancyPrint(d) {
 		retString = retString.concat(" ");
 		retString = retString.concat(percent);
 		retString = retString.concat("%");
-		retString = retString.concat("\n");
+		retString = retString.concat("<br>");
 	}
 	return retString;
 }
 
 function getSymbols()
 {
-    symbols = ["|", ")", "]", ">", "}"];
+    symbols = ["<span style=\"color: blue\">|</span>", "<span style=\"color: red\">|</span>", "]", ">", "}"];
     return symbols;
 }
 
@@ -420,7 +421,7 @@ function actuallyCompare(a, b)
 	}
 
 	let displayString = getCompareString(a, b, aSymbol, bSymbol);
-	displayString = displayString.concat("\n");
+	displayString = displayString.concat("<br>");
 	return displayString.concat(multiPrint(aDamage, bDamage));
 }
 
@@ -462,7 +463,7 @@ function multiPrint() {
             retString = retString.concat("% ");
         }
 
-        retString = retString.concat("\n");
+        retString = retString.concat("<br>");
     }
 
     return retString;
