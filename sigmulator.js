@@ -156,7 +156,9 @@ function createAttack() {
             for (let w = 0; w < this.wounds; w++) this.saves += this.rollToSave();
             for (let s = 0; s < (this.wounds - this.saves); s++) {
                 let localDamage = this.rollDamage();
-                for (let w = 0; w < localDamage; w++) localDamage -= this.rollToWard();
+								let localSaves = 0;
+                for (let w = 0; w < localDamage; w++) localSaves += this.rollToWard();
+								localDamage -= localSaves;
                 this.damageDone += localDamage;
             }
             for (let w = 0; w < this.mortalDamageDone; w++) this.mortalDamageDone -= this.rollToMortalWard();
