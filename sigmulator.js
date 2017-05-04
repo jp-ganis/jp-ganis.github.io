@@ -83,7 +83,9 @@ function createAttack() {
             if (this.extraHitsOnHit && roll >= this.extraHitsOnHit) {
                 return this.damageRoll(this.extraHits);
             }
-            if (this.extraAttacksOnHit && roll >= this.extraAttacksOnHit) {
+            if (this.extraAttacksOnHit && roll >= this.extraAttacksOnHit && !this.attackRoO) {
+								this.attackRoO = true;
+
                 let newHits = 1;
                 for (let h = 0; h < this.extraAttacks; h++) newHits += this.rollToHit();
                 return newHits;
@@ -99,7 +101,7 @@ function createAttack() {
                 this.damageProc = this.damageRoll(this.extraDamage);
                 return 1;
             }
-            if (this.extraAttacksOnHit && roll >= this.extraAttacksOnHit) {
+            if (this.extraAttacksOnWound && roll >= this.extraAttacksOnWound) {
                 let newHits = 0;
                 let newWounds = 1;
                 for (let h = 0; h < this.extraAttacks; h++) newHits += this.rollToHit();
@@ -114,6 +116,7 @@ function createAttack() {
             if (h == 1) return 0;
             h += this.hitModifier;
             let procHits = this.checkForHitProcs(h);
+						this.attackRoO = false;
             if (procHits > -1) return procHits;
             else if (h >= this.toHit) return 1;
             return 0;
