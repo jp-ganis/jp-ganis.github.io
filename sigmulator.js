@@ -181,7 +181,7 @@ function atLeast(attack) {
 	let e = [];
 	for (let a = 0; a < 500; a++) d[a] = 0;
 	for (let i = 0; i < iterations; i++)
-	{
+    {
         dmg = attack.resolve();
         for (let j = 0; j < dmg; j++) d[j]++;
     }
@@ -193,6 +193,7 @@ function atLeast(attack) {
     }
 	return e;
 }
+
 function pad(num, size) {
 	let s = num+"";
 	while (s.length < size) s = "0" + s;
@@ -208,9 +209,9 @@ function rerollsMatch(arr1, arr2)
 function fancyPrint(d) {
     let retString = "";
     let s = getSymbols()[0];
-	for (let i = 1; i < d.length; i++)
+	for (let i = 0; i < d.length; i++)
 	{
-        let damage = pad(i, 2);
+        let damage = pad(i + 1, 2);
         let lines = Array(d[i] + 1).join(s);
 		let percent = d[i].toString();
 		retString = retString.concat(damage);
