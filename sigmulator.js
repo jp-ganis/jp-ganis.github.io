@@ -232,7 +232,7 @@ function fancyPrint(d) {
 
 function getSymbols()
 {
-    symbols = ["<span style=\"color: blue\">|</span>", "<span style=\"color: red\">|</span>", "]", ">", "}"];
+    symbols = ["<span style=\"color: blue\">|</span>", "<span style=\"color: red\">|</span>", "<span style=\"color: green\">|</span>", "<span style=\"color: indigo\">|</span>", "<span style=\"color: slategray\">|</span>"];
     return symbols;
 }
 
@@ -423,6 +423,13 @@ function getCompareString(a, b, aSymbol, bSymbol)
     return aString;
 }
 
+function getBiggerDamage(a, b)
+{
+    if (a.length > b.length) return 0;
+    if (a.length == b.length && a[a.length - 1] > b[b.length - 1]) return 0;
+    return 1;
+}
+
 function actuallyCompare(a, b)
 {
 	let symbols = getSymbols()
@@ -431,8 +438,9 @@ function actuallyCompare(a, b)
 	let aSymbol = symbols[0];
 	let bSymbol = symbols[1];
 
-	if (bDamage.length < aDamage.length || (bDamage.length == aDamage.length && bDamage[bDamage.length-1] < aDamage[aDamage.length-1]))
-	{
+    if (getBiggerDamage(aDamage, bDamage) < 1)
+    {
+        console.log(getBiggerDamage(aDamage, bDamage));
 		aSymbol = symbols[1];
 		bSymbol = symbols[0];
 	}
