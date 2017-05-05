@@ -440,7 +440,6 @@ function actuallyCompare(a, b)
 
     if (getBiggerDamage(aDamage, bDamage) < 1)
     {
-        console.log(getBiggerDamage(aDamage, bDamage));
 		aSymbol = symbols[1];
 		bSymbol = symbols[0];
 	}
