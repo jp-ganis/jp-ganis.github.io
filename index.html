@@ -102,6 +102,7 @@
     <button onclick="onSigmulate()" style="font-size : 12px; width: 80px; height: 40px;">Sigmulate</button>
     <button onclick="onCompare()" style="font-size : 12px; width: 80px; height: 40px;">Compare</button>
     <button onclick="onSum()" style="font-size : 12px; width: 80px; height: 40px;">Add To Last</button>
+    <button onclick="onClear()" style="font-size : 12px; width: 80px; height: 40px;">Clear Stack</button>
 
     <!-- output -->
     <font size="3">
@@ -117,9 +118,15 @@
             onSigmulate(compare=true);
         }
 
-        function onCompare()
+        function onSum()
         {
             onSigmulate(compare=false, sum=true);
+        }
+		
+        function onClear()
+        {
+			document.getElementById("scriptOutput").innerHTML = "";
+            comparatives = [];
         }
 		
         function diceParseInt(s)
@@ -165,10 +172,10 @@
             if (compare)
                 document.getElementById("scriptOutput").innerHTML = actuallyCompare(attack, comparatives[comparatives.length - 1]);
 			else if (sum)
-                document.getElementById("scriptOutput").innerHTML = getSumDamageString(attack, comparatives[comparatives.length - 1]);
+                document.getElementById("scriptOutput").innerHTML = getMultiSumDamageString([attack].concat(comparatives));
             else {
                 document.getElementById("scriptOutput").innerHTML = fancyPrint(atLeast(attack));
-                comparatives = []
+                comparatives = [];
             }
 
             comparatives.push(attack);

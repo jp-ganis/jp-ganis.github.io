@@ -1,5 +1,6 @@
-function d3() { return Math.floor(Math.random() * 3)+1 }
-function d6() { return Math.floor(Math.random() * 6) + 1 }
+function d3() { return Math.floor(Math.random() * 3) + 1; }
+function d6() { return Math.floor(Math.random() * 6) + 1; }
+function getIterations() { return 15000; }
 
 // encoding for things like 2d3 or 3d6
 function parseDiceNumber(d)
@@ -183,7 +184,7 @@ function createAttack() {
 
 // at least function
 function atLeast(attack) {
-	let iterations=15000;
+	let iterations = getIterations();
 	let d = [];
 	let e = [];
 	for (let a = 0; a < 500; a++) d[a] = 0;
@@ -459,23 +460,64 @@ function actuallyCompare(a, b)
 // get string for summed outputs
 function getSumDamageString(a, b)
 {
+	let iterations = getIterations() * 2;
 	let aDamage = atLeast(a);
 	let bDamage = atLeast(b);
+	let cDamage = aDamage;
+	
+	if (getBiggerDamage(aDamage, bDamage) == 1)	cDamage = bDamage;
+	
 	let d = [];
+	let e = [];
 	
+	// initialize damages to zero
 	for (let a = 0; a < 500; a++) d[a] = 0;
-	
-	for (let i = 0; i < aDamage.length; i++)
+
+	// because we can't just add probabilities...
+	for (let i = 0; i < cDamage.length; i++)
 	{
-		d[i] += aDamage[i];
+		let ap = 0;
+		let bp = 0;
+		
+		if (i < aDamage.length) ap = aDamage[i]*0.01;
+		if (i < bDamage.length) bp = bDamage[i]*0.01;
+		
+		d[i] = Math.floor((ap + bp - ap * bp) * 100); 
+		if (d[i] == 0) continue;
+		e[i] = d[i];
 	}
 	
-	for (let i = 0; i < bDamage.length; i++)
+	return fancyPrint(e);
+}
+
+// get string for more than 2 summed outputs
+function getMultiSumDamageString(l)
+{
+	let d = [];
+	let e = [];
+	
+	for (let i = 0; i < 500; i++) d[i] = 0;
+	
+	for (let i = 0; i < l.length; i++)
 	{
-		d[i] += bDamage[i];
+		let aAttack = l[i];
+		let a = atLeast(aAttack);
+		
+		for (let j = 0; j < 500; j++)
+		{
+			let ap = 0;
+			if (j < a.length) ap = a[j] * 0.01;
+			
+			d[j] = ap + d[j] - ap * d[j]; 
+		}
 	}
 	
-	return fancyPrint(d);
+	for (let i = 0; i < d.length; i++)
+	{
+		if (d[i] != 0) e[i] = Math.floor(d[i]*100);
+	}
+	
+	return fancyPrint(e);
 }
 
 // comparative print
