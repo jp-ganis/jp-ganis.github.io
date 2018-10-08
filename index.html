@@ -106,6 +106,7 @@
 
     <!-- output -->
     <font size="3">
+        <p id="confidenceEstimate"></p>
         <p id="scriptOutput"></p>
     </font>
 
@@ -177,6 +178,22 @@
                 document.getElementById("scriptOutput").innerHTML = fancyPrint(atLeast(attack));
                 comparatives = [];
             }
+			
+			// confidence estimate
+			let confidence = 70;
+			var lines = document.getElementById("scriptOutput").innerHTML.split('%<br>');
+			for (var i = lines.length - 1; i >= 0; i--)
+			{
+				var dmg = parseInt(lines[i].charAt(0)+lines[i].charAt(1));
+				var chance = parseInt(lines[i].slice(-2));
+				
+				if (chance >= confidence)
+				{
+					document.getElementById("confidenceEstimate").innerHTML = "70% chance of at least <span style=\"color: red\"><font size=\"5\">"+dmg+"</span></font> wound(s).";
+					break;
+				}
+			}
+			
 
             comparatives.push(attack);
         }
