@@ -1,6 +1,7 @@
 function d3() { return Math.floor(Math.random() * 3)+1 }
 function d6() { return Math.floor(Math.random() * 6) + 1 }
 
+// encoding for things like 2d3 or 3d6
 function parseDiceNumber(d)
 {
     if (d == -6) return d6();
@@ -14,6 +15,7 @@ function parseDiceNumber(d)
     return d;
 }
 
+// initialize Attack object
 function createAttack() {
     let Attack = {
         attacks: 0,
@@ -199,12 +201,14 @@ function atLeast(attack) {
 	return e;
 }
 
+// pad number for prettyprint
 function pad(num, size) {
 	let s = num+"";
 	while (s.length < size) s = "0" + s;
 	return s;
 }
 
+// check if arrays match
 function rerollsMatch(arr1, arr2)
 {
     return JSON.stringify(arr1.sort()) === JSON.stringify(arr2.sort());
@@ -230,12 +234,12 @@ function fancyPrint(d) {
 	return retString;
 }
 
+// symbols for pretty print
 function getSymbols()
 {
     symbols = ["<span style=\"color: blue\">|</span>", "<span style=\"color: red\">|</span>", "<span style=\"color: green\">|</span>", "<span style=\"color: indigo\">|</span>", "<span style=\"color: slategray\">|</span>"];
     return symbols;
 }
-
 
 // comparative processing
 function rerollCompare(a,b)
@@ -243,6 +247,7 @@ function rerollCompare(a,b)
 	return a.sort().join(',')=== b.sort().join(',');
 }
 
+// get strings to differentiate in compare (doesn't work lol)
 function getCompareString(a, b, aSymbol, bSymbol)
 {
     let aString = "";
@@ -423,6 +428,7 @@ function getCompareString(a, b, aSymbol, bSymbol)
     return aString;
 }
 
+// compare two arrays of damage and see which is "better" ( also probably doesn't work )
 function getBiggerDamage(a, b)
 {
     if (a.length > b.length) return 0;
@@ -430,6 +436,7 @@ function getBiggerDamage(a, b)
     return 1;
 }
 
+// get string for two outputs at once 
 function actuallyCompare(a, b)
 {
 	let symbols = getSymbols()
@@ -447,6 +454,28 @@ function actuallyCompare(a, b)
 	let displayString = getCompareString(a, b, aSymbol, bSymbol);
 	displayString = displayString.concat("<br>");
 	return displayString.concat(multiPrint(aDamage, bDamage));
+}
+
+// get string for summed outputs
+function GetSumDamageString(a, b)
+{
+	let aDamage = atLeast(a);
+	let bDamage = atLeast(b);
+	let d = [];
+	
+	for (let a = 0; a < 500; a++) d[a] = 0;
+	
+	for (let i = 0; i < aDamage.length; i++)
+	{
+		d[i] += aDamage[i];
+	}
+	
+	for (let i = 0; i < bDamage.length; i++)
+	{
+		d[i] += bDamage[i];
+	}
+	
+	return fancyPrint(d);
 }
 
 // comparative print
@@ -493,18 +522,22 @@ function multiPrint() {
     return retString;
 }
 
+// convert NaN to max value
 function nanIsMax(n)
 {
     if (isNaN(n)) return 99;
     if (n) return n;
 	return 99;
 }
+
+// convert NaN to min value
 function nanIsZero(n) {
     if (isNaN(n)) return 0;
     if (n) return n;
     return 0;
 }
 
+// create a new attack from parameters
 function newAttack(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, mwOnly, models, procType, procRoll, procValue)
 {
     let Attack = createAttack();
