@@ -101,7 +101,7 @@
     <!-- buttons -->
     <button onclick="onSigmulate()" style="font-size : 12px; width: 80px; height: 40px;">Sigmulate</button>
     <button onclick="onCompare()" style="font-size : 12px; width: 80px; height: 40px;">Compare</button>
-    <button onclick="onCompare()" style="font-size : 12px; width: 80px; height: 40px;">Add To Last</button>
+    <button onclick="onSum()" style="font-size : 12px; width: 80px; height: 40px;">Add To Last</button>
 
     <!-- output -->
     <font size="3">
@@ -114,9 +114,14 @@
         let comparatives = [];
         function onCompare()
         {
-            onSigmulate(true);
+            onSigmulate(compare=true);
         }
 
+        function onCompare()
+        {
+            onSigmulate(compare=false, sum=true);
+        }
+		
         function diceParseInt(s)
         {
             s = s.toLowerCase();
