@@ -202,6 +202,31 @@ function atLeast(attack) {
 	return e;
 }
 
+// at least function for multiple attacks
+function multiLeast(attacks) {
+	let iterations = getIterations();
+	let d = [];
+	let e = [];
+	for (let a = 0; a < 500; a++) d[a] = 0;
+	for (let i = 0; i < iterations; i++)
+    {
+		let dmg = 0;
+		for (let attackIndex = 0; attackIndex < attacks.length; attackIndex++)
+		{
+			dmg += attacks[attackIndex].resolve();
+		}
+		
+        for (let j = 0; j < dmg; j++) d[j]++;
+    }
+	for (let i = 0; i < d.length; i++)
+	{
+		d[i] = Math.floor(d[i]/iterations*100);
+		if (d[i] == 0) continue;
+		e[i] = d[i];
+    }
+	return e;
+}
+
 // pad number for prettyprint
 function pad(num, size) {
 	let s = num+"";
@@ -517,7 +542,7 @@ function getMultiSumDamageString(l)
 		if (d[i] != 0) e[i] = Math.floor(d[i]*100);
 	}
 	
-	return fancyPrint(e);
+	return fancyPrint(multiLeast(l));
 }
 
 // comparative print
