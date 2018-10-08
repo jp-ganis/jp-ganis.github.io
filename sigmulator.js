@@ -457,7 +457,7 @@ function actuallyCompare(a, b)
 }
 
 // get string for summed outputs
-function GetSumDamageString(a, b)
+function getSumDamageString(a, b)
 {
 	let aDamage = atLeast(a);
 	let bDamage = atLeast(b);
