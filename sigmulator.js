@@ -87,10 +87,10 @@ function createAttack() {
                 return this.damageRoll(this.extraHits);
             }
             if (this.extraAttacksOnHit && roll >= this.extraAttacksOnHit && !this.attackRoO) {
-								this.attackRoO = true;
+				this.attackRoO = true;
 
                 let newHits = 1;
-                for (let h = 0; h < this.extraAttacks; h++) newHits += this.rollToHit();
+                for (let h = 0; h < this.extraAttacks; h++) newHits += this.rollToHit(true);
                 return newHits;
             }
             return -1;
@@ -114,12 +114,13 @@ function createAttack() {
         },
 
         // checked rolls
-        rollToHit: function () {
+        rollToHit: function (proccedAttack=false) {
             let h = this.hitRoll();
             if (h == 1) return 0;
             h += this.hitModifier;
-            let procHits = this.checkForHitProcs(h);
-						this.attackRoO = false;
+			let procHits = -1;
+            if (!proccedAttack) procHits = this.checkForHitProcs(h);
+			this.attackRoO = false;
             if (procHits > -1) return procHits;
             else if (h >= this.toHit) return 1;
             return 0;
