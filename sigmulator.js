@@ -18,7 +18,8 @@ function parseDiceNumber(d)
 
 // initialize Attack object
 function createAttack() {
-    let Attack = {
+	let Attack = {
+		models: 0,
         attacks: 0,
         toHit: 0,
         toWound: 0,
@@ -158,22 +159,27 @@ function createAttack() {
 
         // resolve
         resolve: function () {
-            for (let a = 0; a < this.attacks; a++) this.hits += this.rollToHit();
-            for (let h = 0; h < this.hits; h++) this.wounds += this.rollToWound();
-            for (let w = 0; w < this.wounds; w++) this.saves += this.rollToSave();
-            for (let s = 0; s < (this.wounds - this.saves); s++) {
-                let localDamage = this.rollDamage();
-								let localSaves = 0;
-                for (let w = 0; w < localDamage; w++) localSaves += this.rollToWard();
-								localDamage -= localSaves;
-                this.damageDone += localDamage;
-            }
-            for (let w = 0; w < this.mortalDamageDone; w++) this.mortalDamageDone -= this.rollToMortalWard();
+        	for (let m = 0; m < this.models; m++)
+        	{
+        		let localAttacks = parseDiceNumber(this.attacks);
+        		for (let a = 0; a < localAttacks; a++) this.hits += this.rollToHit();
+        		for (let h = 0; h < this.hits; h++) this.wounds += this.rollToWound();
+        		for (let w = 0; w < this.wounds; w++) this.saves += this.rollToSave();
+        		for (let s = 0; s < (this.wounds - this.saves); s++) {
+        			let localDamage = this.rollDamage();
+        			let localSaves = 0;
+        			for (let w = 0; w < localDamage; w++) localSaves += this.rollToWard();
+        			localDamage -= localSaves;
+        			this.damageDone += localDamage;
+        		}
+        		for (let w = 0; w < this.mortalDamageDone; w++) this.mortalDamageDone -= this.rollToMortalWard();
+
+        		this.hits = 0;
+        		this.wounds = 0;
+        		this.saves = 0;
+        	}
 
             let retVal = this.damageDone + this.mortalDamageDone;
-            this.hits = 0;
-            this.wounds = 0;
-            this.saves = 0;
             this.damageDone = 0;
             this.mortalDamageDone = 0;
             return retVal;
@@ -610,8 +616,8 @@ function newAttack(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, mwOnly, mo
 {
     let Attack = createAttack();
 
-    Attack.attacks = parseDiceNumber(nanIsZero(a));
-    if (models) Attack.attacks *= models;
+    Attack.attacks = nanIsZero(a);
+    Attack.models = nanIsZero(models);
 
     Attack.toHit = nanIsMax(h);
     Attack.toWound = nanIsMax(w);
