@@ -69,10 +69,12 @@
         <option value="dmgOnHit">+Damage on hit</option>
         <option value="hitsOnHit">+Hits on hit</option>
         <option value="attacksOnHit">+Attacks on hit</option>
+        <option value="rendOnHit">+Rend on hit</option>
 
         <option value="mwOnWound">+MW on wound</option>
         <option value="dmgOnWound">+Damage on wound</option>
         <option value="attacksOnWound">+Attacks on wound</option>
+        <option value="rendOnWound">+Rend on wound</option>
     </select>
 
     <label for="procRoll">Roll</label>
@@ -83,18 +85,21 @@
 
     <br />
     <br />
-
+	
+    <br />
+    <br />
+	
     <!-- Help -->
     <div>
         <i><b>Notes:</b><br />
         - In the reroll (RR) boxes, you have to enter a list of the numbers you wish to reroll. E.g. "1, 2, 3" or "1 2 3" to reroll failed hits for 4+. or "1" for rerolling just 1s.<br />
         - To compare two sets of stats, set your first stats, press "Sigmulate", then set your second set of stats and press "Compare".<br />
 
+        - For things like MW on hits, the roll is the number required to do the mortal wound, the value is the amount of mortal wounds. E.g. 6s to hit do a MW: Roll=6, Value=1. <br />
         - Output is the percentage chance of doing AT LEAST x amount of damage.<br />
 
         e.g. 03 <span style="color: blue">||||||</span><span style="color: red">|||</span> 50% 70% means there is a 50% chance of blue doing 3 or more wounds, and a 70% chance of red doing 3 or more wounds.<br /></i>
     </div>
-
     <br />
     <br />
 

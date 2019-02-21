@@ -34,6 +34,7 @@ function createAttack() {
         saveRerolls: [],
         damageDone: 0,
         damageProc: 0,
+		rendProc: 0,
         hitModifier: 0,
         woundModifier: 0,
         saveModifier: 0,
@@ -69,10 +70,12 @@ function createAttack() {
         extraDamageOnHit: null,
         extraHitsOnHit: null,
         extraAttacksOnHit: null,
+		extraRendOnHit: null,
 
         extraMwOnWound: null,
         extraDamageOnWound: null,
         extraAttacksOnWound: null,
+        extraRendOnWound: null,
 
         checkForHitProcs: function (roll)
         {
@@ -94,6 +97,10 @@ function createAttack() {
                 for (let h = 0; h < this.extraAttacks; h++) newHits += this.rollToHit(true);
                 return newHits;
             }
+            if (this.extraRendOnHit && roll >= this.extraRendOnHit) {
+				this.rendProc = this.extraRend;
+                return 1;
+            }
             return -1;
         },
         checkForWoundProcs: function (roll) {
@@ -111,6 +118,10 @@ function createAttack() {
                 for (let h = 0; h < this.extraAttacks; h++) newHits += this.rollToHit();
                 for (let w = 0; w < newHits; w++) newWounds += this.rollToWound();
                 return newWounds;
+            }
+            if (this.extraRendOnWound && roll >= this.extraRendOnWound) {
+				this.rendProc = this.extraRend;
+                return 1;
             }
         },
 
@@ -138,7 +149,13 @@ function createAttack() {
         rollToSave: function () {
             let s = this.saveRoll();
             if (s == 1) return 0;
-            if (s + this.saveModifier - Math.abs(this.rend) >= this.toSave) return 1;
+			
+			let rend = Math.abs(this.rend);
+			if (this.rendProc > 0) rend = Math.abs(this.rendProc);
+			
+			this.rendProc = 0;
+			
+            if (s + this.saveModifier - rend >= this.toSave) return 1;
             return 0;
         },
         rollDamage: function () {
@@ -649,6 +666,10 @@ function newAttack(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, mwOnly, mo
             Attack.extraAttacksOnHit = procRoll;
             Attack.extraAttacks = procValue;
             break;
+        case "rendOnHit":
+            Attack.extraRendOnHit = procRoll;
+            Attack.extraRend = Math.abs(procValue);
+            break;
 
         // on wound
         case "mwOnWound":
@@ -662,6 +683,10 @@ function newAttack(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, mwOnly, mo
         case "attacksOnWound":
             Attack.extraAttacksOnWound = procRoll;
             Attack.extraAttacks = procValue;
+            break;
+        case "rendOnWound":
+            Attack.extraRendOnWound = procRoll;
+            Attack.extraRend = Math.abs(procValue);
             break;
 
         // default
