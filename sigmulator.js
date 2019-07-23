@@ -1,20 +1,271 @@
-function d3() { return Math.floor(Math.random() * 3) + 1; }
-function d6() { return Math.floor(Math.random() * 6) + 1; }
+function dn(n) { return Math.floor(Math.random() * n) + 1; }
+function d3() { return dn(3); }
+function d6() { return dn(6); }
 function getIterations() { return 15000; }
 
 // encoding for things like 2d3 or 3d6
-function parseDiceNumber(d)
+function parseDiceNumber(s)
 {
-    if (d == -6) return d6();
-    else if (d == -3) return d3();
-    else if (d == -23) return d3() + d3();
-    else if (d == -33) return d3() + d3() + d3();
-    else if (d == -43) return d3() + d3() + d3() + d3();
-    else if (d == -26) return d6() + d6();
-    else if (d == -36) return d6() + d6() + d6();
-    else if (d == -46) return d6() + d6() + d6() + d6();
-    return d;
+	s = s.toLowerCase();
+	var regEx = /(\d*)d(\d+)(\+(\d+))*/;
+	var match = regEx.exec(s);
+
+	if (match == null)
+	{
+		return parseInt(s);
+	}
+
+	var prefix = nanIsZero(parseInt(match[1]))
+	var suffix = nanIsZero(parseInt(match[2]))
+	var addition = nanIsZero(parseInt(match[4]))
+
+	var d = 0;
+
+	for (var i = 0; i < prefix; ++i)
+	{
+		d += dn(suffix);
+	}
+
+	return d + addition;
 }
+
+// roll with rerolls
+function rollWithRerolls(rollFunc, rerolls)
+{
+	let d = rollFunc();
+		
+	if (rerolls.includes(d))
+	{
+		d = rollFunc();
+	}
+
+	return d;
+}
+
+// reroll under value
+function rollWithRerollUnderValue(rollFunc, value)
+{
+	let d = rollFunc();
+
+	if (d < value)
+	{
+		d = rollFunc();
+	}
+
+	return d;
+}
+
+// get basic attack sequence
+function getBasicAttackSequence(attackProfile, defenceProfile)
+{
+	let h = rollWithRerolls(d6, attackProfile.RRH);
+	let w = rollWithRerolls(d6, attackProfile.RRW);
+	let s = rollWithRerolls(d6, defenceProfile[0].Rerolls);
+
+	let result = 
+	{
+		HitRoll: h,
+		WoundRoll: w,
+		SaveRoll: s,
+	}
+	
+	return result;
+}
+
+// processProc
+function processProc(totalProfile, procProfile)
+{
+	// a proc takes in an attack profile,
+	// an attack sequence, and a damage
+	// value and returns an updated
+	// damage value
+
+}
+
+// parseProcString
+function parseProcString(string)
+{
+	// do a thing!
+
+	// what roll is it on (hit,wound,its own d6)
+	// what value does it require
+	// is it unmodified
+	// what value does it change
+
+}
+
+// parseArray
+function parseArray(string)
+{
+	if (string[0] == "[") { return JSON.parse(string); }
+	else { return JSON.parse("[" + string + "]"); }
+}
+
+// parseAttackString
+function parseAttackString(attackString)
+{
+	let values = attackString.split('/');
+
+	let attacks = parseDiceNumber(values[0]);
+	let hitValue = parseInt(values[1]);
+	let woundValue = parseInt(values[2]);
+	let rendValue = parseInt(values[3]);
+	let damageValue = parseInt(values[4]);
+	let rrhValue = values.length > 5 ? parseArray(values[5]) : [];
+	let rrwValue = values.length > 6 ? parseArray(values[6]) : [];
+
+	let result = 
+	{
+		Attacks: attacks,
+		ToHit: hitValue,
+		ToWound: woundValue,
+		Rend: Math.abs(rendValue),
+		Damage: damageValue,
+		RRH: rrhValue,
+		RRW: rrwValue,
+		Procs: [],
+	}
+
+	for (let i = 7; i < values.length; ++i)
+	{
+		result.Procs.push(parseProcString(values[i]));
+	}
+
+	return result;
+}
+
+// parseDefenceString
+// first value is armor saves
+// second value is mw only saves
+function parseDefenceString(defenceString)
+{
+	let values = defenceString.split('/');
+
+	let result = [];
+
+	for (let i = 0; i < values.length - 2; i += 3)
+	{
+		let save =
+		{
+			Value: parseInt(values[i]),
+			MWOnly: parseInt(values[i+1]),
+			Rerolls: parseArray(values[i+2]),
+		}
+
+		result.push(save);
+	}
+
+	return result;
+}
+
+// parseModifierString
+function parseModifierString(modifierString)
+{
+	let values = modifierString.split('/');
+
+	let result = 
+	{
+		HitModifier: parseInt(values[0]),
+		WoundModifier: parseInt(values[1]),
+		SaveModifier: parseInt(values[2]),
+	}
+
+	return result;
+}
+
+// modify hitwound roll
+function modifyHitWoundRoll(roll, modifier)
+{
+	if (roll == 1 || roll == 6) return roll;
+	return roll + modifier;
+}
+
+// getAfterSaveReduction
+function getAfterSaveReduction(defenceProfile, physicalDamageDone, mortalWoundDamageDone)
+{
+	let afterSaveReduction = 0;
+
+	for (let i = 1; i < defenceProfile.length; ++i)
+	{
+		let afterSave = defenceProfile[i];
+
+		// aftersave vs everything
+		if (!afterSave.MWOnly)
+		{
+			for (let j = 0; j < physicalDamageDone; ++j)
+			{
+				let saveRoll = rollWithRerolls(d6, afterSave.Rerolls);
+				if (saveRoll >= afterSave.Value)
+				{
+					afterSaveReduction++;
+				}
+			}
+		}
+
+		// aftersave vs mortal wounds
+		for (let j = 0; j < mortalWoundDamageDone; ++j)
+		{
+			let saveRoll = rollWithRerolls(d6, afterSave.Rerolls);
+			if (saveRoll >= afterSave.Value)
+			{
+				afterSaveReduction++;
+			}
+		}
+	}
+
+	return afterSaveReduction;
+}
+
+// rollAttack
+let attackProfile = parseAttackString('3/3/3/-2/1');
+let defenceProfile = parseDefenceString('4/0/[]/6/0/[]');
+let modifiers = parseModifierString('0/0/0');
+
+// rollAttack
+function rollAttack(attackProfile, defenceProfile, modifiers)
+{
+	let physicalDamageDone = 0;
+	let mortalWoundDamageDone = 0;
+
+	let rolls = getBasicAttackSequence(attackProfile, defenceProfile);
+
+	let hitRoll = modifyHitWoundRoll(rolls.HitRoll, modifiers.HitModifier);
+	let woundRoll = modifyHitWoundRoll(rolls.WoundRoll, modifiers.WoundModifier);
+	let saveRoll = rolls.SaveRoll + modifiers.SaveModifier - attackProfile.Rend;
+
+	let hitSuccess = hitRoll >= attackProfile.ToHit;
+	let woundSuccess = woundRoll >= attackProfile.ToWound;
+	let saveSuccess = saveRoll >= defenceProfile[0].Value;
+
+	if (rolls.SaveRoll == 1)
+	{
+		saveSuccess = false;
+	}
+
+	// attack
+	if (hitSuccess && woundSuccess && !saveSuccess)
+	{
+		physicalDamageDone += attackProfile.Damage;
+	}
+
+	// saves after save
+	let afterSaveReduction = getAfterSaveReduction(defenceProfile, physicalDamageDone, mortalWoundDamageDone);
+
+
+	// procs
+	return physicalDamageDone + mortalWoundDamageDone - afterSaveReduction;
+}
+
+// multiple comparisons
+// attack strings, that are savable with unit names for a local user (also can share a direct link with people in a chat)
+// scaling parameters: e.g. scaling with buffs, debuffs, saves
+// unmodified options
+// multiple procs
+// reroll failed (with failed in wording)
+// reroll failed (with reroll all in wording)
+// reroll all (fish for value)
+
+
 
 // initialize Attack object
 function createAttack() {
@@ -34,7 +285,7 @@ function createAttack() {
         saveRerolls: [],
         damageDone: 0,
         damageProc: 0,
-		rendProc: 0,
+				rendProc: 0,
         hitModifier: 0,
         woundModifier: 0,
         saveModifier: 0,

@@ -138,6 +138,15 @@
         function diceParseInt(s)
         {
             s = s.toLowerCase();
+						var regEx = /(\d*)d(\d+)(\+(\d+))*/;
+						var match = regEx.exec(s);
+
+						int prefix = parseInt(match[1])
+						int suffix = parseInt(match[2])
+						int addition = parseInt(match[4])
+
+		
+
             if (s.includes("5d3")) return -53;
             else if (s.includes("4d3")) return -43;
             else if (s.includes("3d3")) return -33;
