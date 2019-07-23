@@ -72,26 +72,42 @@ function getBasicAttackSequence(attackProfile, defenceProfile)
 	return result;
 }
 
-// processProc
-function processProc(totalProfile, procProfile)
+// checkProcRoll
+function checkProcRoll(proc, modifiers, roll)
 {
-	// a proc takes in an attack profile,
-	// an attack sequence, and a damage
-	// value and returns an updated
-	// damage value
+	if (!proc.Unmodified)
+	{
+		roll += modifiers.HitRoll;
+	}
 
+	return roll >= proc.Value;
+}
+
+// checkProcActivation
+function checkProcActivation(rolls, modifiers, proc)
+{
+	if (proc.Type == 'mw_on_hit')
+	{
+		return checkProcRoll(proc, modifiers, rolls.HitRoll);
+	}
+}
+
+// processSuccessfulProc
+function processSuccessfulProc(proc)
+{
 }
 
 // parseProcString
 function parseProcString(string)
 {
-	// do a thing!
+	let values = string.split('/');
 
-	// what roll is it on (hit,wound,its own d6)
-	// what value does it require
-	// is it unmodified
-	// what value does it change
+	let proc = {};
+	proc.Type = values[0];  // e.g. mw on a hit roll of...
+	proc.Value = values[1]; // value of roll needed (...6)
+	proc.Unmodified = values[2];
 
+	return proc;
 }
 
 // parseArray
@@ -100,6 +116,15 @@ function parseArray(string)
 	if (string[0] == "[") { return JSON.parse(string); }
 	else { return JSON.parse("[" + string + "]"); }
 }
+
+// parseRerolls
+function findRerolls(string, value, modifier)
+{
+	// if it's an array of numbers, use that
+	// if it's failed, return array of less than value
+	// if it's failedNOMOD, calculate array using value/modifier
+}
+
 
 // parseAttackString
 function parseAttackString(attackString)
@@ -251,11 +276,20 @@ function rollAttack(attackProfile, defenceProfile, modifiers)
 	// saves after save
 	let afterSaveReduction = getAfterSaveReduction(defenceProfile, physicalDamageDone, mortalWoundDamageDone);
 
-
 	// procs
 	return physicalDamageDone + mortalWoundDamageDone - afterSaveReduction;
 }
 
+let s=0;
+for (let i = 0; i < 100000; ++i)
+{
+	s += rollAttack(attackProfile, defenceProfile, modifiers);
+}
+
+console.log(s/10000)
+
+// need to be able to do failed rerolls AND reroll 6s (nice to have probably)
+// specify number of simulations
 // multiple comparisons
 // attack strings, that are savable with unit names for a local user (also can share a direct link with people in a chat)
 // scaling parameters: e.g. scaling with buffs, debuffs, saves
