@@ -186,11 +186,21 @@ function parseArray(string)
 }
 
 // parseRerolls
-function findRerolls(string, value, modifier)
+function parseRerolls(string, value, modifier)
 {
-	// if it's an array of numbers, use that
-	// if it's failed, return array of less than value
-	// if it's failedNOMOD, calculate array using value/modifier
+	let rerolls = [];
+	
+	if (string == 'failed')
+	{
+		for (let i = 1; i < value; ++i)
+		{
+			rerolls.push(i);
+		}
+	}
+	else
+	{
+		return parseArray(string);
+	}
 }
 
 // parseAttackString
@@ -203,8 +213,8 @@ function parseAttackString(attackString)
 	let woundValue = parseInt(values[2]);
 	let rendValue = parseInt(values[3]);
 	let damageValue = values[4];
-	let rrhValue = values.length > 5 ? parseArray(values[5]) : [];
-	let rrwValue = values.length > 6 ? parseArray(values[6]) : [];
+	let rrhValue = values.length > 5 ? parseRerolls(values[5]) : [];
+	let rrwValue = values.length > 6 ? parseRerolls(values[6]) : [];
 
 	let result = 
 	{
@@ -476,7 +486,7 @@ function rollAttack(attackProfile, defenceProfile, modifiers, isBonusAttack = fa
 }
 
 let tg_maw_proc = parseProcString('mw_on_hit/6/6/1');
-let tg_gristlegore_proc = parseProcString('hits_on_hit/6/d6/1');
+let tg_gristlegore_proc = parseProcString('hits_on_hit/6/2/1');
 let fakeattack = parseProcString('attacks_on_wound/2/1/1');
 
 let attackProfile = parseAttackString('3/4/3/-2/d6');
