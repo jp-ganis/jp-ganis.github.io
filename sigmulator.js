@@ -87,6 +87,8 @@ function processSuccessfulProc(proc)
 	results.AttackDamage = 0;
 	results.Rend = 0;
 	
+	proc.Value = parseDiceNumber(proc.Value.toString());
+	
 	results.RollType = proc.Type.includes('hit') ? 'hit' : 'wound';
 	
 	if (proc.Type == 'mw_on_hit')
@@ -146,9 +148,7 @@ function parseProcString(string)
 	let proc = {};
 	proc.Type = values[0];  // e.g. mw on a hit roll of...
 	proc.Roll = parseInt(values[1]); // ...6
-	
-	// TODO this should handle a value of 3d3 or whtaever
-	proc.Value = parseInt(values[2]); // value of proc, 1 MW, 3 extra hits, etc
+	proc.Value = values[2]; // value of proc, 1 MW, 3 extra hits, etc
 	proc.Unmodified = values[3]; 
 
 	return proc;
@@ -476,7 +476,7 @@ function rollAttack(attackProfile, defenceProfile, modifiers, isBonusAttack = fa
 }
 
 let tg_maw_proc = parseProcString('mw_on_hit/6/6/1');
-let tg_gristlegore_proc = parseProcString('hits_on_hit/6/2/1');
+let tg_gristlegore_proc = parseProcString('hits_on_hit/6/d6/1');
 let fakeattack = parseProcString('attacks_on_wound/2/1/1');
 
 let attackProfile = parseAttackString('3/4/3/-2/d6');
@@ -487,13 +487,13 @@ attackProfile.Procs.push(tg_gristlegore_proc);
 let defenceProfile = parseDefenceString('4/0/[]/6/0/[]');
 let modifiers = parseModifierString('0/0/0');
 
-// let s=0;
-// for (let i = 0; i < 100000; ++i)
-// {
-	// s += rollAttack(attackProfile, defenceProfile, modifiers);
-// }
+let s=0;
+for (let i = 0; i < 100000; ++i)
+{
+	s += rollAttack(attackProfile, defenceProfile, modifiers);
+}
 
-// console.log(s/10000)
+console.log(s/10000)
 
 // need to be able to do failed rerolls AND reroll 6s (nice to have probably)
 // specify number of simulations
