@@ -55,52 +55,25 @@ function rollWithRerollUnderValue(rollFunc, value)
 	return d;
 }
 
-// get basic attack sequence
-function getBasicAttackSequence(attackProfile, defenceProfile)
-{
-	let h = rollWithRerolls(d6, attackProfile.RRH);
-	let w = rollWithRerolls(d6, attackProfile.RRW);
-	let s = rollWithRerolls(d6, defenceProfile[0].Rerolls);
-
-	let result = 
-	{
-		HitRoll: h,
-		WoundRoll: w,
-		SaveRoll: s,
-	}
-	
-	return result;
-}
-
 // checkProcRoll
 function checkProcRoll(proc, modifier, roll)
 {
-	if (!proc.Unmodified)
+	if (proc.Unmodified)
 	{
-		roll += modifier;
+		roll -= modifier;
 	}
 
 	return roll >= proc.Roll;
 }
 
 // processProc
-function processProc(rolls, modifiers, proc)
+function processProc(roll, modifier, proc)
 {
-	if (proc.Type.includes('on_hit'))
+	if (checkProcRoll(proc, modifier, roll))
 	{
-		if (checkProcRoll(proc, modifiers.HitModifier, rolls.HitRoll))
-		{
-			return processSuccessfulProc(proc);
-		}
+		return processSuccessfulProc(proc);
 	}
-	else if (proc.Type.includes('on_wound'))
-	{
-		if (checkProcRoll(proc, modifiers.WoundModifier, rolls.WoundRoll))
-		{
-			return processSuccessfulProc(proc);
-		}
-	}
-	
+		
 	return null;
 }
 
@@ -108,11 +81,18 @@ function processProc(rolls, modifiers, proc)
 function processSuccessfulProc(proc)
 {
 	let results = {};
+	results.MWDamage = 0;
+	results.BonusAttacks = 0;
+	results.BonusHits = 0;
+	results.AttackDamage = 0;
+	results.Rend = 0;
+	
+	results.RollType = proc.Type.includes('hit') ? 'hit' : 'wound';
 	
 	if (proc.Type == 'mw_on_hit')
 	{
 		results.MWDamage = proc.Value;
-		results.BonusWoundRolls = -1;
+		results.BonusHits = -1;
 	}
 	if (proc.Type == 'mw_on_hit_ADDITIONAL')
 	{
@@ -120,11 +100,11 @@ function processSuccessfulProc(proc)
 	}
 	else if (proc.Type == 'dmg_on_hit')
 	{
-		results.AttackDamage = proc.Value;
+		results.BonusAttackDamage = proc.Value;
 	}
 	else if (proc.Type == 'hits_on_hit')
 	{
-		results.BonusWoundRolls = proc.Value;
+		results.BonusHits = proc.Value;
 	}
 	else if (proc.Type == 'attacks_on_hit')
 	{
@@ -137,7 +117,6 @@ function processSuccessfulProc(proc)
 	else if (proc.Type == 'mw_on_wound')
 	{
 		results.MWDamage = proc.Value;
-		results.BonusSaveRolls = -1;
 	}
 	else if (proc.Type == 'mw_on_wound_ADDITIONAL')
 	{
@@ -145,7 +124,7 @@ function processSuccessfulProc(proc)
 	}
 	else if (proc.Type == 'dmg_on_wound')
 	{
-		results.AttackDamage = proc.Value;
+		results.BonusAttackDamage = proc.Value;
 	}
 	else if (proc.Type == 'attacks_on_wound')
 	{
@@ -171,6 +150,30 @@ function parseProcString(string)
 	proc.Unmodified = values[3]; 
 
 	return proc;
+}
+
+// accumuluateProcResults
+function accumulateProcResults(procResults)
+{
+	let result = {};
+	result.MWDamage = 0;
+	result.BonusAttacks = 0;
+	result.BonusHits = 0;
+	result.AttackDamage = 0;
+	result.Rend = 0;
+	
+	for (let i = 0; i < procResults.length; ++i)
+	{
+		if (procResults[i] == null) continue;
+		
+		result.MWDamage		+= procResults[i].MWDamage;
+		result.BonusAttacks	+= procResults[i].BonusAttacks;
+		result.BonusHits	+= procResults[i].BonusHits;
+		result.AttackDamage	+= procResults[i].AttackDamage;
+		result.Rend			+= procResults[i].Rend;
+	}
+	
+	return result;
 }
 
 // parseArray
@@ -298,47 +301,163 @@ function getAfterSaveReduction(defenceProfile, physicalDamageDone, mortalWoundDa
 	return afterSaveReduction;
 }
 
+// rollToHit
+function rollToHit(attackProfile, modifiers)
+{
+	let roll = rollWithRerolls(d6, attackProfile.RRH);
+	return modifyHitWoundRoll(roll, modifiers.HitModifier);
+}
+
+// rollToWound
+function rollToWound(attackProfile, modifiers)
+{
+	let roll = rollWithRerolls(d6, attackProfile.RRW);
+	return modifyHitWoundRoll(roll, modifiers.WoundModifier);
+}
+
+// rollToSave
+function rollToSave(attackProfile, defenceProfile, modifiers)
+{
+	let roll = rollWithRerolls(d6, defenceProfile[0].Rerolls);
+	
+	if (roll == 1) return 1;
+	
+	return roll + modifiers.SaveModifier - attackProfile.Rend;
+}
+
 // rollAttack
-function rollAttack(attackProfile, defenceProfile, modifiers)
+function rollAttack(attackProfile, defenceProfile, modifiers, isBonusHit = false, isBonusAttack = false)
 {
 	let physicalDamageDone = 0;
 	let mortalWoundDamageDone = 0;
-
-	let rolls = getBasicAttackSequence(attackProfile, defenceProfile);
-
-	let hitRoll = modifyHitWoundRoll(rolls.HitRoll, modifiers.HitModifier);
-	let woundRoll = modifyHitWoundRoll(rolls.WoundRoll, modifiers.WoundModifier);
-	let saveRoll = rolls.SaveRoll + modifiers.SaveModifier - attackProfile.Rend;
+	let thisAttackDamage = parseDiceNumber(attackProfile.Damage);
+	let thisAttackRend = attackProfile.Rend;
 	
-	let procResults = [];
+	let bonusAttacks = 0;
 	
-	// procs
+	// roll to hit
+	let hitRoll = rollToHit(attackProfile, modifiers);
+	let hitProcs = [];
+	
+	// TO HIT
+	let hits = 0;
+	let bonusDamageHits = 0;
+	let bonusRendHits = 0;
+	
 	for (let i = 0; i < attackProfile.Procs.length; ++i)
 	{
-		procResults.push(processProc(rolls, modifiers, attackProfile.Procs[i]));
+		let thisProc = attackProfile.Procs[i];
+		if (thisProc.Type.includes('on_hit'))
+		{
+			hitProcs.push(processProc(hitRoll, modifiers.HitModifier, thisProc));
+		}
 	}
-
-	let hitSuccess = hitRoll >= attackProfile.ToHit;
-	let woundSuccess = woundRoll >= attackProfile.ToWound;
-	let saveSuccess = saveRoll >= defenceProfile[0].Value;
-
-	if (rolls.SaveRoll == 1)
+	hitProcs = accumulateProcResults(hitProcs);
+	
+	// bonus attacks cannot proc further bonus attacks (recursion-proofing)
+	if (isBonusAttack)
 	{
-		saveSuccess = false;
+		hitProcs.BonusAttacks = 0;
+	}
+	
+	// <PROCTYPES>
+	{
+		// MWDamage 
+		mortalWoundDamageDone += hitProcs.MWDamage;
+		
+		// BonusAttacks
+		bonusAttacks += hitProcs.BonusAttacks;
+		
+		// BonusHits
+		hits += hitProcs.BonusHits; // this needs to not add TWO bonus hits on a proc, but rather 2 minus the original 1. (6s = 2 hits is just ONE bonus hit)
+		
+		// AttackDamage 
+		thisAttackDamage = hitProcs.BonusAttackDamage;
+		
+		// Rend 
+		if (hitProcs.Rend > 0) thisAttackRend = hitProcs.Rend;
+	}
+	// </PROCTYPES>
+	
+	// TO WOUND
+	let wounds = 0;
+	
+	let hitSuccess = hitRoll >= attackProfile.ToHit;
+	hits += hitSuccess;
+	
+	for (let i = 0; i < hits; ++i)
+	{
+		let woundRoll = rollToWound(attackProfile, modifiers);
+		let woundProcs = [];
+		
+		for (let i = 0; i < attackProfile.Procs.length; ++i)
+		{
+			let thisProc = attackProfile.Procs[i];
+			if (thisProc.Type.includes('on_wound'))
+			{
+				woundProcs.push(processProc(woundRoll, modifiers.WoundModifier, thisProc));
+			}
+		}
+		woundProcs = accumulateProcResults(woundProcs);
+		
+		// bonus attacks cannot proc further bonus attacks (recursion-proofing)
+		if (isBonusAttack)
+		{
+			woundProcs.BonusAttacks = 0;
+		}
+		
+		// <PROCTYPES>
+		{
+			// MWDamage 
+			mortalWoundDamageDone += woundProcs.MWDamage;
+			
+			// BonusAttacks
+			bonusAttacks += woundProcs.BonusAttacks;
+			
+			// AttackDamage 
+			if (woundProcs.BonusAttackDamage > 0) thisAttackDamage = woundProcs.BonusAttackDamage;
+			
+			// Rend 
+			if (woundProcs.Rend > 0) thisAttackRend = woundProcs.Rend;
+		}
+		// </PROCTYPES>
+		
+		let woundSuccess = woundRoll >= attackProfile.ToWound;
+		wounds += woundSuccess;
+	}
+	
+	// TO SAVE
+	let saves = 0;
+	
+	for (let i = 0; i < wounds; ++i)
+	{
+		let saveRoll = rollToSave(attackProfile, defenceProfile, modifiers);
+		if (saveRoll == 1)
+		{
+			continue;
+		}
+		else if (saveRoll >= defenceProfile[0].Value)
+		{
+			saves += 1;
+		}
 	}
 
 	// attack
-	if (hitSuccess && woundSuccess && !saveSuccess)
+	let unsavedWounds = wounds - saves;
+	
+	for (let i = 0; i < unsavedWounds; ++i)
 	{
-		physicalDamageDone += parseDiceNumber(attackProfile.Damage);
-		console.log(attackProfile.Damage);
+		physicalDamageDone += thisAttackDamage; // this is incorrect. should rework bonus hits to just be automatically hitting attacks and save ourselves some loops
 	}
 
 	// saves after save
 	let afterSaveReduction = getAfterSaveReduction(defenceProfile, physicalDamageDone, mortalWoundDamageDone);
 
+	// damage total
+	let damageTotal = physicalDamageDone + mortalWoundDamageDone - afterSaveReduction;
+	
 	// procs
-	return physicalDamageDone + mortalWoundDamageDone - afterSaveReduction;
+	return damageTotal;
 }
 
 let tg_maw_proc = parseProcString('mw_on_hit/6/6/1');
