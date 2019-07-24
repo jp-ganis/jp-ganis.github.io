@@ -537,6 +537,8 @@ function debug_test()
 // reroll failed (with failed in wording)
 // reroll failed (with reroll all in wording)
 // reroll all (fish for value)
+// "chance to kill" - where you fill in number of wounds 
+// single roll mode! see what happened this time
 
 // at least function
 function atLeast(attack) {
