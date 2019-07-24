@@ -104,7 +104,7 @@ function processSuccessfulProc(proc)
 	}
 	else if (proc.Type == 'hits_on_hit')
 	{
-		results.BonusHits = proc.Value;
+		results.BonusHits = proc.Value - 1; // we remove 1 so that 6s = 2 hits means 1 bonus hit, not three hits total
 	}
 	else if (proc.Type == 'attacks_on_hit')
 	{
@@ -145,8 +145,10 @@ function parseProcString(string)
 
 	let proc = {};
 	proc.Type = values[0];  // e.g. mw on a hit roll of...
-	proc.Roll = values[1]; // ...6
-	proc.Value = values[2]; // value of proc, 1 MW, 3 extra hits, etc
+	proc.Roll = parseInt(values[1]); // ...6
+	
+	// TODO this should handle a value of 3d3 or whtaever
+	proc.Value = parseInt(values[2]); // value of proc, 1 MW, 3 extra hits, etc
 	proc.Unmodified = values[3]; 
 
 	return proc;
@@ -326,7 +328,7 @@ function rollToSave(attackProfile, defenceProfile, modifiers)
 }
 
 // rollAttack
-function rollAttack(attackProfile, defenceProfile, modifiers, isBonusHit = false, isBonusAttack = false)
+function rollAttack(attackProfile, defenceProfile, modifiers, isBonusAttack = false)
 {
 	let physicalDamageDone = 0;
 	let mortalWoundDamageDone = 0;
@@ -336,14 +338,12 @@ function rollAttack(attackProfile, defenceProfile, modifiers, isBonusHit = false
 	let bonusAttacks = 0;
 	
 	// roll to hit
+	let hits = [];
 	let hitRoll = rollToHit(attackProfile, modifiers);
+	
 	let hitProcs = [];
 	
 	// TO HIT
-	let hits = 0;
-	let bonusDamageHits = 0;
-	let bonusRendHits = 0;
-	
 	for (let i = 0; i < attackProfile.Procs.length; ++i)
 	{
 		let thisProc = attackProfile.Procs[i];
@@ -360,33 +360,46 @@ function rollAttack(attackProfile, defenceProfile, modifiers, isBonusHit = false
 		hitProcs.BonusAttacks = 0;
 	}
 	
-	// <PROCTYPES>
+	let thisHit = {Rend: attackProfile.Rend, Damage: attackProfile.Damage};
+	
+	////////////////////////////// <PROCTYPES>
+	// MWDamage 
+	mortalWoundDamageDone += hitProcs.MWDamage;
+	
+	// BonusAttacks
+	bonusAttacks += hitProcs.BonusAttacks;
+	
+	// BonusHits
+	// this needs to not add TWO bonus hits on a proc, but rather 2 minus the original 1. (6s = 2 hits is just ONE bonus hit)
+	for (let i = 0; i < hitProcs.BonusHits; ++i)
 	{
-		// MWDamage 
-		mortalWoundDamageDone += hitProcs.MWDamage;
-		
-		// BonusAttacks
-		bonusAttacks += hitProcs.BonusAttacks;
-		
-		// BonusHits
-		hits += hitProcs.BonusHits; // this needs to not add TWO bonus hits on a proc, but rather 2 minus the original 1. (6s = 2 hits is just ONE bonus hit)
-		
-		// AttackDamage 
-		thisAttackDamage = hitProcs.BonusAttackDamage;
-		
-		// Rend 
-		if (hitProcs.Rend > 0) thisAttackRend = hitProcs.Rend;
+		hits.push({Rend: attackProfile.Rend, Damage: attackProfile.Damage});
 	}
-	// </PROCTYPES>
+	
+	// AttackDamage 
+	if (hitProcs.BonusAttackDamage > 0)
+	{
+		thisHit.Damage = hitProcs.BonusAttackDamage;
+	}
+	
+	// Rend 
+	if (hitProcs.Rend > 0)
+	{
+		thisHit.Rend = hitProcs.Rend;
+	}
+	////////////////////////////// <\PROCTYPES>
+	
+	if (hitRoll >= attackProfile.ToHit && hitProcs.BonusHits >= 0)
+	{
+		hits.push(thisHit);
+	}
 	
 	// TO WOUND
-	let wounds = 0;
+	let wounds = [];
 	
-	let hitSuccess = hitRoll >= attackProfile.ToHit;
-	hits += hitSuccess;
-	
-	for (let i = 0; i < hits; ++i)
+	for (let i = 0; i < hits.length; ++i)
 	{
+		let thisHit = hits[i];
 		let woundRoll = rollToWound(attackProfile, modifiers);
 		let woundProcs = [];
 		
@@ -406,69 +419,73 @@ function rollAttack(attackProfile, defenceProfile, modifiers, isBonusHit = false
 			woundProcs.BonusAttacks = 0;
 		}
 		
-		// <PROCTYPES>
-		{
-			// MWDamage 
-			mortalWoundDamageDone += woundProcs.MWDamage;
-			
-			// BonusAttacks
-			bonusAttacks += woundProcs.BonusAttacks;
-			
-			// AttackDamage 
-			if (woundProcs.BonusAttackDamage > 0) thisAttackDamage = woundProcs.BonusAttackDamage;
-			
-			// Rend 
-			if (woundProcs.Rend > 0) thisAttackRend = woundProcs.Rend;
-		}
-		// </PROCTYPES>
+		////////////////////////////// <PROCTYPES>
+		// MWDamage 
+		mortalWoundDamageDone += woundProcs.MWDamage;
 		
-		let woundSuccess = woundRoll >= attackProfile.ToWound;
-		wounds += woundSuccess;
+		// BonusAttacks
+		bonusAttacks += woundProcs.BonusAttacks;
+		
+		// AttackDamage 
+		if (woundProcs.BonusAttackDamage > 0)
+		{
+			thisHit.Damage = woundProcs.BonusAttackDamage;
+		}
+		
+		// Rend 
+		if (woundProcs.Rend > 0)
+		{
+			thisHit.Rend = woundProcs.Rend;
+		}
+		////////////////////////////// <\PROCTYPES>
+		
+		if (woundRoll >= attackProfile.ToWound)
+		{
+			wounds.push(thisHit);
+		}
 	}
 	
 	// TO SAVE
 	let saves = 0;
 	
-	for (let i = 0; i < wounds; ++i)
+	for (let i = 0; i < wounds.length; ++i)
 	{
-		let saveRoll = rollToSave(attackProfile, defenceProfile, modifiers);
-		if (saveRoll == 1)
+		let thisWound = wounds[i];
+		let saveRoll = rollToSave(thisWound, defenceProfile, modifiers);
+		
+		if (saveRoll == 1 || saveRoll < defenceProfile[0].Value)
 		{
-			continue;
-		}
-		else if (saveRoll >= defenceProfile[0].Value)
-		{
-			saves += 1;
+			physicalDamageDone += parseDiceNumber(thisWound.Damage);
 		}
 	}
-
-	// attack
-	let unsavedWounds = wounds - saves;
 	
-	for (let i = 0; i < unsavedWounds; ++i)
-	{
-		physicalDamageDone += thisAttackDamage; // this is incorrect. should rework bonus hits to just be automatically hitting attacks and save ourselves some loops
-	}
-
 	// saves after save
 	let afterSaveReduction = getAfterSaveReduction(defenceProfile, physicalDamageDone, mortalWoundDamageDone);
 
 	// damage total
 	let damageTotal = physicalDamageDone + mortalWoundDamageDone - afterSaveReduction;
 	
+	// recurse
+	for (let i = 0; i < bonusAttacks; ++i)
+	{
+		damageTotal += rollAttack(attackProfile, defenceProfile, modifiers, true);
+	}
+	
 	// procs
 	return damageTotal;
 }
 
 let tg_maw_proc = parseProcString('mw_on_hit/6/6/1');
+let tg_gristlegore_proc = parseProcString('hits_on_hit/6/2/1');
+let fakeattack = parseProcString('attacks_on_wound/2/1/1');
 
 let attackProfile = parseAttackString('3/4/3/-2/d6');
-attackProfile.Procs.push(tg_maw_proc);
+attackProfile.Procs.push(tg_gristlegore_proc);
+// attackProfile.Procs.push(tg_maw_proc);
+// attackProfile.Procs.push(fakeattack);
 
 let defenceProfile = parseDefenceString('4/0/[]/6/0/[]');
 let modifiers = parseModifierString('0/0/0');
-
-console.log(rollAttack(attackProfile, defenceProfile, modifiers));
 
 // let s=0;
 // for (let i = 0; i < 100000; ++i)
@@ -488,198 +505,6 @@ console.log(rollAttack(attackProfile, defenceProfile, modifiers));
 // reroll failed (with failed in wording)
 // reroll failed (with reroll all in wording)
 // reroll all (fish for value)
-
-
-
-// initialize Attack object
-function createAttack() {
-	let Attack = {
-		models: 0,
-        attacks: 0,
-        toHit: 0,
-        toWound: 0,
-        toSave: 0,
-        rend: 0,
-        damage: 0,
-        hits: 0,
-        wounds: 0,
-        saves: 0,
-        hitRerolls: [],
-        woundRerolls: [],
-        saveRerolls: [],
-        damageDone: 0,
-        damageProc: 0,
-				rendProc: 0,
-        hitModifier: 0,
-        woundModifier: 0,
-        saveModifier: 0,
-        mortalDamageDone: 0,
-
-        //basic rolls
-        hitRoll: function () {
-            let roll = d6();
-            if (this.hitRerolls.indexOf(roll) >= 0) return d6();
-            return roll;
-        },
-        woundRoll: function () {
-            let roll = d6();
-            if (this.woundRerolls.indexOf(roll) >= 0) return d6();
-            return roll;
-        },
-        saveRoll: function () {
-            let roll = d6();
-            if (this.saveRerolls.indexOf(roll) >= 0) return d6();
-            return roll;
-        },
-        damageRoll: function (inDamage) {
-            return parseDiceNumber(inDamage);
-        },
-
-        // proc effects
-        extraMwDamage: null,
-        extraDamage: null,
-        extraHits: null,
-        extraAttacks: null,
-
-        extraMwOnHit: null,
-        extraDamageOnHit: null,
-        extraHitsOnHit: null,
-        extraAttacksOnHit: null,
-		extraRendOnHit: null,
-
-        extraMwOnWound: null,
-        extraDamageOnWound: null,
-        extraAttacksOnWound: null,
-        extraRendOnWound: null,
-
-        checkForHitProcs: function (roll)
-        {
-            if (this.extraMwOnHit && roll >= this.extraMwOnHit) {
-                this.mortalDamageDone += this.damageRoll(this.extraMwDamage);
-                return 0;
-            }
-            if (this.extraDamageOnHit && roll >= this.extraDamageOnHit) {
-                this.damageProc = this.damageRoll(this.extraDamage);
-                return 1;
-            }
-            if (this.extraHitsOnHit && roll >= this.extraHitsOnHit) {
-                return this.damageRoll(this.extraHits);
-            }
-            if (this.extraAttacksOnHit && roll >= this.extraAttacksOnHit && !this.attackRoO) {
-				this.attackRoO = true;
-
-                let newHits = 1;
-                for (let h = 0; h < this.extraAttacks; h++) newHits += this.rollToHit(true);
-                return newHits;
-            }
-            if (this.extraRendOnHit && roll >= this.extraRendOnHit) {
-				this.rendProc = this.extraRend;
-                return 1;
-            }
-            return -1;
-        },
-        checkForWoundProcs: function (roll) {
-            if (this.extraMwOnWound && roll >= this.extraMwOnWound) {
-                this.mortalDamageDone += this.damageRoll(this.extraMwDamage);
-                return 0;
-            }
-            if (this.extraDamageOnWound && roll >= this.extraDamageOnWound) {
-                this.damageProc = this.damageRoll(this.extraDamage);
-                return 1;
-            }
-            if (this.extraAttacksOnWound && roll >= this.extraAttacksOnWound) {
-                let newHits = 0;
-                let newWounds = 1;
-                for (let h = 0; h < this.extraAttacks; h++) newHits += this.rollToHit();
-                for (let w = 0; w < newHits; w++) newWounds += this.rollToWound();
-                return newWounds;
-            }
-            if (this.extraRendOnWound && roll >= this.extraRendOnWound) {
-				this.rendProc = this.extraRend;
-                return 1;
-            }
-        },
-
-        // checked rolls
-        rollToHit: function (proccedAttack=false) {
-            let h = this.hitRoll();
-            if (h == 1) return 0;
-            h += this.hitModifier;
-			let procHits = -1;
-            if (!proccedAttack) procHits = this.checkForHitProcs(h);
-			this.attackRoO = false;
-            if (procHits > -1) return procHits;
-            else if (h >= this.toHit) return 1;
-            return 0;
-        },
-        rollToWound: function () {
-            let w = this.woundRoll();
-            if (w == 1) return 0;
-            w += this.woundModifier;
-            let procWounds = this.checkForWoundProcs(w);
-            if (procWounds > -1) return procWounds;
-            else if (w >= this.toWound) return 1;
-            return 0;
-        },
-        rollToSave: function () {
-            let s = this.saveRoll();
-            if (s == 1) return 0;
-			
-			let rend = Math.abs(this.rend);
-			if (this.rendProc > 0) rend = Math.abs(this.rendProc);
-			
-			this.rendProc = 0;
-			
-            if (s + this.saveModifier - rend >= this.toSave) return 1;
-            return 0;
-        },
-        rollDamage: function () {
-            if (this.damageProc > 0) d = this.damageProc;
-            else d = this.damageRoll(this.damage);
-
-            this.damageProc = 0;
-            return d;
-        },
-        rollToWard: function () {
-            if (d6() >= this.wardSave) return 1;
-            return 0;
-        },
-        rollToMortalWard: function () {
-            if (d6() >= this.mortalWardSave) return 1;
-            return 0;
-        },
-
-        // resolve
-        resolve: function () {
-        	for (let m = 0; m < this.models; m++)
-        	{
-        		let localAttacks = parseDiceNumber(this.attacks);
-        		for (let a = 0; a < localAttacks; a++) this.hits += this.rollToHit();
-        		for (let h = 0; h < this.hits; h++) this.wounds += this.rollToWound();
-        		for (let w = 0; w < this.wounds; w++) this.saves += this.rollToSave();
-        		for (let s = 0; s < (this.wounds - this.saves); s++) {
-        			let localDamage = this.rollDamage();
-        			let localSaves = 0;
-        			for (let w = 0; w < localDamage; w++) localSaves += this.rollToWard();
-        			localDamage -= localSaves;
-        			this.damageDone += localDamage;
-        		}
-        		for (let w = 0; w < this.mortalDamageDone; w++) this.mortalDamageDone -= this.rollToMortalWard();
-
-        		this.hits = 0;
-        		this.wounds = 0;
-        		this.saves = 0;
-        	}
-
-            let retVal = this.damageDone + this.mortalDamageDone;
-            this.damageDone = 0;
-            this.mortalDamageDone = 0;
-            return retVal;
-        },
-    }
-
-    return Attack;
-}
 
 // at least function
 function atLeast(attack) {
