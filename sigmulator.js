@@ -15,9 +15,9 @@ function parseDiceNumber(s)
 		return parseInt(s);
 	}
 
-	var prefix = nanIsZero(parseInt(match[1]))
-	var suffix = nanIsZero(parseInt(match[2]))
-	var addition = nanIsZero(parseInt(match[4]))
+	var prefix = Math.max(1, nanIsZero(parseInt(match[1])));
+	var suffix = nanIsZero(parseInt(match[2]));
+	var addition = nanIsZero(parseInt(match[4]));
 
 	var d = 0;
 
@@ -73,28 +73,90 @@ function getBasicAttackSequence(attackProfile, defenceProfile)
 }
 
 // checkProcRoll
-function checkProcRoll(proc, modifiers, roll)
+function checkProcRoll(proc, modifier, roll)
 {
 	if (!proc.Unmodified)
 	{
-		roll += modifiers.HitRoll;
+		roll += modifier;
 	}
 
-	return roll >= proc.Value;
+	return roll >= proc.Roll;
 }
 
-// checkProcActivation
-function checkProcActivation(rolls, modifiers, proc)
+// processProc
+function processProc(rolls, modifiers, proc)
 {
-	if (proc.Type == 'mw_on_hit')
+	if (proc.Type.includes('on_hit'))
 	{
-		return checkProcRoll(proc, modifiers, rolls.HitRoll);
+		if (checkProcRoll(proc, modifiers.HitModifier, rolls.HitRoll))
+		{
+			return processSuccessfulProc(proc);
+		}
 	}
+	else if (proc.Type.includes('on_wound'))
+	{
+		if (checkProcRoll(proc, modifiers.WoundModifier, rolls.WoundRoll))
+		{
+			return processSuccessfulProc(proc);
+		}
+	}
+	
+	return null;
 }
 
 // processSuccessfulProc
 function processSuccessfulProc(proc)
 {
+	let results = {};
+	
+	if (proc.Type == 'mw_on_hit')
+	{
+		results.MWDamage = proc.Value;
+		results.BonusWoundRolls = -1;
+	}
+	if (proc.Type == 'mw_on_hit_ADDITIONAL')
+	{
+		results.MWDamage = proc.Value;
+	}
+	else if (proc.Type == 'dmg_on_hit')
+	{
+		results.AttackDamage = proc.Value;
+	}
+	else if (proc.Type == 'hits_on_hit')
+	{
+		results.BonusWoundRolls = proc.Value;
+	}
+	else if (proc.Type == 'attacks_on_hit')
+	{
+		results.BonusAttacks = proc.Value;
+	}
+	else if (proc.Type == 'rend_on_hit')
+	{
+		results.Rend = Math.abs(proc.Value);
+	}
+	else if (proc.Type == 'mw_on_wound')
+	{
+		results.MWDamage = proc.Value;
+		results.BonusSaveRolls = -1;
+	}
+	else if (proc.Type == 'mw_on_wound_ADDITIONAL')
+	{
+		results.MWDamage = proc.Value;
+	}
+	else if (proc.Type == 'dmg_on_wound')
+	{
+		results.AttackDamage = proc.Value;
+	}
+	else if (proc.Type == 'attacks_on_wound')
+	{
+		results.BonusAttacks = proc.Value;
+	}
+	else if (proc.Type == 'rend_on_wound')
+	{
+		results.Rend = Math.abs(proc.Value);
+	}
+	
+	return results;
 }
 
 // parseProcString
@@ -104,8 +166,9 @@ function parseProcString(string)
 
 	let proc = {};
 	proc.Type = values[0];  // e.g. mw on a hit roll of...
-	proc.Value = values[1]; // value of roll needed (...6)
-	proc.Unmodified = values[2];
+	proc.Roll = values[1]; // ...6
+	proc.Value = values[2]; // value of proc, 1 MW, 3 extra hits, etc
+	proc.Unmodified = values[3]; 
 
 	return proc;
 }
@@ -125,17 +188,16 @@ function findRerolls(string, value, modifier)
 	// if it's failedNOMOD, calculate array using value/modifier
 }
 
-
 // parseAttackString
 function parseAttackString(attackString)
 {
 	let values = attackString.split('/');
 
-	let attacks = parseDiceNumber(values[0]);
+	let attacks = values[0];
 	let hitValue = parseInt(values[1]);
 	let woundValue = parseInt(values[2]);
 	let rendValue = parseInt(values[3]);
-	let damageValue = parseInt(values[4]);
+	let damageValue = values[4];
 	let rrhValue = values.length > 5 ? parseArray(values[5]) : [];
 	let rrwValue = values.length > 6 ? parseArray(values[6]) : [];
 
@@ -149,11 +211,6 @@ function parseAttackString(attackString)
 		RRH: rrhValue,
 		RRW: rrwValue,
 		Procs: [],
-	}
-
-	for (let i = 7; i < values.length; ++i)
-	{
-		result.Procs.push(parseProcString(values[i]));
 	}
 
 	return result;
@@ -242,11 +299,6 @@ function getAfterSaveReduction(defenceProfile, physicalDamageDone, mortalWoundDa
 }
 
 // rollAttack
-let attackProfile = parseAttackString('3/3/3/-2/1');
-let defenceProfile = parseDefenceString('4/0/[]/6/0/[]');
-let modifiers = parseModifierString('0/0/0');
-
-// rollAttack
 function rollAttack(attackProfile, defenceProfile, modifiers)
 {
 	let physicalDamageDone = 0;
@@ -257,6 +309,14 @@ function rollAttack(attackProfile, defenceProfile, modifiers)
 	let hitRoll = modifyHitWoundRoll(rolls.HitRoll, modifiers.HitModifier);
 	let woundRoll = modifyHitWoundRoll(rolls.WoundRoll, modifiers.WoundModifier);
 	let saveRoll = rolls.SaveRoll + modifiers.SaveModifier - attackProfile.Rend;
+	
+	let procResults = [];
+	
+	// procs
+	for (let i = 0; i < attackProfile.Procs.length; ++i)
+	{
+		procResults.push(processProc(rolls, modifiers, attackProfile.Procs[i]));
+	}
 
 	let hitSuccess = hitRoll >= attackProfile.ToHit;
 	let woundSuccess = woundRoll >= attackProfile.ToWound;
@@ -270,7 +330,8 @@ function rollAttack(attackProfile, defenceProfile, modifiers)
 	// attack
 	if (hitSuccess && woundSuccess && !saveSuccess)
 	{
-		physicalDamageDone += attackProfile.Damage;
+		physicalDamageDone += parseDiceNumber(attackProfile.Damage);
+		console.log(attackProfile.Damage);
 	}
 
 	// saves after save
@@ -280,13 +341,23 @@ function rollAttack(attackProfile, defenceProfile, modifiers)
 	return physicalDamageDone + mortalWoundDamageDone - afterSaveReduction;
 }
 
-let s=0;
-for (let i = 0; i < 100000; ++i)
-{
-	s += rollAttack(attackProfile, defenceProfile, modifiers);
-}
+let tg_maw_proc = parseProcString('mw_on_hit/6/6/1');
 
-console.log(s/10000)
+let attackProfile = parseAttackString('3/4/3/-2/d6');
+attackProfile.Procs.push(tg_maw_proc);
+
+let defenceProfile = parseDefenceString('4/0/[]/6/0/[]');
+let modifiers = parseModifierString('0/0/0');
+
+console.log(rollAttack(attackProfile, defenceProfile, modifiers));
+
+// let s=0;
+// for (let i = 0; i < 100000; ++i)
+// {
+	// s += rollAttack(attackProfile, defenceProfile, modifiers);
+// }
+
+// console.log(s/10000)
 
 // need to be able to do failed rerolls AND reroll 6s (nice to have probably)
 // specify number of simulations
