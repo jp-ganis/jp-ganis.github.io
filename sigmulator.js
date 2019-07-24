@@ -265,6 +265,7 @@ function parseModifierString(modifierString)
 		HitModifier: parseInt(values[0]),
 		WoundModifier: parseInt(values[1]),
 		SaveModifier: parseInt(values[2]),
+		AttacksModifier: values[3],
 	}
 
 	return result;
@@ -485,25 +486,46 @@ function rollAttack(attackProfile, defenceProfile, modifiers, isBonusAttack = fa
 	return damageTotal;
 }
 
-let tg_maw_proc = parseProcString('mw_on_hit/6/6/1');
-let tg_gristlegore_proc = parseProcString('hits_on_hit/6/2/1');
-let fakeattack = parseProcString('attacks_on_wound/2/1/1');
-
-let attackProfile = parseAttackString('3/4/3/-2/d6');
-attackProfile.Procs.push(tg_gristlegore_proc);
-// attackProfile.Procs.push(tg_maw_proc);
-// attackProfile.Procs.push(fakeattack);
-
-let defenceProfile = parseDefenceString('4/0/[]/6/0/[]');
-let modifiers = parseModifierString('0/0/0');
-
-let s=0;
-for (let i = 0; i < 100000; ++i)
+// rollAttacks
+function rollAttacks(attackProfile, defenceProfile, modifiers)
 {
-	s += rollAttack(attackProfile, defenceProfile, modifiers);
+	let damage = 0;
+	let numAttacks = parseDiceNumber(attackProfile.Attacks);
+	let bonusAttacks = parseDiceNumber(modifiers.AttacksModifier);
+	
+	let totalAttacks = numAttacks + bonusAttacks;
+	
+	for (let i = 0; i < totalAttacks; ++i)
+	{
+		damage += rollAttack(attackProfile, defenceProfile, modifiers);
+	}
+	
+	return damage;
 }
 
-console.log(s/10000)
+// debug test
+function debug_test()
+{
+	let tg_maw_proc = parseProcString('mw_on_hit/6/6/1');
+	let tg_gristlegore_proc = parseProcString('hits_on_hit/6/2/1');
+	let fakeattack = parseProcString('attacks_on_wound/2/1/1');
+
+	let attackProfile = parseAttackString('3/4/3/-2/d6');
+	attackProfile.Procs.push(tg_gristlegore_proc);
+	// attackProfile.Procs.push(tg_maw_proc);
+	// attackProfile.Procs.push(fakeattack);
+
+	let defenceProfile = parseDefenceString('4/0/[]/6/0/[]');
+	let modifiers = parseModifierString('0/0/0/d3');
+
+	let s=0;
+	for (let i = 0; i < 10000; ++i)
+	{
+		s += rollAttacks(attackProfile, defenceProfile, modifiers);
+	}
+
+	console.log(s/10000)
+}
 
 // need to be able to do failed rerolls AND reroll 6s (nice to have probably)
 // specify number of simulations
