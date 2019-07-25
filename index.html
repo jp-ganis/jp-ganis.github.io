@@ -135,7 +135,7 @@
 	
 	<br />
 	
-    <button onclick="onSigmulate()" style="font-size : 12px; height: 20px;"><i>Add Weapon Specific Buffs</i></button>
+    <button onclick="onSigmulate()" style="font-size : 12px; height: 20px;"><i>Add Weapon Specific Effects</i></button>
 
     <br />
 	<br />
@@ -204,15 +204,23 @@
     <label for="tosave">save: </label>
     <input type="text" id="tosave" size="3" value="4" />
 	
-    <label for="savemod">save+</label>
+    <label for="savemod">save modifier: </label>
     <input type="text" id="savemod" size="2" />
 
-    <label for="srr">save RR</label>
-    <input type="text" id="srr" size="3" />
+    <label for="hitmod">save rerolls: </label>
+    <select id="hitRR" type='select2'>
+        <option value="mwOnHit">none</option>
+        <option value="dmgOnHit">reroll 1s</option>
+        <option value="hitsOnHit">reroll failed</option>
+        <option value="attacksOnHit">reroll failed (all)</option>
+        <option value="rendOnHit">custom</option>
+    </select>
 	
-    <label for="ward">ward save</label>
+    <label for="ward">save-after-save: </label>
     <input type="text" id="ward" size="2" />
     <input type="checkbox" id="mwOnly" value="mwOnlyWard">(MW only?)<br>
+	
+    <button onclick="onSigmulate()" style="font-size : 12px; height: 20px;"><i>Add additional save-after-save</i></button>
 	
     <br />
     <br />
