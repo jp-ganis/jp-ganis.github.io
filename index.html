@@ -89,7 +89,7 @@
 	<!--         -->
 	<!------------->
 	<div id='MODIFIERRS'>
-		<div><font size="4"><i>Unit Buffs</i></font></div>
+		<div><font size="4"><i>Buffs</i></font></div>
 			<table type='modifierTable'>
 				<tr>
 					<td>
@@ -151,46 +151,33 @@
 							<option value="rendOnHit">custom</option>
 						</select>
 					</td>	
+                </tr>
+                
+				<tr type='procRow'>
+					<td>
+						<label for="hitmod">procs: </label>
+					</td>
+					<td>
+                        <select id="procType" type='select2'>
+                            <option value="none">none</option>
+                            <option value="mwOnHit">+MW on hit</option>
+                            <option value="dmgOnHit">+Damage on hit</option>
+                            <option value="hitsOnHit">+Hits on hit</option>
+                            <option value="attacksOnHit">+Attacks on hit</option>
+                            <option value="rendOnHit">+Rend on hit</option>
+                            <option value="mwOnWound">+MW on wound</option>
+                            <option value="dmgOnWound">+Damage on wound</option>
+                            <option value="attacksOnWound">+Attacks on wound</option>
+                            <option value="rendOnWound">+Rend on wound</option>
+                        </select>
+					</td>
 				</tr>
 			</table>
 		</div>
 		
 		</br>
 		
-	</div
-
-	<!------------->
-	<!--         -->
-    <!-- PROCS   -->
-	<!--         -->
-	<!------------->
-	<div id='PROCS'>
-		<div><font size="4"><i>Unit Procs</i></font></div>
-		
-		<div id='procs' type='weaponBlock'>
-			<select id="procType" type='select2'>
-				<option value="mwOnHit">+MW on hit</option>
-				<option value="dmgOnHit">+Damage on hit</option>
-				<option value="hitsOnHit">+Hits on hit</option>
-				<option value="attacksOnHit">+Attacks on hit</option>
-				<option value="rendOnHit">+Rend on hit</option>
-
-				<option value="mwOnWound">+MW on wound</option>
-				<option value="dmgOnWound">+Damage on wound</option>
-				<option value="attacksOnWound">+Attacks on wound</option>
-				<option value="rendOnWound">+Rend on wound</option>
-			</select>
-
-			<label for="procRoll">roll: </label>
-			<input type="text" id="procRoll" size="2" />
-
-			<label for="procValue">value: </label>
-			<input type="text" id="procValue" size="2" />
-		</div>
-		
-		</br>
-		
-	</div>
+    </div>  
 	
 	<!------------->
 	<!--         -->
@@ -198,33 +185,52 @@
 	<!--         -->
 	<!------------->
 	<div id='TARGET'>
-		<div><font size="4"><i>Target</i></font></div>
-		
-		<div id='saves' type='rerollsBlock'>
-			<label for="tosave">save: </label>
-			<input type="text" id="tosave" size="3" value="4" />
-			
-			<label for="savemod">save modifier: </label>
-			<input type="text" id="savemod" size="2" />
-
-			<label for="hitmod">save rerolls: </label>
-			<select id="hitRR" type='select2'>
-				<option value="mwOnHit">none</option>
-				<option value="dmgOnHit">reroll 1s</option>
-				<option value="hitsOnHit">reroll failed</option>
-				<option value="attacksOnHit">reroll failed (all)</option>
-				<option value="attacksOnHit">reroll 6s</option>
-				<option value="rendOnHit">custom</option>
-			</select>
-			
-			<label for="ward">save-after-save: </label>
-			<input type="text" id="ward" size="2" />
-			<input type="checkbox" id="mwOnly" value="mwOnlyWard">(MW only?)<br>
-		</div>
-		
-		</br>
-		
-	</div>
+        <div><font size="4"><i>Target</i></font></div>
+        <table type='modifierTable'>
+            <tr>
+                <td>
+                    <label for="attackmod">save: </label>
+                </td>
+                <td>
+                    <input type="tableInput" id="attackmod" size="2" value="4"/>
+                </td>	
+            </tr>
+            
+            <tr>
+                <td>
+                    <label for="attackmod">save modifier: </label>
+                </td>
+                <td>
+                    <input type="tableInput" id="attackmod" size="2" />
+                </td>	
+            </tr>
+            
+            <tr>
+                <td>
+                    <label for="hitmod">save rerolls: </label>
+                </td>
+                <td>
+                    <select id="hitRR" type='select2'>
+                        <option value="mwOnHit">none</option>
+                        <option value="dmgOnHit">reroll 1s</option>	
+                        <option value="hitsOnHit">reroll failed</option>
+                        <option value="attacksOnHit">reroll failed (all)</option>
+                        <option value="attacksOnHit">reroll 6s</option>
+                        <option value="rendOnHit">custom</option>
+                    </select>
+                </td>	
+            </tr>
+            
+            <tr type='procRow'>
+                <td>
+                    <label for="hitmod">save-after-save: </label>
+                </td>
+                <td>
+                    <input type="tableInput" id="attackmod" size="2" />
+                </td>	
+            </tr>
+        </table>
+    </div>
 	
     <!-- Help -->
     <!-- Help -->
