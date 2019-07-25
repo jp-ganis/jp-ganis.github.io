@@ -57,6 +57,8 @@
 			width: 160px;
 
 			background: transparent;
+			
+			border-width: thin;
 		}
 		
 		select
@@ -95,14 +97,20 @@
 			border: none;
 			outline: none;
 			
-        box-shadow:none; 
-        background-image: none;
+			box-shadow:none; 
+			background-image: none;
 		}
 		
 		span 
 		{
 			display: inline-block;
 			width: 100px;
+		}
+		
+		p[type='weaponBlock']
+		{ 
+			border: 1px solid grey;
+			position: relative;
 		}
 		
     </style>
@@ -117,35 +125,47 @@
     <!-- basic -->
     <div><font size="4"><i>Weapons</i></font></div>
 	
-    <label for="models">models: </label>
-    <input type="text" id="models" size="3" value="10" />
+	<p id='weaponContainer' type='weaponContainer'>
+		<p id='weapon1' type='weaponBlock'>
+			<label for="models">models: </label>
+			<input type="text" id="models" size="3" value="10" />
 
-    <label for="attacks">attacks: </label>
-    <input type="text" id="attacks" size="3" value="1" />
+			<label for="attacks">attacks: </label>
+			<input type="text" id="attacks" size="3" value="1" />
 
-    <label for="tohit">hit: </label>
-    <input type="text" id="tohit" size="3" value="4" />
+			<label for="tohit">hit: </label>
+			<input type="text" id="tohit" size="3" value="4" />
 
-    <label for="towound">wound: </label>
-    <input type="text" id="towound" size="3" value="4" />
+			<label for="towound">wound: </label>
+			<input type="text" id="towound" size="3" value="4" />
 
-    <label for="rend">rend: </label>
-    <input type="text" id="rend" size="3" value="0" />
+			<label for="rend">rend: </label>
+			<input type="text" id="rend" size="3" value="0" />
 
-    <label for="damage">damage: </label>
-    <input type="text" id="damage" size="3" value="1" />
+			<label for="damage">damage: </label>
+			<input type="text" id="damage" size="3" value="1" />
+		
+			<br />
+			
+			<button onclick="onSigmulate()" style="font-size : 12px; height: 20px;"><i>Add Weapon Specific Rules</i></button>
+			
+			<br />
+		</p>
+	</p>
 	
-	<br />
 	
-    <button onclick="onSigmulate()" style="font-size : 12px; height: 20px;"><i>Add Weapon Specific Effects</i></button>
+	<script>
+		var itm = document.getElementById("weapon1");
+		var cln = itm.cloneNode(true);
+		document.getElementById("weaponContainer").appendChild(cln);
+	</script>
 
-    <br />
 	<br />
 	<br />
 
     <!-- mods -->
     <div><font size="4"><i>Unit Buffs</i></font></div>
-    <label for="attackmod">attacks modifier: </label>
+    <label for="attackmod">bonus attacks: </label>
     <input type="text" id="attackmod" size="2" />
 
     <label for="hitmod">hit modifier: </label>

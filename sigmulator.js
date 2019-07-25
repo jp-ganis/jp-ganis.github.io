@@ -539,6 +539,9 @@ function debug_test()
 // reroll all (fish for value)
 // "chance to kill" - where you fill in number of wounds 
 // single roll mode! see what happened this time
+// add tickbox to enable/disable procs/weapons etc
+// add some default target dummies that we see in the game
+// add some examples where you click a button and it shows a unit name, describes what procs do, etc
 
 // at least function
 function atLeast(attack) {
