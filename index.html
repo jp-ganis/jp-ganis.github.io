@@ -26,7 +26,7 @@
 			<table id='weapon1' type='weaponTable'>
 				<tr>
 					<td>
-						<input type="text2" id="models" size="3" value="weapon1" />
+						<input type="weaponNameText" id="weaponName" size="3" value="weapon1" />
 					</td>
 					<td>
 						<label for="models">models: </label>
@@ -55,22 +55,29 @@
 				</tr>
 			</table>
 		</div>
-		
-		</br>
-		
-	</div>
-	
-<button onclick="myFunction()">Try it</button>
-		
-	<script>
-		function myFunction()
-		{
-		  var itm = document.getElementById("weaponContainer").lastChild;
-		  var cln = itm.cloneNode(true);
-		  document.getElementById("pls").appendChild(cln);
-		}
-	</script>
-	
+    </div>
+        
+    </br>
+        
+    <button onclick="addWeapon()">Add Weapon</button>
+    </br>
+    </br>
+            
+    <script>
+        function addWeapon()
+        {
+            myTable = document.getElementsByTagName("table")[0];
+            myClone = myTable.cloneNode(true);
+            document.getElementById('WEAPONS').appendChild(myClone);
+
+            let weaponNames = document.querySelectorAll('input[type=weaponNameText]');
+            for (let i = 0; i < weaponNames.length; ++i)
+            {
+                weaponNames[i].value = 'weapon'+(i+1).toString();
+            }
+        }
+    </script>
+
 	<!------------->
 	<!--         -->
     <!-- MODS/RRS-->
