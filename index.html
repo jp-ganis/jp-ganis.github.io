@@ -72,9 +72,9 @@
 		{
 			font-family: 'Abel', serif;
 			font-size: 16px;
-			color: #FEF7DB;
+			color: #33F7DB;
 			
-			width: 170px;
+			width: 120px;
 
 			background: transparent;
 			border: none;
@@ -136,7 +136,6 @@
 	<br />
 	
     <button onclick="onSigmulate()" style="font-size : 12px; height: 20px;"><i>Add Weapon Specific Buffs</i></button>
-    <button onclick="onSigmulate()" style="font-size : 12px; height: 20px;"><i>Add Weapon Specific Procs</i></button>
 
     <br />
 	<br />
@@ -152,37 +151,26 @@
 
     <label for="woundmod">wound modifier: </label>
     <input type="text" id="woundmod" size="2" />
-
-    <!-- <label for="hrr">hit RR</label> -->
-    <!-- <input type="text2" id="hrr" size="2" /> -->
-
-    <!-- <label for="wrr">wound RR</label> -->
-    <!-- <input type="text2" id="wrr" size="2" /> -->
 	
-	<br />
-	
+    <label for="hitmod">hit rerolls: </label>
     <select id="hitRR" type='select2'>
-        <option value="mwOnHit">no hit rerolls</option>
-        <option value="dmgOnHit">reroll 1s to hit</option>
-        <option value="hitsOnHit">reroll failed hits</option>
-        <option value="attacksOnHit">reroll ALL failed hits</option>
-        <option value="rendOnHit">reroll custom hit values</option>
+        <option value="mwOnHit">none</option>
+        <option value="dmgOnHit">reroll 1s</option>
+        <option value="hitsOnHit">reroll failed</option>
+        <option value="attacksOnHit">reroll failed (all)</option>
+        <option value="rendOnHit">custom</option>
     </select>
 	
-	<br />
-	
+    <label for="hitmod">wound rerolls: </label>
     <select id="woundRR" type='select2'>
-        <option value="mwOnHit">No wound rerolls</option>
-        <option value="dmgOnHit">Reroll 1s to wound</option>
-        <option value="woundsOnHit">Reroll failed wounds</option>
-        <option value="attacksOnHit">Reroll ALL failed wounds</option>
-        <option value="rendOnHit">Reroll custom wound values</option>
+        <option value="mwOnHit">none</option>
+        <option value="dmgOnHit">reroll 1s</option>
+        <option value="hitsOnHit">reroll failed</option>
+        <option value="attacksOnHit">reroll failed (all)</option>
+        <option value="rendOnHit">custom</option>
     </select>
 	
 	<br />
-	
-
-    <br />
 	<br />
 	<br />
 
