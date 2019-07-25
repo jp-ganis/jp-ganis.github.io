@@ -43,7 +43,6 @@ input[type='weaponNameText']
 	font-size: 18px;
 	color: #33F7DB;
 	
-
 	background: transparent;
 	border: none;
 	outline: none;
@@ -65,7 +64,8 @@ input[type='tableInput']
 	border: none;
 	outline: none;
 	
-	/* text-align: center; */
+	position: relative;
+	left: 7px;
 	
 	width: 120px;
 }
