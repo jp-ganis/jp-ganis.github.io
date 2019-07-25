@@ -4,116 +4,9 @@
 <head>
 	<link href="https://fonts.googleapis.com/css?family=Abel&display=swap" rel="stylesheet">
 	<link href="https://fonts.googleapis.com/css?family=Abel&display=swap" rel="stylesheet">
-	<!-- <link rel="stylesheet" href="style.css"> -->
+	<link rel="stylesheet" href="style.css">
 
     <title>Age of Sigmulator</title>
-	
-	<style>
-		body
-		{
-			font-family: 'Abel', serif;
-		}
-
-		input[type='text']
-		{
-			font-family: 'Abel', serif;
-			font-size: 18px;
-			color: #33F7DB;
-
-			background: transparent;
-			border: none;
-			outline: none;
-			
-			position: relative;
-			top: 1px;
-			left: 2px;
-			
-			width:50px;
-		}
-		
-		input[type='text2']
-		{
-			font-family: 'Abel', serif;
-			font-size: 18px;
-			color: #33F7DB;
-
-			background: transparent;
-			border: none;
-			outline: none;
-			
-			position: relative;
-			top: 1px;
-			left: 2px;
-			
-			width:80px;
-		}
-		
-		button
-		{
-			font-family: 'Abel', serif;
-			font-size: 14px;
-			color: #FEF7DB;
-			
-			width: 160px;
-
-			background: transparent;
-			
-			border-width: thin;
-		}
-		
-		select
-		{
-			font-family: 'Abel', serif;
-			font-size: 14px;
-			color: #33F7DB;
-			
-			width: 120px;
-
-			background: transparent;
-			border: none;
-			outline: none;
-		}
-		
-		select[type='select2']
-		{
-			font-family: 'Abel', serif;
-			font-size: 16px;
-			color: #33F7DB;
-			
-			width: 120px;
-
-			background: transparent;
-			border: none;
-			outline: none;
-		}
-		
-		option
-		{
-			font-family: 'Abel', serif;
-			font-size: 13px;
-			color: #55F7DB;
-
-			background: #35342F;
-			border: none;
-			outline: none;
-			
-			box-shadow:none; 
-			background-image: none;
-		}
-		
-		span 
-		{
-			display: inline-block;
-			width: 100px;
-		}
-		
-		p[type='weaponBlock']
-		{ 
-			border: 1px solid grey;
-			position: relative;
-		}
-		
-    </style>
 </head>
 
 <body bgcolor='#35342F' text='#FEF7DB'>
@@ -121,142 +14,220 @@
     <div><font size="6">Age of Sigmulator</font></div>
     <br />
 	
-	
-    <!-- basic -->
-    <div><font size="4"><i>Weapons</i></font></div>
-	
-	<p id='weaponContainer' type='weaponContainer'>
-		<p id='weapon1' type='weaponBlock'>
-			<label for="models">models: </label>
-			<input type="text" id="models" size="3" value="10" />
-
-			<label for="attacks">attacks: </label>
-			<input type="text" id="attacks" size="3" value="1" />
-
-			<label for="tohit">hit: </label>
-			<input type="text" id="tohit" size="3" value="4" />
-
-			<label for="towound">wound: </label>
-			<input type="text" id="towound" size="3" value="4" />
-
-			<label for="rend">rend: </label>
-			<input type="text" id="rend" size="3" value="0" />
-
-			<label for="damage">damage: </label>
-			<input type="text" id="damage" size="3" value="1" />
+	<!------------->
+	<!--         -->
+    <!-- WEAPONS -->
+	<!--         -->
+	<!------------->
+	<div id='WEAPONS'>
+		<div><font size="4"><i>Weapons</i></font></div>
 		
-			<br />
-			
-			<button onclick="onSigmulate()" style="font-size : 12px; height: 20px;"><i>Add Weapon Specific Rules</i></button>
-			
-			<br />
-		</p>
-	</p>
+		<div id='weaponContainer' type='weaponContainer'>
+			<table id='weapon1' type='weaponTable'>
+				<tr>
+					<td>
+						<input type="text2" id="models" size="3" value="weapon1" />
+					</td>
+					<td>
+						<label for="models">models: </label>
+						<input type="text" id="models" size="3" value="10" />
+					</td>
+					<td>
+						<label for="attacks">attacks: </label>
+						<input type="text" id="attacks" size="3" value="1" />
+					</td>
+					<td>
+						<label for="tohit">hit: </label>
+						<input type="text" id="tohit" size="3" value="4" />
+					</td>
+					<td>
+						<label for="towound">wound: </label>
+						<input type="text" id="towound" size="3" value="4" />
+					</td>
+					<td>
+						<label for="rend">rend: </label>
+						<input type="text" id="rend" size="3" value="0" />
+					</td>
+					<td>
+						<label for="damage">damage: </label>
+						<input type="text" id="damage" size="3" value="1" />
+					</td>
+				</tr>
+			</table>
+		</div>
+		
+		</br>
+		
+	</div>
 	
-	
+<button onclick="myFunction()">Try it</button>
+		
 	<script>
-		var itm = document.getElementById("weapon1");
-		var cln = itm.cloneNode(true);
-		document.getElementById("weaponContainer").appendChild(cln);
+		function myFunction()
+		{
+		  var itm = document.getElementById("weaponContainer").lastChild;
+		  var cln = itm.cloneNode(true);
+		  document.getElementById("pls").appendChild(cln);
+		}
 	</script>
-
-	<br />
-	<br />
-
-    <!-- mods -->
-    <div><font size="4"><i>Unit Buffs</i></font></div>
-    <label for="attackmod">bonus attacks: </label>
-    <input type="text" id="attackmod" size="2" />
-
-    <label for="hitmod">hit modifier: </label>
-    <input type="text" id="hitmod" size="2" />
-
-    <label for="woundmod">wound modifier: </label>
-    <input type="text" id="woundmod" size="2" />
 	
-    <label for="hitmod">hit rerolls: </label>
-    <select id="hitRR" type='select2'>
-        <option value="mwOnHit">none</option>
-        <option value="dmgOnHit">reroll 1s</option>
-        <option value="hitsOnHit">reroll failed</option>
-        <option value="attacksOnHit">reroll failed (all)</option>
-        <option value="rendOnHit">custom</option>
-    </select>
-	
-    <label for="hitmod">wound rerolls: </label>
-    <select id="woundRR" type='select2'>
-        <option value="mwOnHit">none</option>
-        <option value="dmgOnHit">reroll 1s</option>
-        <option value="hitsOnHit">reroll failed</option>
-        <option value="attacksOnHit">reroll failed (all)</option>
-        <option value="rendOnHit">custom</option>
-    </select>
-	
-	<br />
-    <button onclick="onSigmulate()" style="font-size : 12px; height: 20px;"><i>Add Weapon</i></button>
-	
-	<br />
-	<br />
-	<br />
+	<!------------->
+	<!--         -->
+    <!-- MODS/RRS-->
+	<!--         -->
+	<!------------->
+	<div id='MODIFIERRS'>
+		<div><font size="4"><i>Unit Buffs</i></font></div>
+			<table type='weaponTable'>
+				<tr>
+					<td>
+						<label for="attackmod">bonus attacks: </label>
+					</td>
+					<td>
+						<input type="tableInput" id="attackmod" size="2" />
+					</td>	
+				</tr>
+				
+				
+				<tr>
+					<td>
+						<label for="attackmod">hit modifier: </label>
+					</td>
+					<td>
+						<input type="tableInput" id="attackmod" size="2" />
+					</td>	
+				</tr>
+				
+				
+				<tr>
+					<td>
+						<label for="attackmod">wound modifier: </label>
+					</td>
+					<td>
+						<input type="tableInput" id="attackmod" size="2" />
+					</td>	
+				</tr>
+				
+				<tr>
+					<td>
+						<label for="hitmod">hit rerolls: </label>
+					</td>
+					<td>
+						
+						<select id="hitRR" type='select2'>
+							<option value="mwOnHit">none</option>
+							<option value="dmgOnHit">reroll 1s</option>	
+							<option value="hitsOnHit">reroll failed</option>
+							<option value="attacksOnHit">reroll failed (all)</option>
+							<option value="attacksOnHit">reroll 6s</option>
+							<option value="rendOnHit">custom</option>
+						</select>
+					</td>	
+				</tr>
+				
+				<tr>
+					<td>
+						<label for="hitmod">wound rerolls: </label>
+					</td>
+					<td>
+						<select id="woundRR" type='select2'>
+							<option value="mwOnHit">none</option>
+							<option value="dmgOnHit">reroll 1s</option>
+							<option value="hitsOnHit">reroll failed</option>
+							<option value="attacksOnHit">reroll failed (all)</option>
+							<option value="attacksOnHit">reroll 6s</option>
+							<option value="rendOnHit">custom</option>
+						</select>
+					</td>	
+				</tr>
+			</table>
+		</div>
+		
+		</br>
+		
+	</div
 
-    <!-- procs -->
-    <div><font size="4"><i>Unit Procs</i></font></div>
-    <select id="procType">
-        <option value="mwOnHit">+MW on hit</option>
-        <option value="dmgOnHit">+Damage on hit</option>
-        <option value="hitsOnHit">+Hits on hit</option>
-        <option value="attacksOnHit">+Attacks on hit</option>
-        <option value="rendOnHit">+Rend on hit</option>
+	<!------------->
+	<!--         -->
+    <!-- PROCS   -->
+	<!--         -->
+	<!------------->
+	<div id='PROCS'>
+		<div><font size="4"><i>Unit Procs</i></font></div>
+		
+		<div id='procs' type='weaponBlock'>
+			<select id="procType" type='select2'>
+				<option value="mwOnHit">+MW on hit</option>
+				<option value="dmgOnHit">+Damage on hit</option>
+				<option value="hitsOnHit">+Hits on hit</option>
+				<option value="attacksOnHit">+Attacks on hit</option>
+				<option value="rendOnHit">+Rend on hit</option>
 
-        <option value="mwOnWound">+MW on wound</option>
-        <option value="dmgOnWound">+Damage on wound</option>
-        <option value="attacksOnWound">+Attacks on wound</option>
-        <option value="rendOnWound">+Rend on wound</option>
-    </select>
+				<option value="mwOnWound">+MW on wound</option>
+				<option value="dmgOnWound">+Damage on wound</option>
+				<option value="attacksOnWound">+Attacks on wound</option>
+				<option value="rendOnWound">+Rend on wound</option>
+			</select>
 
-    <label for="procRoll">roll: </label>
-    <input type="text" id="procRoll" size="2" />
+			<label for="procRoll">roll: </label>
+			<input type="text" id="procRoll" size="2" />
 
-    <label for="procValue">value: </label>
-    <input type="text" id="procValue" size="2" />
+			<label for="procValue">value: </label>
+			<input type="text" id="procValue" size="2" />
+		</div>
+		
+		</br>
+		
+	</div>
+	
+	<!------------->
+	<!--         -->
+    <!-- TARGET  -->
+	<!--         -->
+	<!------------->
+	<div id='TARGET'>
+		<div><font size="4"><i>Target</i></font></div>
+		
+		<div id='saves' type='rerollsBlock'>
+			<label for="tosave">save: </label>
+			<input type="text" id="tosave" size="3" value="4" />
+			
+			<label for="savemod">save modifier: </label>
+			<input type="text" id="savemod" size="2" />
 
-	<br />
-    <button onclick="onSigmulate()" style="font-size : 12px; height: 20px;"><i>Add Proc</i></button>
-
-    <br />
-    <br />
-    <br />
-	
-	<!-- target defence -->
-    <div><font size="4"><i>Target</i></font></div>
-    <label for="tosave">save: </label>
-    <input type="text" id="tosave" size="3" value="4" />
-	
-    <label for="savemod">save modifier: </label>
-    <input type="text" id="savemod" size="2" />
-
-    <label for="hitmod">save rerolls: </label>
-    <select id="hitRR" type='select2'>
-        <option value="mwOnHit">none</option>
-        <option value="dmgOnHit">reroll 1s</option>
-        <option value="hitsOnHit">reroll failed</option>
-        <option value="attacksOnHit">reroll failed (all)</option>
-        <option value="rendOnHit">custom</option>
-    </select>
-	
-    <label for="ward">save-after-save: </label>
-    <input type="text" id="ward" size="2" />
-    <input type="checkbox" id="mwOnly" value="mwOnlyWard">(MW only?)<br>
-	
-    <button onclick="onSigmulate()" style="font-size : 12px; height: 20px;"><i>Add Save-After-Save</i></button>
-	
-    <br />
-    <br />
-	
-    <br />
-    <br />
+			<label for="hitmod">save rerolls: </label>
+			<select id="hitRR" type='select2'>
+				<option value="mwOnHit">none</option>
+				<option value="dmgOnHit">reroll 1s</option>
+				<option value="hitsOnHit">reroll failed</option>
+				<option value="attacksOnHit">reroll failed (all)</option>
+				<option value="attacksOnHit">reroll 6s</option>
+				<option value="rendOnHit">custom</option>
+			</select>
+			
+			<label for="ward">save-after-save: </label>
+			<input type="text" id="ward" size="2" />
+			<input type="checkbox" id="mwOnly" value="mwOnlyWard">(MW only?)<br>
+		</div>
+		
+		</br>
+		
+	</div>
 	
     <!-- Help -->
+    <!-- Help -->
+    <!-- Help -->
+    <!-- Help -->
+    <!-- Help -->
+    <!-- Help -->
+    <!-- Help -->
+    <!-- Help -->
+	
+    <br />
+    <br />
+    <br />
+    <br />
+	
     <div>
         <i><b>Notes:</b><br />
         - In the reroll (RR) boxes, you have to enter a list of the numbers you wish to reroll. E.g. "1, 2, 3" or "1 2 3" to reroll failed hits for 4+. or "1" for rerolling just 1s.<br />

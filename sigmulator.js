@@ -542,6 +542,8 @@ function debug_test()
 // add tickbox to enable/disable procs/weapons etc
 // add some default target dummies that we see in the game
 // add some examples where you click a button and it shows a unit name, describes what procs do, etc
+// add double pilein
+// rerollable ward
 
 // at least function
 function atLeast(attack) {
