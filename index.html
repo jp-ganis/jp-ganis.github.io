@@ -28,14 +28,53 @@
 			top: 1px;
 			left: 2px;
 			
-			width:40px;
+			width:50px;
+		}
+		
+		input[type='text2']
+		{
+			font-family: 'Abel', serif;
+			font-size: 18px;
+			color: #33F7DB;
+
+			background: transparent;
+			border: none;
+			outline: none;
+			
+			position: relative;
+			top: 1px;
+			left: 2px;
+			
+			width:80px;
+		}
+		
+		button
+		{
+			font-family: 'Abel', serif;
+			font-size: 14px;
+			color: #FEF7DB;
+
+			background: transparent;
 		}
 		
 		select
 		{
 			font-family: 'Abel', serif;
-			font-size: 18px;
+			font-size: 14px;
 			color: #33F7DB;
+
+			background: transparent;
+			border: none;
+			outline: none;
+		}
+		
+		select[type='select2']
+		{
+			font-family: 'Abel', serif;
+			font-size: 16px;
+			color: #FEF7DB;
+			
+			width: 170px;
 
 			background: transparent;
 			border: none;
@@ -45,7 +84,7 @@
 		option
 		{
 			font-family: 'Abel', serif;
-			font-size: 18px;
+			font-size: 13px;
 			color: #55F7DB;
 
 			background: #35342F;
@@ -73,6 +112,9 @@
 	
 	
     <!-- basic -->
+    <div><font size="4"><i>Weapons</i></font></div>
+	<br />
+	
     <label for="models">models: </label>
     <input type="text" id="models" size="3" value="10" />
 
@@ -90,43 +132,62 @@
 
     <label for="damage">damage: </label>
     <input type="text" id="damage" size="3" value="1" />
-
-    <label for="tosave">save: </label>
-    <input type="text" id="tosave" size="3" value="4" />
+	
+	<br />
+	
+    <button onclick="onSigmulate()" style="font-size : 12px; height: 20px;"><i>Add Weapon Specific Buffs</i></button>
+    <button onclick="onSigmulate()" style="font-size : 12px; height: 20px;"><i>Add Weapon Specific Procs</i></button>
 
     <br />
-    <br />
+	<br />
+	<br />
 
     <!-- mods -->
-    <label for="attackmod">attacks+</label>
-    <input type="text" id="attackmod" size="3" />
+    <div><font size="4"><i>Unit Buffs</i></font></div>
+    <label for="attackmod">attacks modifier: </label>
+    <input type="text" id="attackmod" size="2" />
 
-    <label for="hitmod">hit+</label>
-    <input type="text" id="hitmod" size="3" />
+    <label for="hitmod">hit modifier: </label>
+    <input type="text" id="hitmod" size="2" />
 
-    <label for="woundmod">wound+</label>
-    <input type="text" id="woundmod" size="3" />
+    <label for="woundmod">wound modifier: </label>
+    <input type="text" id="woundmod" size="2" />
 
-    <label for="savemod">save+</label>
-    <input type="text" id="savemod" size="3" />
+    <!-- <label for="hrr">hit RR</label> -->
+    <!-- <input type="text2" id="hrr" size="2" /> -->
 
-    <label for="hrr">hit RR</label>
-    <input type="text" id="hrr" size="3" />
-
-    <label for="wrr">wound RR</label>
-    <input type="text" id="wrr" size="3" />
-
-    <label for="srr">save RR</label>
-    <input type="text" id="srr" size="3" />
-
-    <label for="ward">ward save</label>
-    <input type="text" id="ward" size="3" />
-    <input type="checkbox" id="mwOnly" value="mwOnlyWard">(MW only?)<br>
+    <!-- <label for="wrr">wound RR</label> -->
+    <!-- <input type="text2" id="wrr" size="2" /> -->
+	
+	<br />
+	
+    <select id="hitRR" type='select2'>
+        <option value="mwOnHit">no hit rerolls</option>
+        <option value="dmgOnHit">reroll 1s to hit</option>
+        <option value="hitsOnHit">reroll failed hits</option>
+        <option value="attacksOnHit">reroll ALL failed hits</option>
+        <option value="rendOnHit">reroll custom hit values</option>
+    </select>
+	
+	<br />
+	
+    <select id="woundRR" type='select2'>
+        <option value="mwOnHit">No wound rerolls</option>
+        <option value="dmgOnHit">Reroll 1s to wound</option>
+        <option value="woundsOnHit">Reroll failed wounds</option>
+        <option value="attacksOnHit">Reroll ALL failed wounds</option>
+        <option value="rendOnHit">Reroll custom wound values</option>
+    </select>
+	
+	<br />
+	
 
     <br />
-    <br />
+	<br />
+	<br />
 
     <!-- procs -->
+    <div><font size="4"><i>Unit Procs</i></font></div>
     <select id="procType">
         <option value="mwOnHit">+MW on hit</option>
         <option value="dmgOnHit">+Damage on hit</option>
@@ -140,12 +201,31 @@
         <option value="rendOnWound">+Rend on wound</option>
     </select>
 
-    <label for="procRoll">Roll</label>
-    <input type="text" id="procRoll" size="3" />
+    <label for="procRoll">roll</label>
+    <input type="text" id="procRoll" size="2" />
 
-    <label for="procValue">Value</label>
-    <input type="text" id="procValue" size="3" />
+    <label for="procValue">value</label>
+    <input type="text" id="procValue" size="2" />
 
+    <br />
+    <br />
+    <br />
+	
+	<!-- target defence -->
+    <div><font size="4"><i>Target</i></font></div>
+    <label for="tosave">save: </label>
+    <input type="text" id="tosave" size="3" value="4" />
+	
+    <label for="savemod">save+</label>
+    <input type="text" id="savemod" size="2" />
+
+    <label for="srr">save RR</label>
+    <input type="text" id="srr" size="3" />
+	
+    <label for="ward">ward save</label>
+    <input type="text" id="ward" size="2" />
+    <input type="checkbox" id="mwOnly" value="mwOnlyWard">(MW only?)<br>
+	
     <br />
     <br />
 	
