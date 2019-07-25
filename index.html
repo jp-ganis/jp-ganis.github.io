@@ -57,9 +57,8 @@
 		</div>
     </div>
         
-    </br>
-        
     <button onclick="addWeapon()">Add Weapon</button>
+    <button onclick="removeWeapon()">Remove Weapon</button>
     </br>
     </br>
             
@@ -71,10 +70,16 @@
             document.getElementById('WEAPONS').appendChild(myClone);
 
             let weaponNames = document.querySelectorAll('input[type=weaponNameText]');
-            for (let i = 0; i < weaponNames.length; ++i)
-            {
-                weaponNames[i].value = 'weapon'+(i+1).toString();
-            }
+            weaponNames[weaponNames.length - 1].value = 'weapon'+(weaponNames.length).toString();
+        }
+
+        function removeWeapon()
+        {
+            let weaponNames = document.querySelectorAll('table[type=weaponTable]');
+
+            if (weaponNames.length <= 1) return;
+
+            weaponNames[weaponNames.length - 1].remove();
         }
     </script>
 
@@ -85,7 +90,7 @@
 	<!------------->
 	<div id='MODIFIERRS'>
 		<div><font size="4"><i>Unit Buffs</i></font></div>
-			<table type='weaponTable'>
+			<table type='modifierTable'>
 				<tr>
 					<td>
 						<label for="attackmod">bonus attacks: </label>

@@ -134,6 +134,12 @@ table[type='weaponTable']
 	text-align: right;
 }
 
+table[type='modifierTable']
+{
+	border: 1px solid grey;
+	text-align: right;
+}
+
 td
 {
 	border: 1px solid grey;
