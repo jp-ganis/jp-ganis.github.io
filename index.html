@@ -53,6 +53,8 @@
 			font-family: 'Abel', serif;
 			font-size: 14px;
 			color: #FEF7DB;
+			
+			width: 160px;
 
 			background: transparent;
 		}
@@ -62,6 +64,8 @@
 			font-family: 'Abel', serif;
 			font-size: 14px;
 			color: #33F7DB;
+			
+			width: 120px;
 
 			background: transparent;
 			border: none;
@@ -94,7 +98,6 @@
         box-shadow:none; 
         background-image: none;
 		}
-		
 		
 		span 
 		{
@@ -171,6 +174,9 @@
     </select>
 	
 	<br />
+    <button onclick="onSigmulate()" style="font-size : 12px; height: 20px;"><i>Add Weapon</i></button>
+	
+	<br />
 	<br />
 	<br />
 
@@ -189,11 +195,14 @@
         <option value="rendOnWound">+Rend on wound</option>
     </select>
 
-    <label for="procRoll">roll</label>
+    <label for="procRoll">roll: </label>
     <input type="text" id="procRoll" size="2" />
 
-    <label for="procValue">value</label>
+    <label for="procValue">value: </label>
     <input type="text" id="procValue" size="2" />
+
+	<br />
+    <button onclick="onSigmulate()" style="font-size : 12px; height: 20px;"><i>Add Proc</i></button>
 
     <br />
     <br />
@@ -220,7 +229,7 @@
     <input type="text" id="ward" size="2" />
     <input type="checkbox" id="mwOnly" value="mwOnlyWard">(MW only?)<br>
 	
-    <button onclick="onSigmulate()" style="font-size : 12px; height: 20px;"><i>Add additional save-after-save</i></button>
+    <button onclick="onSigmulate()" style="font-size : 12px; height: 20px;"><i>Add Save-After-Save</i></button>
 	
     <br />
     <br />
