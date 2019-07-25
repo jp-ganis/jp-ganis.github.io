@@ -23,36 +23,55 @@
 		<div><font size="4"><i>Weapons</i></font></div>
 		
 		<div id='weaponContainer' type='weaponContainer'>
-			<table id='weapon1' type='weaponTable'>
+			<table id='weapon1' type='modifierTable'>
 				<tr>
 					<td>
+						<label for="models">weapon name: </label>
+                    </td>
+					<td>
 						<input type="weaponNameText" id="weaponName" size="3" value="weapon1" />
-					</td>
+                    </td>
+                </tr>
+				<tr>
 					<td>
-						<label for="models">models: </label>
-						<input type="text" id="models" size="3" value="10" />
-					</td>
+						<label for="models">models w/ weapon: </label>
+                    </td>
 					<td>
-						<label for="attacks">attacks: </label>
-						<input type="text" id="attacks" size="3" value="1" />
-					</td>
+						<input type="weaponNameText" id="weaponName" size="3" value="10" />
+                    </td>
+                </tr>
+				<tr>
 					<td>
-						<label for="tohit">hit: </label>
-						<input type="text" id="tohit" size="3" value="4" />
-					</td>
+						<label for="models">to hit: </label>
+                    </td>
 					<td>
-						<label for="towound">wound: </label>
-						<input type="text" id="towound" size="3" value="4" />
-					</td>
+						<input type="weaponNameText" id="weaponName" size="3" value="4" />
+                    </td>
+                </tr>
+				<tr>
 					<td>
-						<label for="rend">rend: </label>
-						<input type="text" id="rend" size="3" value="0" />
-					</td>
+						<label for="models">to wound: </label>
+                    </td>
 					<td>
-						<label for="damage">damage: </label>
-						<input type="text" id="damage" size="3" value="1" />
-					</td>
-				</tr>
+						<input type="weaponNameText" id="weaponName" size="3" value="3" />
+                    </td>
+                </tr>
+				<tr>
+					<td>
+						<label for="models">rend: </label>
+                    </td>
+					<td>
+						<input type="weaponNameText" id="weaponName" size="3" value="2" />
+                    </td>
+                </tr>
+				<tr>
+					<td>
+						<label for="models">rend: </label>
+                    </td>
+					<td>
+						<input type="weaponNameText" id="weaponName" size="3" value="d3" />
+                    </td>
+                </tr>
 			</table>
 		</div>
     </div>
@@ -65,7 +84,7 @@
     <script>
         function addWeapon()
         {
-            myTable = document.getElementsByTagName("table")[0];
+            myTable = document.getElementsByTagName("div")[3];
             myClone = myTable.cloneNode(true);
             document.getElementById('WEAPONS').appendChild(myClone);
 
@@ -90,90 +109,89 @@
 	<!------------->
 	<div id='MODIFIERRS'>
 		<div><font size="4"><i>Buffs</i></font></div>
-			<table type='modifierTable'>
-				<tr>
-					<td>
-						<label for="attackmod">bonus attacks: </label>
-					</td>
-					<td>
-						<input type="tableInput" id="attackmod" size="2" />
-					</td>	
-				</tr>
-				
-				
-				<tr>
-					<td>
-						<label for="attackmod">hit modifier: </label>
-					</td>
-					<td>
-						<input type="tableInput" id="attackmod" size="2" />
-					</td>	
-				</tr>
-				
-				
-				<tr>
-					<td>
-						<label for="attackmod">wound modifier: </label>
-					</td>
-					<td>
-						<input type="tableInput" id="attackmod" size="2" />
-					</td>	
-				</tr>
-				
-				<tr>
-					<td>
-						<label for="hitmod">hit rerolls: </label>
-					</td>
-					<td>
-						
-						<select id="hitRR" type='select2'>
-							<option value="mwOnHit">none</option>
-							<option value="dmgOnHit">reroll 1s</option>	
-							<option value="hitsOnHit">reroll failed</option>
-							<option value="attacksOnHit">reroll failed (all)</option>
-							<option value="attacksOnHit">reroll 6s</option>
-							<option value="rendOnHit">custom</option>
-						</select>
-					</td>	
-				</tr>
-				
-				<tr>
-					<td>
-						<label for="hitmod">wound rerolls: </label>
-					</td>
-					<td>
-						<select id="woundRR" type='select2'>
-							<option value="mwOnHit">none</option>
-							<option value="dmgOnHit">reroll 1s</option>
-							<option value="hitsOnHit">reroll failed</option>
-							<option value="attacksOnHit">reroll failed (all)</option>
-							<option value="attacksOnHit">reroll 6s</option>
-							<option value="rendOnHit">custom</option>
-						</select>
-					</td>	
-                </tr>
-                
-				<tr type='procRow'>
-					<td>
-						<label for="hitmod">procs: </label>
-					</td>
-					<td>
-                        <select id="procType" type='select2'>
-                            <option value="none">none</option>
-                            <option value="mwOnHit">+MW on hit</option>
-                            <option value="dmgOnHit">+Damage on hit</option>
-                            <option value="hitsOnHit">+Hits on hit</option>
-                            <option value="attacksOnHit">+Attacks on hit</option>
-                            <option value="rendOnHit">+Rend on hit</option>
-                            <option value="mwOnWound">+MW on wound</option>
-                            <option value="dmgOnWound">+Damage on wound</option>
-                            <option value="attacksOnWound">+Attacks on wound</option>
-                            <option value="rendOnWound">+Rend on wound</option>
-                        </select>
-					</td>
-				</tr>
-			</table>
-		</div>
+        <table type='modifierTable'>
+            <tr>
+                <td>
+                    <label for="attackmod">bonus attacks: </label>
+                </td>
+                <td>
+                    <input type="tableInput" id="attackmod" size="2" />
+                </td>	
+            </tr>
+            
+            
+            <tr>
+                <td>
+                    <label for="attackmod">hit modifier: </label>
+                </td>
+                <td>
+                    <input type="tableInput" id="attackmod" size="2" />
+                </td>	
+            </tr>
+            
+            
+            <tr>
+                <td>
+                    <label for="attackmod">wound modifier: </label>
+                </td>
+                <td>
+                    <input type="tableInput" id="attackmod" size="2" />
+                </td>	
+            </tr>
+            
+            <tr>
+                <td>
+                    <label for="hitmod">hit rerolls: </label>
+                </td>
+                <td>
+                    
+                    <select id="hitRR" type='select2'>
+                        <option value="mwOnHit">none</option>
+                        <option value="dmgOnHit">reroll 1s</option>	
+                        <option value="hitsOnHit">reroll failed</option>
+                        <option value="attacksOnHit">reroll failed (all)</option>
+                        <option value="attacksOnHit">reroll 6s</option>
+                        <option value="rendOnHit">custom</option>
+                    </select>
+                </td>	
+            </tr>
+            
+            <tr>
+                <td>
+                    <label for="hitmod">wound rerolls: </label>
+                </td>
+                <td>
+                    <select id="woundRR" type='select2'>
+                        <option value="mwOnHit">none</option>
+                        <option value="dmgOnHit">reroll 1s</option>
+                        <option value="hitsOnHit">reroll failed</option>
+                        <option value="attacksOnHit">reroll failed (all)</option>
+                        <option value="attacksOnHit">reroll 6s</option>
+                        <option value="rendOnHit">custom</option>
+                    </select>
+                </td>	
+            </tr>
+            
+            <tr type='procRow'>
+                <td>
+                    <label for="hitmod">procs: </label>
+                </td>
+                <td>
+                    <select id="procType" type='select2'>
+                        <option value="none">none</option>
+                        <option value="mwOnHit">+MW on hit</option>
+                        <option value="dmgOnHit">+Damage on hit</option>
+                        <option value="hitsOnHit">+Hits on hit</option>
+                        <option value="attacksOnHit">+Attacks on hit</option>
+                        <option value="rendOnHit">+Rend on hit</option>
+                        <option value="mwOnWound">+MW on wound</option>
+                        <option value="dmgOnWound">+Damage on wound</option>
+                        <option value="attacksOnWound">+Attacks on wound</option>
+                        <option value="rendOnWound">+Rend on wound</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
 		
 		</br>
 		
