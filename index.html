@@ -88,6 +88,10 @@
 								</td>
 							</tr>
 							<tr>
+								<td/>
+								<td/>
+							</tr>
+							<tr>
 								<td>
 									<label for="hitmod">hit rerolls: </label>
 								</td>
@@ -137,6 +141,18 @@
 									</select>
 								</td>
 							</tr>
+							
+							<tr type="weaponProcTr">
+								<td>
+									<label for="models">+mw on hit: </label>
+								</td>
+								<td type='left'>
+									<input type="tableInputHalf" id="weaponName" size="3" value="6+" />
+									<label>deals</label>
+									<input type="tableInputHalf" id="weaponName" size="3" value="d6" />
+									<label>damage</label>
+								</td>
+							</tr>
 						</table>
 					</div>
 				</td>				
@@ -175,11 +191,11 @@
     <!-- MODS/RRS-->
 	<!--         -->
 	<!------------->
-	<div id='MODIFIERRS'>
-		<div><font size="4"><i>Unit Buffs</i></font></div>
+	<div id='UNITBUFFS'>
+		<div><font size="4"><i>Unit-wide Buffs</i></font></div>
         <table type='modifierTable'>
             <tr>
-                <td>
+                <td type='lower'>
                     <label for="attackmod">bonus attacks: </label>
                 </td>
                 <td>
@@ -189,7 +205,7 @@
             
             
             <tr>
-                <td>
+                <td type='lower'>
                     <label for="attackmod">hit modifier: </label>
                 </td>
                 <td>
@@ -199,7 +215,7 @@
             
             
             <tr>
-                <td>
+                <td type='lower'>
                     <label for="attackmod">wound modifier: </label>
                 </td>
                 <td>
@@ -208,7 +224,7 @@
             </tr>
             
             <tr>
-                <td>
+                <td type='lower'>
                     <label for="hitmod">hit rerolls: </label>
                 </td>
                 <td>
@@ -225,7 +241,7 @@
             </tr>
             
             <tr>
-                <td>
+                <td type='lower'>
                     <label for="hitmod">wound rerolls: </label>
                 </td>
                 <td>
@@ -241,7 +257,7 @@
             </tr>
             
             <tr type='procRow'>
-                <td>
+                <td type='lower'>
                     <label for="hitmod">procs: </label>
                 </td>
                 <td>
@@ -271,10 +287,10 @@
 	<!--         -->
 	<!------------->
 	<div id='TARGET'>
-        <div><font size="4"><i>Target</i></font></div>
+        <div><font size="4"><i>Target Profile</i></font></div>
         <table type='modifierTable'>
             <tr>
-                <td>
+                <td type='lower'>
                     <label for="attackmod">save: </label>
                 </td>
                 <td>
@@ -282,17 +298,29 @@
                 </td>	
             </tr>
             
-            <tr>
+            <tr type='procRow' type='lower'>
                 <td>
+                    <label for="hitmod">ward save: </label>
+                </td>
+                <td>
+                    <input type="tableInput" id="attackmod" size="2" />
+                </td>	
+            </tr>
+			
+			<td/>
+			<td/>
+			
+            <tr>
+                <td type='lower'>
                     <label for="attackmod">save modifier: </label>
                 </td>
                 <td>
                     <input type="tableInput" id="attackmod" size="2" />
                 </td>	
             </tr>
-            
+			
             <tr>
-                <td>
+                <td type='lower'>
                     <label for="hitmod">save rerolls: </label>
                 </td>
                 <td>
@@ -306,13 +334,20 @@
                     </select>
                 </td>	
             </tr>
-            
-            <tr type='procRow'>
-                <td>
-                    <label for="hitmod">save-after-save: </label>
+			
+            <tr>
+                <td type='lower'>
+                    <label for="hitmod">ward rerolls: </label>
                 </td>
                 <td>
-                    <input type="tableInput" id="attackmod" size="2" />
+                    <select id="hitRR" type='select2'>
+                        <option value="mwOnHit">none</option>
+                        <option value="dmgOnHit">reroll 1s</option>	
+                        <option value="hitsOnHit">reroll failed</option>
+                        <option value="attacksOnHit">reroll failed (all)</option>
+                        <option value="attacksOnHit">reroll 6s</option>
+                        <option value="rendOnHit">custom</option>
+                    </select>
                 </td>	
             </tr>
         </table>
