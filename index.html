@@ -23,113 +23,113 @@
 		<div><font size="4"><i>Weapons</i></font></div>
         
         <table type='profilesTable' id='profileParent'>
-            <td type='profilesTd'>
-                <div id='weaponContainer' type='weaponContainer'>
-                    <table id='weapon1' type='modifierTable'>
-                        <tr>
-                            <td>
-                                <label for="models">profile name: </label>
-                            </td>
-                            <td>
-                                <input type="tableInput" id="weaponName" size="3" value="weapon1" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <label for="models">models w/ weapon: </label>
-                            </td>
-                            <td>
-                                <input type="tableInput" id="weaponName" size="3" value="10" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <label for="models">to hit: </label>
-                            </td>
-                            <td>
-                                <input type="tableInput" id="weaponName" size="3" value="4" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <label for="models">to wound: </label>
-                            </td>
-                            <td>
-                                <input type="tableInput" id="weaponName" size="3" value="3" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <label for="models">rend: </label>
-                            </td>
-                            <td>
-                                <input type="tableInput" id="weaponName" size="3" value="2" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <label for="models">rend: </label>
-                            </td>
-                            <td>
-                                <input type="tableInput" id="weaponName" size="3" value="d3" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <label for="hitmod">hit rerolls: </label>
-                            </td>
-                            <td>
-                                
-                                <select id="hitRR" type='select2'>
-                                    <option value="mwOnHit">none</option>
-                                    <option value="dmgOnHit">reroll 1s</option>	
-                                    <option value="hitsOnHit">reroll failed</option>
-                                    <option value="attacksOnHit">reroll failed (all)</option>
-                                    <option value="attacksOnHit">reroll 6s</option>
-                                    <option value="rendOnHit">custom</option>
-                                </select>
-                            </td>	
-                        </tr>
-                        
-                        <tr>
-                            <td>
-                                <label for="hitmod">wound rerolls: </label>
-                            </td>
-                            <td>
-                                <select id="woundRR" type='select2'>
-                                    <option value="mwOnHit">none</option>
-                                    <option value="dmgOnHit">reroll 1s</option>
-                                    <option value="hitsOnHit">reroll failed</option>
-                                    <option value="attacksOnHit">reroll failed (all)</option>
-                                    <option value="attacksOnHit">reroll 6s</option>
-                                    <option value="rendOnHit">custom</option>
-                                </select>
-                            </td>	
-                        </tr>
-                        
-                        <tr type='procRow'>
-                            <td>
-                                <label for="hitmod">procs: </label>
-                            </td>
-                            <td>
-                                <select id="procType" type='select2'>
-                                    <option value="none">none</option>
-                                    <option value="mwOnHit">+MW on hit</option>
-                                    <option value="dmgOnHit">+Damage on hit</option>
-                                    <option value="hitsOnHit">+Hits on hit</option>
-                                    <option value="attacksOnHit">+Attacks on hit</option>
-                                    <option value="rendOnHit">+Rend on hit</option>
-                                    <option value="mwOnWound">+MW on wound</option>
-                                    <option value="dmgOnWound">+Damage on wound</option>
-                                    <option value="attacksOnWound">+Attacks on wound</option>
-                                    <option value="rendOnWound">+Rend on wound</option>
-                                </select>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-            </td>
-        </table>
+			<tr id='kingsRow'>
+				<td type='profilesTd'>
+					<div id='weaponContainer' type='weaponContainer'>
+						<table id='weapon1' type='modifierTable'>
+							<tr>
+								<td>
+									<label for="models">profile name: </label>
+								</td>
+								<td>
+									<input type="tableInput" id="weaponNameX" size="3" value="weapon1" />
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<label for="models">models w/ weapon: </label>
+								</td>
+								<td>
+									<input type="tableInput" id="weaponName" size="3" value="10" />
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<label for="models">to hit: </label>
+								</td>
+								<td>
+									<input type="tableInput" id="weaponName" size="3" value="4" />
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<label for="models">to wound: </label>
+								</td>
+								<td>
+									<input type="tableInput" id="weaponName" size="3" value="4" />
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<label for="models">rend: </label>
+								</td>
+								<td>
+									<input type="tableInput" id="weaponName" size="3" value="-" />
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<label for="models">damage: </label>
+								</td>
+								<td>
+									<input type="tableInput" id="weaponName" size="3" value="1" />
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<label for="hitmod">hit rerolls: </label>
+								</td>
+								<td>
+									
+									<select id="hitRR" type='select2'>
+										<option value="mwOnHit">none</option>
+										<option value="dmgOnHit">reroll 1s</option>	
+										<option value="hitsOnHit">reroll failed</option>
+										<option value="attacksOnHit">reroll failed (all)</option>
+										<option value="attacksOnHit">reroll 6s</option>
+										<option value="rendOnHit">custom</option>
+									</select>
+								</td>	
+							</tr> 
+							<tr>
+								<td>
+									<label for="hitmod">wound rerolls: </label>
+								</td>
+								<td>
+									<select id="woundRR" type='select2'>
+										<option value="mwOnHit">none</option>
+										<option value="dmgOnHit">reroll 1s</option>
+										<option value="hitsOnHit">reroll failed</option>
+										<option value="attacksOnHit">reroll failed (all)</option>
+										<option value="attacksOnHit">reroll 6s</option>
+										<option value="rendOnHit">custom</option>
+									</select>
+								</td>	
+							</tr>                      
+							<tr type='procRow'>
+								<td>
+									<label for="hitmod">procs: </label>
+								</td>
+								<td>
+									<select id="procType" type='select2'>
+										<option value="none">none</option>
+										<option value="mwOnHit">+MW on hit</option>
+										<option value="dmgOnHit">+Damage on hit</option>
+										<option value="hitsOnHit">+Hits on hit</option>
+										<option value="attacksOnHit">+Attacks on hit</option>
+										<option value="rendOnHit">+Rend on hit</option>
+										<option value="mwOnWound">+MW on wound</option>
+										<option value="dmgOnWound">+Damage on wound</option>
+										<option value="attacksOnWound">+Attacks on wound</option>
+										<option value="rendOnWound">+Rend on wound</option>
+									</select>
+								</td>
+							</tr>
+						</table>
+					</div>
+				</td>				
+			</tr>
+		</table>
     </div>
         
     </br>
@@ -137,21 +137,21 @@
     <button onclick="removeWeapon()">Remove Profile</button>
     </br>
     </br>
-            
+	
     <script>
         function addWeapon()
         {
-            myTable = document.getElementsByTagName("td")[0];
-            myClone = myTable.cloneNode(true);
-            document.getElementById('profileParent').appendChild(myClone);
+			let profileTd = document.querySelectorAll('td[type=profilesTd]')[0];
+            myClone = profileTd.cloneNode(true);
+            document.getElementById('kingsRow').appendChild(myClone);
 
-            let weaponNames = document.querySelectorAll('input[type=weaponNameText]');
+            let weaponNames = document.querySelectorAll('input[id=weaponNameX]');
             weaponNames[weaponNames.length - 1].value = 'weapon'+(weaponNames.length).toString();
         }
 
         function removeWeapon()
         {
-            let weaponNames = document.querySelectorAll('table[type=weaponTable]');
+            let weaponNames = document.querySelectorAll('td[type=profilesTd]');
 
             if (weaponNames.length <= 1) return;
 
