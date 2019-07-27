@@ -544,6 +544,8 @@ function debug_test()
 // add some examples where you click a button and it shows a unit name, describes what procs do, etc
 // add double pilein
 // rerollable ward
+// clear button for procs
+// ability to remove procs
 
 // at least function
 function atLeast(attack) {

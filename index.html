@@ -198,10 +198,7 @@
             let lastRow = document.querySelector('tr[id=silentProc');
 
             inWeapon = inWeapon.parentNode.parentNode.parentNode;
-            // let lastRow = inWeapon.rows[ inWeapon.rows.length - 1 ];
             let cloneRow = lastRow.cloneNode(true);
-
-            console.log(cloneRow);
 
             cloneRow.setAttribute('style', '');
 
@@ -321,7 +318,7 @@
             
             <tr type='procRow'>
                 <td type='lower'>
-                    <label for="hitmod">procs: </label>
+                    <label for="hitmod">add proc: </label>
                 </td>
                 <td>
                     <select id="procType" type='select2' onChange='addProc(this)'>
@@ -441,19 +438,6 @@
     <br />
     <br />
     <br />
-	
-    <div>
-        <i><b>Notes:</b><br />
-        - In the reroll (RR) boxes, you have to enter a list of the numbers you wish to reroll. E.g. "1, 2, 3" or "1 2 3" to reroll failed hits for 4+. or "1" for rerolling just 1s.<br />
-        - To compare two sets of stats, set your first stats, press "Sigmulate", then set your second set of stats and press "Compare".<br />
-
-        - For things like MW on hits, the roll is the number required to do the mortal wound, the value is the amount of mortal wounds. E.g. 6s to hit do a MW: Roll=6, Value=1. <br />
-        - Output is the percentage chance of doing AT LEAST x amount of damage.<br />
-
-        e.g. 03 <span style="color: blue">||||||</span><span style="color: red">|||</span> 50% 70% means there is a 50% chance of blue doing 3 or more wounds, and a 70% chance of red doing 3 or more wounds.<br /></i>
-    </div>
-    <br />
-    <br />
 
     <!-- buttons -->
     <button onclick="onSigmulate()" style="font-size : 12px; width: 80px; height: 40px;">Sigmulate</button>
@@ -493,9 +477,9 @@
 						var regEx = /(\d*)d(\d+)(\+(\d+))*/;
 						var match = regEx.exec(s);
 
-						int prefix = parseInt(match[1])
-						int suffix = parseInt(match[2])
-						int addition = parseInt(match[4])
+						int prefix = parseInt(match[1]);
+						int suffix = parseInt(match[2]);
+						int addition = parseInt(match[4]);
 
 		
 
