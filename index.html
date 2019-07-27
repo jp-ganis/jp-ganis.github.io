@@ -124,10 +124,10 @@
 							</tr>                      
 							<tr type='procRow'>
 								<td>
-									<label for="hitmod">procs: </label>
+									<label for="hitmod">add proc: </label>
 								</td>
 								<td>
-									<select id="procType" type='select2'>
+									<select id="procType" type='select2' onchange='addProc(this)'>
 										<option value="none">none</option>
 										<option value="mwOnHit">+MW on hit</option>
 										<option value="dmgOnHit">+Damage on hit</option>
@@ -142,15 +142,15 @@
 								</td>
 							</tr>
 							
-							<tr type="weaponProcTr">
+							<tr style='display:none'>
 								<td>
-									<label for="models">+mw on hit: </label>
+									<label id='procDescriptor' for="models">+mw on hit: </label>
 								</td>
 								<td type='left'>
-									<input type="tableInputHalf" id="weaponName" size="3" value="6+" />
-									<label>deals</label>
-									<input type="tableInputHalf" id="weaponName" size="3" value="d6" />
-									<label>damage</label>
+                                    <label id='procText1'>generates</label>
+									<input type="tableInputHalf" id="weaponName" size="3" value="1" />
+									<label id='procText2'>attacks</label>
+									<input type="tableInputHalf" id="weaponName" size="3" value="6" />
 								</td>
 							</tr>
 						</table>
@@ -166,8 +166,67 @@
     </br>
 	
     <script>
+        function getProcLabels(procType)
+        {
+            let labels = ["", "mw on a"];
+
+            if (procType.includes('+Damage'))
+            {
+                labels = ["","damage on a"];
+            }
+            else if (procType.includes('+Hits'))
+            {
+                labels = ["","hits on a"];
+            }
+            else if (procType.includes('+Rend'))
+            {
+                labels = ["","rend on a"];
+            }
+            else if (procType.includes('+Attacks'))
+            {
+                labels = ["","attacks on a"];
+            }
+
+            return labels;
+        }
+
+        function addProc(inWeapon)
+        {
+            let procType = inWeapon.options[inWeapon.selectedIndex].innerHTML;
+
+            inWeapon = inWeapon.parentNode.parentNode.parentNode;
+            let lastRow = inWeapon.rows[ inWeapon.rows.length - 1 ];
+            let cloneRow = lastRow.cloneNode(true);
+
+            cloneRow.setAttribute('style', '');
+
+            let label0 = cloneRow.querySelector('label[id=procDescriptor]');
+            let label1 = cloneRow.querySelector('label[id=procText1]');
+            let label2 = cloneRow.querySelector('label[id=procText2]');
+            
+            label0.innerHTML = procType;
+
+            let labels = getProcLabels(procType);
+            label1.innerHTML = labels[0];
+            label2.innerHTML = labels[1];
+
+            inWeapon.appendChild(cloneRow);
+        }
+
+        function removeProc(inWeapon)
+        {
+            let lastRow = inWeapon.rows[ inWeapon.rows.length - 1 ];
+
+            if (lastRow.style != "display:none")
+            {
+                lastRow.remove();
+            }
+        }
+
         function addWeapon()
         {
+            addProc(document.querySelector('table[id=weapon1]'));
+
 			let profileTd = document.querySelectorAll('td[type=profilesTd]')[0];
             myClone = profileTd.cloneNode(true);
             document.getElementById('kingsRow').appendChild(myClone);
@@ -178,11 +237,14 @@
 
         function removeWeapon()
         {
+
+            removeProc(document.querySelector('table[id=weapon1]'));
             let weaponNames = document.querySelectorAll('td[type=profilesTd]');
 
-            if (weaponNames.length <= 1) return;
-
-            weaponNames[weaponNames.length - 1].remove();
+            if (weaponNames.length > 1)
+            {
+                weaponNames[weaponNames.length - 1].remove();
+            }
         }
     </script>
 
@@ -261,7 +323,7 @@
                     <label for="hitmod">procs: </label>
                 </td>
                 <td>
-                    <select id="procType" type='select2'>
+                    <select id="procType" type='select2' onChange='addProc(this)'>
                         <option value="none">none</option>
                         <option value="mwOnHit">+MW on hit</option>
                         <option value="dmgOnHit">+Damage on hit</option>
@@ -275,6 +337,18 @@
                     </select>
                 </td>
             </tr>
+            							
+            <tr style='display:none'>
+                    <td>
+                        <label for="models">+mw on hit: </label>
+                    </td>
+                    <td type='left'>
+                        <input type="tableInputHalf" id="weaponName" size="3" value="6+" />
+                        <label>make</label>
+                        <input type="tableInputHalf" id="weaponName" size="3" value="d6" />
+                        <label>attacks</label>
+                    </td>
+                </tr>
         </table>
 		
 		</br>
