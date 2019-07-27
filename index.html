@@ -142,7 +142,7 @@
 								</td>
 							</tr>
 							
-							<tr style='display:none'>
+							<tr id='silentProc' style='display:none'>
 								<td>
 									<label id='procDescriptor' for="models">+mw on hit: </label>
 								</td>
@@ -195,9 +195,13 @@
             let procType = inWeapon.options[inWeapon.selectedIndex].innerHTML;
             inWeapon.selectedIndex = 0;
 
+            let lastRow = document.querySelector('tr[id=silentProc');
+
             inWeapon = inWeapon.parentNode.parentNode.parentNode;
-            let lastRow = inWeapon.rows[ inWeapon.rows.length - 1 ];
+            // let lastRow = inWeapon.rows[ inWeapon.rows.length - 1 ];
             let cloneRow = lastRow.cloneNode(true);
+
+            console.log(cloneRow);
 
             cloneRow.setAttribute('style', '');
 
