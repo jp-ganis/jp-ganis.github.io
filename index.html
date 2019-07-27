@@ -193,6 +193,7 @@
         function addProc(inWeapon)
         {
             let procType = inWeapon.options[inWeapon.selectedIndex].innerHTML;
+            inWeapon.selectedIndex = 0;
 
             inWeapon = inWeapon.parentNode.parentNode.parentNode;
             let lastRow = inWeapon.rows[ inWeapon.rows.length - 1 ];
@@ -225,8 +226,6 @@
 
         function addWeapon()
         {
-            addProc(document.querySelector('table[id=weapon1]'));
-
 			let profileTd = document.querySelectorAll('td[type=profilesTd]')[0];
             myClone = profileTd.cloneNode(true);
             document.getElementById('kingsRow').appendChild(myClone);
@@ -237,8 +236,6 @@
 
         function removeWeapon()
         {
-
-            removeProc(document.querySelector('table[id=weapon1]'));
             let weaponNames = document.querySelectorAll('td[type=profilesTd]');
 
             if (weaponNames.length > 1)
