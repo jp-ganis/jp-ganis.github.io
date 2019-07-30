@@ -18,8 +18,8 @@
 	<!--         -->
     <!-- WEAPONS -->
 	<!--         -->
-	<!------------->
-	<div id='WEAPONS'>
+    <!------------->
+   <div id='WEAPONS'>
 		<div><font size="4"><i>Weapons</i></font></div>
         
         <table type='profilesTable' id='profileParent'>
@@ -252,7 +252,7 @@
 	<!--         -->
 	<!------------->
 	<div id='UNITBUFFS'>
-		<div><font size="4"><i>Unit-wide Buffs</i></font></div>
+		<div><font size="4"><i>Unit-wide Effects</i></font></div>
         <table type='modifierTable'>
             <tr>
                 <td type='lower'>
@@ -435,9 +435,6 @@
     <!-- Help -->
 	
     <br />
-    <br />
-    <br />
-    <br />
 
     <!-- buttons -->
     <button onclick="onSigmulate()" style="font-size : 12px; width: 80px; height: 40px;">Sigmulate</button>
@@ -471,30 +468,6 @@
             comparatives = [];
         }
 		
-        function diceParseInt(s)
-        {
-            s = s.toLowerCase();
-						var regEx = /(\d*)d(\d+)(\+(\d+))*/;
-						var match = regEx.exec(s);
-
-						int prefix = parseInt(match[1]);
-						int suffix = parseInt(match[2]);
-						int addition = parseInt(match[4]);
-
-		
-
-            if (s.includes("5d3")) return -53;
-            else if (s.includes("4d3")) return -43;
-            else if (s.includes("3d3")) return -33;
-            else if (s.includes("2d3")) return -23;
-            else if (s.includes("4d6")) return -46;
-            else if (s.includes("3d6")) return -36;
-            else if (s.includes("2d6")) return -26;
-            else if (s.includes("d6")) return -6;
-            else if (s.includes("d3")) return -3;
-
-            return parseInt(s);
-        }
 
         function onSigmulate(compare = false, sum = false) {
             let a = diceParseInt(document.getElementById('attacks').value);

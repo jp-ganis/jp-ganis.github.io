@@ -527,6 +527,49 @@ function debug_test()
 	console.log(s/10000)
 }
 
+function debug_test_sylv()
+{
+	let tg_maw_proc = parseProcString('mw_on_wound/6/1/1');
+	let tg_gristlegore_proc = parseProcString('hits_on_hit/6/2/1');
+
+	let attackProfile = parseAttackString('16/3/3/-1/2');
+	attackProfile.Procs.push(tg_gristlegore_proc);
+	attackProfile.Procs.push(tg_maw_proc);
+
+	let defenceProfile = parseDefenceString('4/0/[]/7/0/[]');
+	let modifiers = parseModifierString('0/0/0/0');
+
+	let s=0;
+	for (let i = 0; i < 10000; ++i)
+	{
+		s += rollAttacks(attackProfile, defenceProfile, modifiers);
+	}
+
+	console.log(s/10000)
+}
+
+function debug_test_sylv2()
+{
+	let tg_gristlegore_proc = parseProcString('hits_on_hit/6/2/1');
+
+	let attackProfile = parseAttackString('18/3/3/-2/d3');
+	attackProfile.Procs.push(tg_gristlegore_proc);
+
+	let defenceProfile = parseDefenceString('4/0/[]/7/0/[]');
+	let modifiers = parseModifierString('0/0/0/0');
+
+	let s=0;
+	for (let i = 0; i < 10000; ++i)
+	{
+		s += rollAttacks(attackProfile, defenceProfile, modifiers);
+	}
+
+	console.log(s/10000)
+}
+
+debug_test_sylv()
+debug_test_sylv2()
+
 // need to be able to do failed rerolls AND reroll 6s (nice to have probably)
 // specify number of simulations
 // multiple comparisons
@@ -538,6 +581,7 @@ function debug_test()
 // reroll failed (with reroll all in wording)
 // reroll all (fish for value)
 // "chance to kill" - where you fill in number of wounds 
+// target dummies for change to kill: 40 plaguemonks, nagash, terrorgheist, stardrake, sequiturs, etc
 // single roll mode! see what happened this time
 // add tickbox to enable/disable procs/weapons etc
 // add some default target dummies that we see in the game
@@ -546,6 +590,9 @@ function debug_test()
 // rerollable ward
 // clear button for procs
 // ability to remove procs
+// need to actually make custom rerolls work
+// save previous sims, be able to compare any of them
+// change confidence intervals
 
 // at least function
 function atLeast(attack) {
