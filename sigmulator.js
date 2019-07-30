@@ -567,8 +567,6 @@ function debug_test_sylv2()
 	console.log(s/10000)
 }
 
-debug_test_sylv()
-debug_test_sylv2()
 
 // need to be able to do failed rerolls AND reroll 6s (nice to have probably)
 // specify number of simulations
