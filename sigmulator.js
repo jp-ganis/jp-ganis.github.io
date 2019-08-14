@@ -527,6 +527,30 @@ function debug_test()
 	console.log(s/10000)
 }
 
+function debug_test_mannfred()
+{
+	let attackProfile1 = parseAttackString('4/2/2/-1/d3');
+	let attackProfile2 = parseAttackString('2/3/3/-1/2');
+	let attackProfile3 = parseAttackString('6/4/3/-2/2');
+	let attackProfile4 = parseAttackString('6/5/4/0/1');
+	let mw_proc = parseProcString('mw_on_hit/6/1/1');
+	attackProfile4.Procs.push(mw_proc);
+
+	let defenceProfile = parseDefenceString('4/0/[]');
+	let modifiers = parseModifierString('0/0/0/0');
+
+	let s=0;
+	for (let i = 0; i < 10000; ++i)
+	{
+		s += rollAttacks(attackProfile1, defenceProfile, modifiers);
+		s += rollAttacks(attackProfile2, defenceProfile, modifiers);
+		s += rollAttacks(attackProfile3, defenceProfile, modifiers);
+		s += rollAttacks(attackProfile4, defenceProfile, modifiers);
+	}
+
+	console.log(s/10000)
+}
+
 function debug_test_sylv()
 {
 	let tg_maw_proc = parseProcString('mw_on_wound/6/1/1');

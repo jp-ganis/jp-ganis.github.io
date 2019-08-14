@@ -26,13 +26,13 @@
 			<tr id='kingsRow'>
 				<td type='profilesTd'>
 					<div id='weaponContainer' type='weaponContainer'>
-						<table id='weapon1' type='modifierTable'>
+						<table class='weapon1' type='modifierTable'>
 							<tr>
 								<td>
 									<label for="models">profile name: </label>
 								</td>
 								<td>
-									<input type="tableInput" id="weaponNameX" size="3" value="weapon1" />
+									<input type="tableInput" class="weaponNameX" size="3" value="weapon1" />
 								</td>
 							</tr>
 							<tr>
@@ -40,7 +40,7 @@
 									<label for="models">models w/ weapon: </label>
 								</td>
 								<td>
-									<input type="tableInput" id="weaponName" size="3" value="10" />
+									<input type="tableInput" class="numModels" size="3" value="10" />
 								</td>
 							</tr>
 							<tr>
@@ -52,7 +52,7 @@
 									<label for="models">attacks: </label>
 								</td>
 								<td>
-									<input type="tableInput" id="weaponName" size="3" value="2" />
+									<input type="tableInput" class="numAttacks" size="3" value="2" />
 								</td>
 							</tr>
 							<tr>
@@ -60,7 +60,7 @@
 									<label for="models">to hit: </label>
 								</td>
 								<td>
-									<input type="tableInput" id="weaponName" size="3" value="4" />
+									<input type="tableInput" class="toHit" size="3" value="4" />
 								</td>
 							</tr>
 							<tr>
@@ -68,7 +68,7 @@
 									<label for="models">to wound: </label>
 								</td>
 								<td>
-									<input type="tableInput" id="weaponName" size="3" value="4" />
+									<input type="tableInput" class="toWound" size="3" value="4" />
 								</td>
 							</tr>
 							<tr>
@@ -76,7 +76,7 @@
 									<label for="models">rend: </label>
 								</td>
 								<td>
-									<input type="tableInput" id="weaponName" size="3" value="-" />
+									<input type="tableInput" class="rend" size="3" value="-" />
 								</td>
 							</tr>
 							<tr>
@@ -84,7 +84,7 @@
 									<label for="models">damage: </label>
 								</td>
 								<td>
-									<input type="tableInput" id="weaponName" size="3" value="1" />
+									<input type="tableInput" class="damage" size="3" value="1" />
 								</td>
 							</tr>
 							<tr>
@@ -97,13 +97,13 @@
 								</td>
 								<td>
 									
-									<select id="hitRR" type='select2'>
-										<option value="mwOnHit">none</option>
-										<option value="dmgOnHit">reroll 1s</option>	
-										<option value="hitsOnHit">reroll failed</option>
-										<option value="attacksOnHit">reroll failed (all)</option>
-										<option value="attacksOnHit">reroll 6s</option>
-										<option value="rendOnHit">custom</option>
+									<select class="hitRerolls" type='select2'>
+										<option value="none">none</option>
+										<option value="rerollOnes">reroll 1s</option>	
+										<option value="rerollFailed">reroll failed</option>
+										<option value="rerollFailedAll">reroll failed (all)</option>
+										<option value="rerollSixes">reroll 6s</option>
+										<option value="custom">custom</option>
 									</select>
 								</td>	
 							</tr> 
@@ -112,13 +112,13 @@
 									<label for="hitmod">wound rerolls: </label>
 								</td>
 								<td>
-									<select id="woundRR" type='select2'>
-										<option value="mwOnHit">none</option>
-										<option value="dmgOnHit">reroll 1s</option>
-										<option value="hitsOnHit">reroll failed</option>
-										<option value="attacksOnHit">reroll failed (all)</option>
-										<option value="attacksOnHit">reroll 6s</option>
-										<option value="rendOnHit">custom</option>
+									<select class="woundRerolls" type='select2'>
+										<option value="none">none</option>
+										<option value="rerollOnes">reroll 1s</option>	
+										<option value="rerollFailed">reroll failed</option>
+										<option value="rerollFailedAll">reroll failed (all)</option>
+										<option value="rerollSixes">reroll 6s</option>
+										<option value="custom">custom</option>
 									</select>
 								</td>	
 							</tr>                      
@@ -127,7 +127,7 @@
 									<label for="hitmod">add proc: </label>
 								</td>
 								<td>
-									<select id="procType" type='select2' onchange='addProc(this)'>
+									<select class="procType" type='select2' onchange='addProc(this)'>
 										<option value="none">none</option>
 										<option value="mwOnHit">+MW on hit</option>
 										<option value="dmgOnHit">+Damage on hit</option>
@@ -142,15 +142,15 @@
 								</td>
 							</tr>
 							
-							<tr id='silentProc' style='display:none'>
+							<tr id='silentProc' class='procDescriptor' style='display:none' value=''>
 								<td>
 									<label id='procDescriptor' for="models">+mw on hit: </label>
 								</td>
 								<td type='left'>
-                                    <label id='procText1'>generates</label>
-									<input type="tableInputHalf" id="weaponName" size="3" value="1" />
+									<label id='procText1'>generates</label>
+									<input type="tableInputHalf" class="procValue" size="3" value="1" />
 									<label id='procText2'>attacks</label>
-									<input type="tableInputHalf" id="weaponName" size="3" value="6" />
+									<input type="tableInputHalf" class="procRoll" size="3" value="6" />
 								</td>
 							</tr>
 						</table>
@@ -159,6 +159,30 @@
 			</tr>
 		</table>
     </div>
+
+		<script>
+			function createSigmulatorStrings()
+			{
+				let weaponNames = document.querySelectorAll('.weaponNameX');
+				let models = document.querySelectorAll('.numModels');
+				let toHits = document.querySelectorAll('.toHit');
+				let toWounds = document.querySelectorAll('.toWound');
+				let rends = document.querySelectorAll('.rend');
+				let damages = document.querySelectorAll('.damage');
+				let hitRerolls = document.querySelectorAll('.hitRerolls');
+				let woundRerolls = document.querySelectorAll('.woundRerolls');
+				let procDescriptors = document.querySelectorAll('.procDescriptor');
+				console.log(models.length);
+				console.log(models[0].value);
+				console.log(toHits[0].value);
+				console.log(toWounds[0].value);
+				console.log(rends[0].value);
+				console.log(damages[0].value);
+				console.log(hitRerolls[0].value);
+				console.log(woundRerolls[0].value);
+				console.log(procDescriptors[0].style);
+			}
+		</script>
         
     <button onclick="addWeapon()">Add Profile</button>
     <button onclick="removeWeapon()">Remove Profile</button>
@@ -201,6 +225,7 @@
             let cloneRow = lastRow.cloneNode(true);
 
             cloneRow.setAttribute('style', '');
+						cloneRow.class = 'procDescriptor';
 
             let label0 = cloneRow.querySelector('label[id=procDescriptor]');
             let label1 = cloneRow.querySelector('label[id=procText1]');
@@ -227,11 +252,12 @@
 
         function addWeapon()
         {
-			let profileTd = document.querySelectorAll('td[type=profilesTd]')[0];
+					createSigmulatorStrings();
+						let profileTd = document.querySelectorAll('td[type=profilesTd]')[0];
             myClone = profileTd.cloneNode(true);
             document.getElementById('kingsRow').appendChild(myClone);
 
-            let weaponNames = document.querySelectorAll('input[id=weaponNameX]');
+            let weaponNames = document.querySelectorAll('input[class=weaponNameX]');
             weaponNames[weaponNames.length - 1].value = 'weapon'+(weaponNames.length).toString();
         }
 
@@ -259,7 +285,7 @@
                     <label for="attackmod">bonus attacks: </label>
                 </td>
                 <td>
-                    <input type="tableInput" id="attackmod" size="2" />
+                    <input type="tableInput" class="unitBonusAttacks" size="2" />
                 </td>	
             </tr>
             
@@ -269,7 +295,7 @@
                     <label for="attackmod">hit modifier: </label>
                 </td>
                 <td>
-                    <input type="tableInput" id="attackmod" size="2" />
+                    <input type="tableInput" class="unitHitModifier" size="2" />
                 </td>	
             </tr>
             
@@ -279,7 +305,7 @@
                     <label for="attackmod">wound modifier: </label>
                 </td>
                 <td>
-                    <input type="tableInput" id="attackmod" size="2" />
+                    <input type="tableInput" class="unitWoundModifier" size="2" />
                 </td>	
             </tr>
             
@@ -289,13 +315,13 @@
                 </td>
                 <td>
                     
-                    <select id="hitRR" type='select2'>
-                        <option value="mwOnHit">none</option>
-                        <option value="dmgOnHit">reroll 1s</option>	
-                        <option value="hitsOnHit">reroll failed</option>
-                        <option value="attacksOnHit">reroll failed (all)</option>
-                        <option value="attacksOnHit">reroll 6s</option>
-                        <option value="rendOnHit">custom</option>
+                    <select class="unitHitRerolls" type='select2'>
+                        <option value="none">none</option>
+                        <option value="rerollOnes">reroll 1s</option>	
+                        <option value="rerollFailed">reroll failed</option>
+                        <option value="rerollFailedAll">reroll failed (all)</option>
+                        <option value="rerollSixes">reroll 6s</option>
+                        <option value="custom">custom</option>
                     </select>
                 </td>	
             </tr>
@@ -305,13 +331,13 @@
                     <label for="hitmod">wound rerolls: </label>
                 </td>
                 <td>
-                    <select id="woundRR" type='select2'>
-                        <option value="mwOnHit">none</option>
-                        <option value="dmgOnHit">reroll 1s</option>
-                        <option value="hitsOnHit">reroll failed</option>
-                        <option value="attacksOnHit">reroll failed (all)</option>
-                        <option value="attacksOnHit">reroll 6s</option>
-                        <option value="rendOnHit">custom</option>
+                    <select class="unitWoundRerolls" type='select2'>
+                        <option value="none">none</option>
+                        <option value="rerollOnes">reroll 1s</option>	
+                        <option value="rerollFailed">reroll failed</option>
+                        <option value="rerollFailedAll">reroll failed (all)</option>
+                        <option value="rerollSixes">reroll 6s</option>
+                        <option value="custom">custom</option>
                     </select>
                 </td>	
             </tr>
@@ -321,7 +347,7 @@
                     <label for="hitmod">add proc: </label>
                 </td>
                 <td>
-                    <select id="procType" type='select2' onChange='addProc(this)'>
+                    <select class="unitProcType" type='select2' onChange='addProc(this)'>
                         <option value="none">none</option>
                         <option value="mwOnHit">+MW on hit</option>
                         <option value="dmgOnHit">+Damage on hit</option>
@@ -341,9 +367,9 @@
                         <label for="models">+mw on hit: </label>
                     </td>
                     <td type='left'>
-                        <input type="tableInputHalf" id="weaponName" size="3" value="6+" />
+                        <input type="tableInputHalf" class="unitProcRoll" size="3" value="6+" />
                         <label>make</label>
-                        <input type="tableInputHalf" id="weaponName" size="3" value="d6" />
+                        <input type="tableInputHalf" class="unitProcValue" size="3" value="d6" />
                         <label>attacks</label>
                     </td>
                 </tr>
@@ -366,7 +392,7 @@
                     <label for="attackmod">save: </label>
                 </td>
                 <td>
-                    <input type="tableInput" id="attackmod" size="2" value="4"/>
+                    <input type="tableInput" class="save" size="2" value="4"/>
                 </td>	
             </tr>
             
@@ -375,7 +401,7 @@
                     <label for="hitmod">ward save: </label>
                 </td>
                 <td>
-                    <input type="tableInput" id="attackmod" size="2" />
+                    <input type="tableInput" class="wardSave" size="2" />
                 </td>	
             </tr>
 			
@@ -387,7 +413,7 @@
                     <label for="attackmod">save modifier: </label>
                 </td>
                 <td>
-                    <input type="tableInput" id="attackmod" size="2" />
+                    <input type="tableInput" class="saveModifier" size="2" />
                 </td>	
             </tr>
 			
@@ -396,13 +422,13 @@
                     <label for="hitmod">save rerolls: </label>
                 </td>
                 <td>
-                    <select id="hitRR" type='select2'>
-                        <option value="mwOnHit">none</option>
-                        <option value="dmgOnHit">reroll 1s</option>	
-                        <option value="hitsOnHit">reroll failed</option>
-                        <option value="attacksOnHit">reroll failed (all)</option>
-                        <option value="attacksOnHit">reroll 6s</option>
-                        <option value="rendOnHit">custom</option>
+                    <select class="saveRerolls" type='select2'>
+                        <option value="none">none</option>
+                        <option value="rerollOnes">reroll 1s</option>	
+                        <option value="rerollFailed">reroll failed</option>
+                        <option value="rerollFailedAll">reroll failed (all)</option>
+                        <option value="rerollSixes">reroll 6s</option>
+                        <option value="custom">custom</option>
                     </select>
                 </td>	
             </tr>
@@ -412,13 +438,13 @@
                     <label for="hitmod">ward rerolls: </label>
                 </td>
                 <td>
-                    <select id="hitRR" type='select2'>
-                        <option value="mwOnHit">none</option>
-                        <option value="dmgOnHit">reroll 1s</option>	
-                        <option value="hitsOnHit">reroll failed</option>
-                        <option value="attacksOnHit">reroll failed (all)</option>
-                        <option value="attacksOnHit">reroll 6s</option>
-                        <option value="rendOnHit">custom</option>
+                    <select class="wardRerolls" type='select2'>
+                        <option value="none">none</option>
+                        <option value="rerollOnes">reroll 1s</option>	
+                        <option value="rerollFailed">reroll failed</option>
+                        <option value="rerollFailedAll">reroll failed (all)</option>
+                        <option value="rerollSixes">reroll 6s</option>
+                        <option value="custom">custom</option>
                     </select>
                 </td>	
             </tr>
