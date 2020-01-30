@@ -3,6 +3,21 @@ function d3() { return dn(3); }
 function d6() { return dn(6); }
 function getIterations() { return 15000; }
 
+// convert NaN to max value
+function nanIsMax(n)
+{
+    if (isNaN(n)) return 99;
+    if (n) return n;
+	return 99;
+}
+
+// convert NaN to min value
+function nanIsZero(n) {
+    if (isNaN(n)) return 0;
+    if (n) return n;
+    return 0;
+}
+
 // encoding for things like 2d3 or 3d6
 function parseDiceNumber(s)
 {
@@ -35,19 +50,6 @@ function rollWithRerolls(rollFunc, rerolls)
 	let d = rollFunc();
 		
 	if (rerolls.includes(d))
-	{
-		d = rollFunc();
-	}
-
-	return d;
-}
-
-// reroll under value
-function rollWithRerollUnderValue(rollFunc, value)
-{
-	let d = rollFunc();
-
-	if (d < value)
 	{
 		d = rollFunc();
 	}
@@ -144,17 +146,22 @@ function processSuccessfulProc(proc)
 function parseProcString(string)
 {
 	let values = string.split('/');
+	
+	if (values[1] == 0)
+	{
+		return null;
+	}
 
 	let proc = {};
 	proc.Type = values[0];  // e.g. mw on a hit roll of...
 	proc.Roll = parseInt(values[1]); // ...6
 	proc.Value = values[2]; // value of proc, 1 MW, 3 extra hits, etc
-	proc.Unmodified = values[3]; 
+	proc.Unmodified = true;//values[3]; // for now, everything is unmodified
 
 	return proc;
 }
 
-// accumuluateProcResults
+// accumulateProcResults
 function accumulateProcResults(procResults)
 {
 	let result = {};
@@ -188,19 +195,37 @@ function parseArray(string)
 // parseRerolls
 function parseRerolls(string, value, modifier)
 {
-	let rerolls = [];
-	
-	if (string == 'failed')
+	if (string == "none")
 	{
+		return [];
+	}
+	else if (string == "rerollOnes")
+	{
+		return [1];
+	}
+	else if (string == 'rerollFailedAll')
+	{
+		value -= modifier;
+		string = 'rerollFailed';
+	}
+	else if (string == 'rerollSixes')
+	{
+		return [6];
+	}
+
+	if (string == 'rerollFailed')
+	{
+		let rerolls = [];
+		value = Math.min(6, value);
+		
 		for (let i = 1; i < value; ++i)
 		{
 			rerolls.push(i);
 		}
+		return rerolls;
 	}
-	else
-	{
-		return parseArray(string);
-	}
+	
+	return parseArray(string);
 }
 
 // parseAttackString
@@ -211,11 +236,11 @@ function parseAttackString(attackString)
 	let attacks = values[0];
 	let hitValue = parseInt(values[1]);
 	let woundValue = parseInt(values[2]);
-	let rendValue = parseInt(values[3]);
+	let rendValue = nanIsZero(parseInt(values[3]));
 	let damageValue = values[4];
-	let rrhValue = values.length > 5 ? parseRerolls(values[5]) : [];
-	let rrwValue = values.length > 6 ? parseRerolls(values[6]) : [];
-
+	let rrhValue = values.length > 5 ? values[5] : "none";
+	let rrwValue = values.length > 6 ? values[6] : "none";
+	
 	let result = 
 	{
 		Attacks: attacks,
@@ -246,7 +271,7 @@ function parseDefenceString(defenceString)
 		{
 			Value: parseInt(values[i]),
 			MWOnly: parseInt(values[i+1]),
-			Rerolls: parseArray(values[i+2]),
+			Rerolls: values[i+2],
 		}
 
 		result.push(save);
@@ -317,6 +342,8 @@ function getAfterSaveReduction(defenceProfile, physicalDamageDone, mortalWoundDa
 // rollToHit
 function rollToHit(attackProfile, modifiers)
 {
+	attackProfile.RRH = parseRerolls(attackProfile.RRH, attackProfile.ToHit, modifiers.HitModifier);
+	
 	let roll = rollWithRerolls(d6, attackProfile.RRH);
 	return modifyHitWoundRoll(roll, modifiers.HitModifier);
 }
@@ -324,6 +351,8 @@ function rollToHit(attackProfile, modifiers)
 // rollToWound
 function rollToWound(attackProfile, modifiers)
 {
+	attackProfile.RRW = parseRerolls(attackProfile.RRH, attackProfile.ToHit, modifiers.HitModifier);
+	
 	let roll = rollWithRerolls(d6, attackProfile.RRW);
 	return modifyHitWoundRoll(roll, modifiers.WoundModifier);
 }
@@ -331,6 +360,8 @@ function rollToWound(attackProfile, modifiers)
 // rollToSave
 function rollToSave(attackProfile, defenceProfile, modifiers)
 {
+	defenceProfile[0].Rerolls = parseRerolls(defenceProfile[0].Rerolls, defenceProfile[0].Value, -attackProfile.Rend);
+	
 	let roll = rollWithRerolls(d6, defenceProfile[0].Rerolls);
 	
 	if (roll == 1) return 1;
@@ -343,8 +374,6 @@ function rollAttack(attackProfile, defenceProfile, modifiers, isBonusAttack = fa
 {
 	let physicalDamageDone = 0;
 	let mortalWoundDamageDone = 0;
-	let thisAttackDamage = parseDiceNumber(attackProfile.Damage);
-	let thisAttackRend = attackProfile.Rend;
 	
 	let bonusAttacks = 0;
 	
@@ -487,17 +516,22 @@ function rollAttack(attackProfile, defenceProfile, modifiers, isBonusAttack = fa
 }
 
 // rollAttacks
-function rollAttacks(attackProfile, defenceProfile, modifiers)
+function rollAttacks(attackProfiles, defenceProfile, modifiers)
 {
 	let damage = 0;
-	let numAttacks = parseDiceNumber(attackProfile.Attacks);
-	let bonusAttacks = parseDiceNumber(modifiers.AttacksModifier);
-	
-	let totalAttacks = numAttacks + bonusAttacks;
-	
-	for (let i = 0; i < totalAttacks; ++i)
+
+	for (let a = 0; a < attackProfiles.length; ++a)
 	{
-		damage += rollAttack(attackProfile, defenceProfile, modifiers);
+		let attackProfile = attackProfiles[a];
+		let numAttacks = parseDiceNumber(attackProfile.Attacks);
+		let bonusAttacks = parseDiceNumber(modifiers.AttacksModifier);
+		
+		let totalAttacks = numAttacks + bonusAttacks;
+		
+		for (let i = 0; i < totalAttacks; ++i)
+		{
+			damage += rollAttack(attackProfile, defenceProfile, modifiers);
+		}
 	}
 	
 	return damage;
@@ -508,12 +542,13 @@ function debug_test()
 {
 	let tg_maw_proc = parseProcString('mw_on_hit/6/6/1');
 	let tg_gristlegore_proc = parseProcString('hits_on_hit/6/2/1');
-	let fakeattack = parseProcString('attacks_on_wound/2/1/1');
 
-	let attackProfile = parseAttackString('3/4/3/-2/d6');
-	attackProfile.Procs.push(tg_gristlegore_proc);
-	// attackProfile.Procs.push(tg_maw_proc);
-	// attackProfile.Procs.push(fakeattack);
+	let mawProfile = parseAttackString('3/4/3/-2/d6');
+	mawProfile.Procs.push(tg_gristlegore_proc);
+	mawProfile.Procs.push(tg_maw_proc);
+	
+	let clawsProfile = parseAttackString('4/4/3/-1/d3');
+	clawsProfile.Procs.push(tg_gristlegore_proc);
 
 	let defenceProfile = parseDefenceString('4/0/[]/6/0/[]');
 	let modifiers = parseModifierString('0/0/0/d3');
@@ -521,7 +556,7 @@ function debug_test()
 	let s=0;
 	for (let i = 0; i < 10000; ++i)
 	{
-		s += rollAttacks(attackProfile, defenceProfile, modifiers);
+		s += rollAttacks([mawProfile, clawsProfile], defenceProfile, modifiers);
 	}
 
 	console.log(s/10000)
@@ -589,524 +624,4 @@ function debug_test_sylv2()
 	}
 
 	console.log(s/10000)
-}
-
-
-// need to be able to do failed rerolls AND reroll 6s (nice to have probably)
-// specify number of simulations
-// multiple comparisons
-// attack strings, that are savable with unit names for a local user (also can share a direct link with people in a chat)
-// scaling parameters: e.g. scaling with buffs, debuffs, saves
-// unmodified options
-// multiple procs
-// reroll failed (with failed in wording)
-// reroll failed (with reroll all in wording)
-// reroll all (fish for value)
-// "chance to kill" - where you fill in number of wounds 
-// target dummies for change to kill: 40 plaguemonks, nagash, terrorgheist, stardrake, sequiturs, etc
-// single roll mode! see what happened this time
-// add tickbox to enable/disable procs/weapons etc
-// add some default target dummies that we see in the game
-// add some examples where you click a button and it shows a unit name, describes what procs do, etc
-// add double pilein
-// rerollable ward
-// clear button for procs
-// ability to remove procs
-// need to actually make custom rerolls work
-// save previous sims, be able to compare any of them
-// change confidence intervals
-
-// at least function
-function atLeast(attack) {
-	let iterations = getIterations();
-	let d = [];
-	let e = [];
-	for (let a = 0; a < 500; a++) d[a] = 0;
-	for (let i = 0; i < iterations; i++)
-    {
-        dmg = attack.resolve();
-        for (let j = 0; j < dmg; j++) d[j]++;
-    }
-	for (let i = 0; i < d.length; i++)
-	{
-		d[i] = Math.floor(d[i]/iterations*100);
-		if (d[i] == 0) continue;
-		e[i] = d[i];
-    }
-	return e;
-}
-
-// at least function for multiple attacks
-function multiLeast(attacks) {
-	let iterations = getIterations();
-	let d = [];
-	let e = [];
-	for (let a = 0; a < 500; a++) d[a] = 0;
-	for (let i = 0; i < iterations; i++)
-    {
-		let dmg = 0;
-		for (let attackIndex = 0; attackIndex < attacks.length; attackIndex++)
-		{
-			dmg += attacks[attackIndex].resolve();
-		}
-		
-        for (let j = 0; j < dmg; j++) d[j]++;
-    }
-	for (let i = 0; i < d.length; i++)
-	{
-		d[i] = Math.floor(d[i]/iterations*100);
-		if (d[i] == 0) continue;
-		e[i] = d[i];
-    }
-	return e;
-}
-
-// pad number for prettyprint
-function pad(num, size) {
-	let s = num+"";
-	while (s.length < size) s = "0" + s;
-	return s;
-}
-
-// check if arrays match
-function rerollsMatch(arr1, arr2)
-{
-    return JSON.stringify(arr1.sort()) === JSON.stringify(arr2.sort());
-}
-
-// fancyPrint
-function fancyPrint(d) {
-    let retString = "";
-    let s = getSymbols()[0];
-	for (let i = 0; i < d.length; i++)
-	{
-        let damage = pad(i + 1, 2);
-        let lines = Array(d[i] + 1).join(s);
-		let percent = d[i].toString();
-		retString = retString.concat(damage);
-		retString = retString.concat(" ");
-		retString = retString.concat(lines);
-		retString = retString.concat(" ");
-		retString = retString.concat(percent);
-		retString = retString.concat("%");
-		retString = retString.concat("<br>");
-	}
-	return retString;
-}
-
-// symbols for pretty print
-function getSymbols()
-{
-    symbols = ["<span style=\"color: blue\">|</span>", "<span style=\"color: red\">|</span>", "<span style=\"color: green\">|</span>", "<span style=\"color: indigo\">|</span>", "<span style=\"color: slategray\">|</span>"];
-    return symbols;
-}
-
-// comparative processing
-function rerollCompare(a,b)
-{
-	return a.sort().join(',')=== b.sort().join(',');
-}
-
-// get strings to differentiate in compare (doesn't work lol)
-function getCompareString(a, b, aSymbol, bSymbol)
-{
-    let aString = "";
-    let bString = "";
-
-    // attacks
-    if (a.attacks != b.attacks)
-    {
-        aString = aString.concat(a.attacks);
-        aString = aString.concat(" attacks ");
-        bString = bString.concat(b.attacks);
-        bString = bString.concat(" attacks ");
-    }
-
-    // toHit
-    if (a.toHit != b.toHit) {
-        aString = aString.concat(a.toHit);
-        aString = aString.concat(" to hit ");
-        bString = bString.concat(b.toHit);
-        bString = bString.concat(" to hit ");
-    }
-
-    // toWound
-    if (a.toWound != b.toWound) {
-        aString = aString.concat(a.toWound);
-        aString = aString.concat(" to wound ");
-        bString = bString.concat(b.toWound);
-        bString = bString.concat(" to wound ");
-    }
-
-    // rend
-    if (a.rend != b.rend) {
-        aString = aString.concat(a.rend);
-        aString = aString.concat(" rend ");
-        bString = bString.concat(b.rend);
-        bString = bString.concat(" rend ");
-    }
-
-    // damage
-    if (a.toSave != b.toSave) {
-        aString = aString.concat(a.toSave);
-        aString = aString.concat(" to save ");
-        bString = bString.concat(b.toSave);
-        bString = bString.concat(" to save ");
-    }
-
-    // ward save
-    if (a.wardSave != b.wardSave) {
-        aString = aString.concat(a.wardSave);
-        aString = aString.concat(" ward ");
-        bString = bString.concat(b.wardSave);
-        bString = bString.concat(" ward ");
-    }
-
-    // mortal ward save
-    if (a.mortalWardSave != b.mortalWardSave) {
-        aString = aString.concat(a.mortalWardSave);
-        aString = aString.concat(" mortal ward ");
-        bString = bString.concat(b.mortalWardSave);
-        bString = bString.concat(" mortal ward ");
-    }
-
-    // hit mod
-    if (a.hitModifier != b.hitModifier) {
-				if (a.hitModifier > 0) aString = aString.concat("+");
-        aString = aString.concat(a.hitModifier);
-        aString = aString.concat(" to hit ");
-				if (b.hitModifier > 0) bString = bString.concat("+");
-        bString = bString.concat(b.hitModifier);
-        bString = bString.concat(" to hit ");
-    }
-
-    // wound mod
-    if (a.woundModifier != b.woundModifier) {
-				if (a.woundModifier > 0) aString = aString.concat("+");
-        aString = aString.concat(a.woundModifier);
-        aString = aString.concat(" to wound ");
-				if (b.woundModifier > 0) bString = bString.concat("+");
-        bString = bString.concat(b.woundModifier);
-        bString = bString.concat(" to wound ");
-    }
-
-    // save mod
-    if (a.saveModifier != b.saveModifier) {
-				if (a.saveModifier > 0) aString = aString.concat("+");
-        aString = aString.concat(a.saveModifier);
-        aString = aString.concat(" to save ");
-				if (b.saveModifier > 0) bString = bString.concat("+");
-        bString = bString.concat(b.saveModifier);
-        bString = bString.concat(" to save ");
-    }
-    
-    // hit rerolls
-    if (!(rerollCompare(a.hitRerolls, b.hitRerolls))) {
-        aString = aString.concat(" rerolling ");
-        aString = aString.concat(a.hitRerolls);
-        aString = aString.concat(" to hit ");
-        bString = bString.concat(" rerolling ");
-        bString = bString.concat(a.hitRerolls);
-        bString = bString.concat(" to hit ");
-    }
-
-    // wound rerolls
-    if (!(rerollCompare(a.woundRerolls, b.woundRerolls))) {
-        aString = aString.concat(" rerolling ");
-        aString = aString.concat(a.woundRerolls);
-        aString = aString.concat(" to wound ");
-        bString = bString.concat(" rerolling ");
-        bString = bString.concat(a.woundRerolls);
-        bString = bString.concat(" to wound ");
-    }
-
-    // save rerolls
-    if (!(rerollCompare(a.saveRerolls, b.saveRerolls))) {
-        aString = aString.concat(" rerolling ");
-        aString = aString.concat(a.saveRerolls);
-        aString = aString.concat(" to save ");
-        bString = bString.concat(" rerolling ");
-        bString = bString.concat(a.saveRerolls);
-        bString = bString.concat(" to save ");
-    }
-
-    // mw on hit
-    if (a.mwOnHit != b.mwOnHit) {
-        aString = aString.concat(" mw on hits of ");
-        aString = aString.concat(a.mwOnHit);
-        bString = bString.concat(" mw on hits of ");
-        bString = bString.concat(b.mwOnHit);
-    }
-    // dmg on hit
-    if (a.extraDamageOnHit != b.extraDamageOnHit) {
-        aString = aString.concat(" extra damage on hits of ");
-        aString = aString.concat(a.extraDamageOnHit);
-        bString = bString.concat(" extra damage on hits of ");
-        bString = bString.concat(b.extraDamageOnHit);
-    }
-    // hits on hit
-    if (a.extraHitsOnHit != b.extraHitsOnHit) {
-        aString = aString.concat(" extra hits on hits of ");
-        aString = aString.concat(a.extraHitsOnHit);
-        bString = bString.concat(" extra hits on hits of ");
-        bString = bString.concat(b.extraHitsOnHit);
-    }
-    // attacks on hit
-    if (a.extraAttacksOnHit != b.extraAttacksOnHit) {
-        aString = aString.concat(" extra attacks on hits of ");
-        aString = aString.concat(a.extraAttacksOnHit);
-        bString = bString.concat(" extra attacks on hits of ");
-        bString = bString.concat(b.extraAttacksOnHit);
-    }
-    // mw on Wound
-    if (a.mwOnWound != b.mwOnWound) {
-        aString = aString.concat(" mw on Wounds of ");
-        aString = aString.concat(a.mwOnWound);
-        bString = bString.concat(" mw on Wounds of ");
-        bString = bString.concat(b.mwOnWound);
-    }
-    // dmg on Wound
-    if (a.extraDamageOnWound != b.extraDamageOnWound) {
-        aString = aString.concat(" extra damage on Wounds of ");
-        aString = aString.concat(a.extraDamageOnWound);
-        bString = bString.concat(" extra damage on Wounds of ");
-        bString = bString.concat(b.extraDamageOnWound);
-    }
-    // attacks on Wound
-    if (a.extraAttacksOnWound != b.extraAttacksOnWound) {
-        aString = aString.concat(" extra attacks on Wounds of ");
-        aString = aString.concat(a.extraAttacksOnWound);
-        bString = bString.concat(" extra attacks on Wounds of ");
-        bString = bString.concat(b.extraAttacksOnWound);
-    }
-
-		if (aString === "") return "";
-		aString = aString.concat(aSymbol);
-		bString = bString.concat(bSymbol);
-    aString = aString.concat(" vs ");
-    aString = aString.concat(bString);
-    return aString;
-}
-
-// compare two arrays of damage and see which is "better" ( also probably doesn't work )
-function getBiggerDamage(a, b)
-{
-    if (a.length > b.length) return 0;
-    if (a.length == b.length && a[a.length - 1] > b[b.length - 1]) return 0;
-    return 1;
-}
-
-// get string for two outputs at once 
-function actuallyCompare(a, b)
-{
-	let symbols = getSymbols()
-	let aDamage = atLeast(a);
-	let bDamage = atLeast(b);
-	let aSymbol = symbols[0];
-	let bSymbol = symbols[1];
-
-    if (getBiggerDamage(aDamage, bDamage) < 1)
-    {
-		aSymbol = symbols[1];
-		bSymbol = symbols[0];
-	}
-
-	let displayString = getCompareString(a, b, aSymbol, bSymbol);
-	displayString = displayString.concat("<br>");
-	return displayString.concat(multiPrint(aDamage, bDamage));
-}
-
-// get string for summed outputs
-function getSumDamageString(a, b)
-{
-	let iterations = getIterations() * 2;
-	let aDamage = atLeast(a);
-	let bDamage = atLeast(b);
-	let cDamage = aDamage;
-	
-	if (getBiggerDamage(aDamage, bDamage) == 1)	cDamage = bDamage;
-	
-	let d = [];
-	let e = [];
-	
-	// initialize damages to zero
-	for (let a = 0; a < 500; a++) d[a] = 0;
-
-	// because we can't just add probabilities...
-	for (let i = 0; i < cDamage.length; i++)
-	{
-		let ap = 0;
-		let bp = 0;
-		
-		if (i < aDamage.length) ap = aDamage[i]*0.01;
-		if (i < bDamage.length) bp = bDamage[i]*0.01;
-		
-		d[i] = Math.floor((ap + bp - ap * bp) * 100); 
-		if (d[i] == 0) continue;
-		e[i] = d[i];
-	}
-	
-	return fancyPrint(e);
-}
-
-// get string for more than 2 summed outputs
-function getMultiSumDamageString(l)
-{
-	let d = [];
-	let e = [];
-	
-	for (let i = 0; i < 500; i++) d[i] = 0;
-	
-	for (let i = 0; i < l.length; i++)
-	{
-		let aAttack = l[i];
-		let a = atLeast(aAttack);
-		
-		for (let j = 0; j < 500; j++)
-		{
-			let ap = 0;
-			if (j < a.length) ap = a[j] * 0.01;
-			
-			d[j] = ap + d[j] - ap * d[j]; 
-		}
-	}
-	
-	for (let i = 0; i < d.length; i++)
-	{
-		if (d[i] != 0) e[i] = Math.floor(d[i]*100);
-	}
-	
-	return fancyPrint(multiLeast(l));
-}
-
-// comparative print
-function multiPrint() {
-    let symbols = getSymbols();
-    let retString = "";
-    let damages = [].slice.call(arguments).sort(function (a, b) { if (a.length != b.length) return a.length - b.length; return a[a.length-1] - b[b.length-1]; })
-
-    // foreach damage value in the biggest damage array
-    for (let i = 1; i < damages[damages.length - 1].length; i++) {
-        let damage = pad(i, 2);
-        let total = 0; // total lines used
-        let percents = [];
-        retString = retString.concat(damage);
-        retString = retString.concat(" ");
-
-        // foreach damage array
-        for (let j = 0; j < damages.length; j++) {
-            if (damages[j].length < i) continue;
-            let d = damages[j];
-
-            let numLines = (d[i] + 1) - total;
-            if (!numLines || numLines <= 0) continue;
-            total += d[i] + 1;
-
-            let lines = Array(numLines).join(symbols[j]);
-            retString = retString.concat(lines);
-
-            let percent = d[i].toString();
-            percents.push(percent);
-            percents.push(symbols[j]);
-        }
-        retString = retString.concat(" ");
-
-        for (let p = 0; p < percents.length; p += 2) {
-            retString = retString.concat(percents[p]);
-            retString = retString.concat(percents[p + 1]);
-            retString = retString.concat("% ");
-        }
-
-        retString = retString.concat("<br>");
-    }
-
-    return retString;
-}
-
-// convert NaN to max value
-function nanIsMax(n)
-{
-    if (isNaN(n)) return 99;
-    if (n) return n;
-	return 99;
-}
-
-// convert NaN to min value
-function nanIsZero(n) {
-    if (isNaN(n)) return 0;
-    if (n) return n;
-    return 0;
-}
-
-// create a new attack from parameters
-function newAttack(a, h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, mwOnly, models, procType, procRoll, procValue)
-{
-    let Attack = createAttack();
-
-    Attack.attacks = nanIsZero(a);
-    Attack.models = nanIsZero(models);
-
-    Attack.toHit = nanIsMax(h);
-    Attack.toWound = nanIsMax(w);
-    Attack.damage = nanIsMax(d);
-    Attack.toSave = nanIsMax(s);
-    if (mwOnly) Attack.mortalWardSave = nanIsMax(ward);
-    else Attack.wardSave = nanIsMax(ward);
-
-    Attack.rend = nanIsZero(r);
-    Attack.hitModifier = nanIsZero(hm);
-    Attack.woundModifier = nanIsZero(wm);
-    Attack.saveModifier = nanIsZero(sm);
-
-    switch (procType) {
-        // on hit
-        case "mwOnHit":
-            Attack.extraMwOnHit = procRoll;
-            Attack.extraMwDamage = procValue;
-            break;
-        case "dmgOnHit":
-            Attack.extraDamageOnHit = procRoll;
-            Attack.extraDamage = procValue;
-            break;
-        case "hitsOnHit":
-            Attack.extraHitsOnHit = procRoll;
-            Attack.extraHits = procValue;
-            break;
-        case "attacksOnHit":
-            Attack.extraAttacksOnHit = procRoll;
-            Attack.extraAttacks = procValue;
-            break;
-        case "rendOnHit":
-            Attack.extraRendOnHit = procRoll;
-            Attack.extraRend = Math.abs(procValue);
-            break;
-
-        // on wound
-        case "mwOnWound":
-            Attack.extraMwOnWound = procRoll;
-            Attack.extraMwDamage = procValue;
-            break;
-        case "dmgOnWound":
-            Attack.extraDamageOnWound = procRoll;
-            Attack.extraDamage = procValue;
-            break;
-        case "attacksOnWound":
-            Attack.extraAttacksOnWound = procRoll;
-            Attack.extraAttacks = procValue;
-            break;
-        case "rendOnWound":
-            Attack.extraRendOnWound = procRoll;
-            Attack.extraRend = Math.abs(procValue);
-            break;
-
-        // default
-        default:
-            break;
-    }
-
-    if (hrr) Attack.hitRerolls = hrr.split(/[ ,]+/).map(Number);
-    if (wrr) Attack.woundRerolls = wrr.split(/[ ,]+/).map(Number);
-    if (srr) Attack.saveRerolls = srr.split(/[ ,]+/).map(Number);
-
-    return Attack;
 }

@@ -129,58 +129,105 @@
 								<td>
 									<select class="procType" type='select2' onchange='addProc(this)'>
 										<option value="none">none</option>
-										<option value="mwOnHit">+MW on hit</option>
-										<option value="dmgOnHit">+Damage on hit</option>
-										<option value="hitsOnHit">+Hits on hit</option>
-										<option value="attacksOnHit">+Attacks on hit</option>
-										<option value="rendOnHit">+Rend on hit</option>
-										<option value="mwOnWound">+MW on wound</option>
-										<option value="dmgOnWound">+Damage on wound</option>
-										<option value="attacksOnWound">+Attacks on wound</option>
-										<option value="rendOnWound">+Rend on wound</option>
+										<option value="mw_on_hit">+MW on hit</option>
+										<option value="mw_on_hit_ADDITIONAL">+Additional MW on hit</option>
+										<option value="dmg_on_hit">+Damage on hit</option>
+										<option value="hits_on_hit">+Hits on hit</option>
+										<option value="attacks_on_hit">+Attacks on hit</option>
+										<option value="rend_on_hit">+Rend on hit</option>
+										<option value="mw_on_wound">+MW on wound</option>
+										<option value="mw_on_wound_ADDITIONAL">+Additional MW on wound</option>
+										<option value="dmg_on_wound">+Damage on wound</option>
+										<option value="attacks_on_wound">+Attacks on wound</option>
+										<option value="rend_on_wound">+Rend on wound</option>
 									</select>
 								</td>
 							</tr>
 							
-							<tr id='silentProc' class='procDescriptor' style='display:none' value=''>
+							<tr id='silentProc1' class='procDescriptor' style='display:none' value=''>
 								<td>
-									<label id='procDescriptor' for="models">+mw on hit: </label>
+									<label id='procDescriptor' for="models">mw_on_hit</label>
 								</td>
 								<td type='left'>
 									<label id='procText1'>generates</label>
-									<input type="tableInputHalf" class="procValue" size="3" value="1" />
+									<input type="tableInputHalf" class="procValue" size="3" value="0" />
 									<label id='procText2'>attacks</label>
-									<input type="tableInputHalf" class="procRoll" size="3" value="6" />
+									<input type="tableInputHalf" class="procRoll" size="3" value="0" />
 								</td>
 							</tr>
 						</table>
 					</div>
-				</td>				
+				</td>		
 			</tr>
 		</table>
     </div>
 
 		<script>
-			function createSigmulatorStrings()
+			function sigmulateAttacks()
 			{
 				let weaponNames = document.querySelectorAll('.weaponNameX');
 				let models = document.querySelectorAll('.numModels');
+				let attacks = document.querySelectorAll('.numAttacks');
 				let toHits = document.querySelectorAll('.toHit');
 				let toWounds = document.querySelectorAll('.toWound');
 				let rends = document.querySelectorAll('.rend');
 				let damages = document.querySelectorAll('.damage');
 				let hitRerolls = document.querySelectorAll('.hitRerolls');
 				let woundRerolls = document.querySelectorAll('.woundRerolls');
-				let procDescriptors = document.querySelectorAll('.procDescriptor');
-				console.log(models.length);
-				console.log(models[0].value);
-				console.log(toHits[0].value);
-				console.log(toWounds[0].value);
-				console.log(rends[0].value);
-				console.log(damages[0].value);
-				console.log(hitRerolls[0].value);
-				console.log(woundRerolls[0].value);
-				console.log(procDescriptors[0].style);
+				
+				let targetSave = document.querySelector('.targetSave');
+				let targetWardSave = document.querySelector('.targetWardSave');
+				let targetSaveModifier = document.querySelector('.targetSaveModifier');
+				let targetSaveRerolls = document.querySelector('.targetSaveRerolls');
+				
+				let numProfiles = weaponNames.length;
+				
+				for (let j = 0; j < numProfiles; ++j)
+				{
+					let clawsProfile = parseAttackString(`${attacks[j].value}/${toHits[j].value}/${toWounds[j].value}/${rends[j].value}/${damages[j].value}/${hitRerolls[j].value}/${woundRerolls[j].value}`);
+					
+					let procDescriptors = document.querySelectorAll("[id^='silentProc']");
+					for (let k = 0; k < procDescriptors.length; ++k)
+					{
+						// check if this proc is associated with this weapon
+						if (procDescriptors[k].parentNode == attacks[j].parentNode.parentNode.parentNode)
+						{
+							let procText = procDescriptors[k].querySelector('[id=procDescriptor').innerHTML;
+							let procValue1 = procDescriptors[k].querySelector('[class=procValue').value;
+							let procValue2 = procDescriptors[k].querySelector('[class=procRoll').value;
+
+							let thisProc = parseProcString(`${procText}/${procValue2}/${procValue1}/1`);
+							
+							if (procValue1 > 0)
+							{
+								clawsProfile.Procs.push(thisProc);
+							}
+						}
+					}
+					
+					let defenceProfile = parseDefenceString(`${targetSave.value}/${targetSaveModifier.value}/${targetSaveRerolls.value}/${targetWardSave.value}/0/[]`);
+					let modifiers = parseModifierString('0/0/0/0');
+
+					s = 0;
+					for (m = 0; m < models[j].value; ++m)
+					{
+						s += rollAttacks([clawsProfile], defenceProfile, modifiers);
+					}
+					
+					return s;
+				}
+			}
+		
+			function getThousandSimAverage()
+			{
+				let iters = 1000;
+				let s = 0;
+				for (let i = 0; i < iters; ++i)
+				{
+					s += sigmulateAttacks();
+				}
+				
+				return s/iters;
 			}
 		</script>
         
@@ -194,19 +241,19 @@
         {
             let labels = ["", "mw on a"];
 
-            if (procType.includes('+Damage'))
+            if (procType.includes('damage'))
             {
                 labels = ["","damage on a"];
             }
-            else if (procType.includes('+Hits'))
+            else if (procType.includes('hits'))
             {
                 labels = ["","hits on a"];
             }
-            else if (procType.includes('+Rend'))
+            else if (procType.includes('rend'))
             {
                 labels = ["","rend on a"];
             }
-            else if (procType.includes('+Attacks'))
+            else if (procType.includes('attacks'))
             {
                 labels = ["","attacks on a"];
             }
@@ -216,16 +263,19 @@
 
         function addProc(inWeapon)
         {
-            let procType = inWeapon.options[inWeapon.selectedIndex].innerHTML;
+            let procType = inWeapon.options[inWeapon.selectedIndex].value;
             inWeapon.selectedIndex = 0;
 
-            let lastRow = document.querySelector('tr[id=silentProc');
+            let lastRow = document.querySelector('tr[id=silentProc1');
 
             inWeapon = inWeapon.parentNode.parentNode.parentNode;
             let cloneRow = lastRow.cloneNode(true);
 
             cloneRow.setAttribute('style', '');
-						cloneRow.class = 'procDescriptor';
+			cloneRow.class = 'procDescriptor';
+			
+			var nextId = parseInt(cloneRow.id.match(/\d+/g), 10 ) + 1;
+			cloneRow.id = 'silentProc'+nextId;
 
             let label0 = cloneRow.querySelector('label[id=procDescriptor]');
             let label1 = cloneRow.querySelector('label[id=procText1]');
@@ -252,8 +302,7 @@
 
         function addWeapon()
         {
-					createSigmulatorStrings();
-						let profileTd = document.querySelectorAll('td[type=profilesTd]')[0];
+			let profileTd = document.querySelectorAll('td[type=profilesTd]')[0];
             myClone = profileTd.cloneNode(true);
             document.getElementById('kingsRow').appendChild(myClone);
 
@@ -269,6 +318,10 @@
             {
                 weaponNames[weaponNames.length - 1].remove();
             }
+			else
+			{
+				removeProc(weaponNames[0].parentNode);
+			}
         }
     </script>
 
@@ -392,7 +445,7 @@
                     <label for="attackmod">save: </label>
                 </td>
                 <td>
-                    <input type="tableInput" class="save" size="2" value="4"/>
+                    <input type="tableInput" class="targetSave" size="2" value="4"/>
                 </td>	
             </tr>
             
@@ -401,7 +454,7 @@
                     <label for="hitmod">ward save: </label>
                 </td>
                 <td>
-                    <input type="tableInput" class="wardSave" size="2" />
+                    <input type="tableInput" class="targetWardSave" size="2" />
                 </td>	
             </tr>
 			
@@ -413,7 +466,7 @@
                     <label for="attackmod">save modifier: </label>
                 </td>
                 <td>
-                    <input type="tableInput" class="saveModifier" size="2" />
+                    <input type="tableInput" class="targetSaveModifier" size="2" />
                 </td>	
             </tr>
 			
@@ -422,7 +475,7 @@
                     <label for="hitmod">save rerolls: </label>
                 </td>
                 <td>
-                    <select class="saveRerolls" type='select2'>
+                    <select class="targetSaveRerolls" type='select2'>
                         <option value="none">none</option>
                         <option value="rerollOnes">reroll 1s</option>	
                         <option value="rerollFailed">reroll failed</option>
@@ -438,7 +491,7 @@
                     <label for="hitmod">ward rerolls: </label>
                 </td>
                 <td>
-                    <select class="wardRerolls" type='select2'>
+                    <select class="targetWardSaveRerolls" type='select2'>
                         <option value="none">none</option>
                         <option value="rerollOnes">reroll 1s</option>	
                         <option value="rerollFailed">reroll failed</option>
@@ -463,7 +516,8 @@
     <br />
 
     <!-- buttons -->
-    <button onclick="onSigmulate()" style="font-size : 12px; width: 80px; height: 40px;">Sigmulate</button>
+    <button onclick="getThousandSimAverage()" style="font-size : 12px; width: 80px; height: 40px;">Sigmulate</button>
+    <button onclick="sigmulateAttacks()" style="font-size : 12px; width: 80px; height: 40px;">Single Roll</button>
     <button onclick="onCompare()" style="font-size : 12px; width: 80px; height: 40px;">Compare</button>
     <button onclick="onSum()" style="font-size : 12px; width: 80px; height: 40px;">Add To Last</button>
     <button onclick="onClear()" style="font-size : 12px; width: 80px; height: 40px;">Clear Stack</button>
@@ -493,41 +547,8 @@
 			document.getElementById("scriptOutput").innerHTML = "";
             comparatives = [];
         }
-		
 
         function onSigmulate(compare = false, sum = false) {
-            let a = diceParseInt(document.getElementById('attacks').value);
-            let h = parseInt(document.getElementById('tohit').value);
-            let w = parseInt(document.getElementById('towound').value);
-            let r = parseInt(document.getElementById('rend').value);
-            let d = diceParseInt(document.getElementById('damage').value);
-            let s = parseInt(document.getElementById('tosave').value);
-            let am = parseInt(document.getElementById('attackmod').value);
-            let hm = parseInt(document.getElementById('hitmod').value);
-            let wm = parseInt(document.getElementById('woundmod').value);
-            let sm = parseInt(document.getElementById('savemod').value);
-            let hrr = document.getElementById('hrr').value;
-            let wrr = document.getElementById('wrr').value;
-            let srr = document.getElementById('srr').value;
-            let ward = parseInt(document.getElementById('ward').value);
-            let models = parseInt(document.getElementById('models').value);
-            let mwOnly = document.getElementById('mwOnly').checked;
-
-            let procType = document.getElementById('procType').value;
-            let procRoll = parseInt(document.getElementById('procRoll').value);
-            let procValue = diceParseInt(document.getElementById('procValue').value);
-            
-            let attack = newAttack(a+nanIsZero(am), h, w, r, d, s, hm, wm, sm, hrr, wrr, srr, ward, mwOnly, models, procType, procRoll, procValue);
-
-            if (compare)
-                document.getElementById("scriptOutput").innerHTML = actuallyCompare(attack, comparatives[comparatives.length - 1]);
-			else if (sum)
-                document.getElementById("scriptOutput").innerHTML = getMultiSumDamageString([attack].concat(comparatives));
-            else {
-                document.getElementById("scriptOutput").innerHTML = fancyPrint(atLeast(attack));
-                comparatives = [];
-            }
-			
 			// confidence estimate
 			let confidence = 70;
 			var lines = document.getElementById("scriptOutput").innerHTML.split('%<br>');
@@ -544,7 +565,6 @@
 				document.getElementById("confidenceEstimate").innerHTML = "";
 			}
 			
-
             comparatives.push(attack);
         }
     </script>
