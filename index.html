@@ -590,10 +590,8 @@
 					saveString = saveString + `/${wards[k]}/0/[]`
 				}
 				
-				console.log(saveString);
 				let defenceProfile = parseDefenceString(saveString);
 				let modifiers = parseModifierString(`${unitHitModifier}/${unitWoundModifier}/0/${unitBonusAttacks}`);
-				console.log(modifiers)
 
 				for (m = 0; m < models[j].value; ++m)
 				{
