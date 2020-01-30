@@ -228,6 +228,34 @@
             inWeapon.appendChild(cloneRow);
         }
 
+        function addUnitProc(inWeapon)
+        {
+            let procType = inWeapon.options[inWeapon.selectedIndex].value;
+            inWeapon.selectedIndex = 0;
+
+            let lastRow = document.querySelector('tr[id=unitProcParent1');
+
+            inWeapon = inWeapon.parentNode.parentNode.parentNode;
+            let cloneRow = lastRow.cloneNode(true);
+
+            cloneRow.setAttribute('style', '');
+			cloneRow.class = 'unitProcDescriptor';
+			
+			var nextId = parseInt(cloneRow.id.match(/\d+/g), 10 ) + 1;
+			cloneRow.id = 'unitProcParent'+nextId;
+
+            let label0 = cloneRow.querySelector('label[id=unitProcDescriptor]');
+            let label1 = cloneRow.querySelector('label[id=unitProcText1]');
+            let label2 = cloneRow.querySelector('label[id=unitProcText2]');
+            
+            label0.innerHTML = procType;
+
+            let labels = getProcLabels(procType);
+            label1.innerHTML = labels[0];
+            label2.innerHTML = labels[1];
+
+            inWeapon.appendChild(cloneRow);
+        }
         function removeProc(inWeapon)
         {
             let lastRow = inWeapon.rows[ inWeapon.rows.length - 1 ];
@@ -341,32 +369,34 @@
                     <label for="hitmod">add proc: </label>
                 </td>
                 <td>
-                    <select class="unitProcType" type='select2' onChange='addProc(this)'>
-                        <option value="none">none</option>
-                        <option value="mwOnHit">+MW on hit</option>
-                        <option value="dmgOnHit">+Damage on hit</option>
-                        <option value="hitsOnHit">+Hits on hit</option>
-                        <option value="attacksOnHit">+Attacks on hit</option>
-                        <option value="rendOnHit">+Rend on hit</option>
-                        <option value="mwOnWound">+MW on wound</option>
-                        <option value="dmgOnWound">+Damage on wound</option>
-                        <option value="attacksOnWound">+Attacks on wound</option>
-                        <option value="rendOnWound">+Rend on wound</option>
+                    <select class="unitProcType" type='select2' onChange='addUnitProc(this)'>
+						<option value="none">none</option>
+						<option value="mw_on_hit">+MW on hit</option>
+						<option value="mw_on_hit_ADDITIONAL">+Additional MW on hit</option>
+						<option value="dmg_on_hit">+Damage on hit</option>
+						<option value="hits_on_hit">+Hits on hit</option>
+						<option value="attacks_on_hit">+Attacks on hit</option>
+						<option value="rend_on_hit">+Rend on hit</option>
+						<option value="mw_on_wound">+MW on wound</option>
+						<option value="mw_on_wound_ADDITIONAL">+Additional MW on wound</option>
+						<option value="dmg_on_wound">+Damage on wound</option>
+						<option value="attacks_on_wound">+Attacks on wound</option>
+						<option value="rend_on_wound">+Rend on wound</option>
                     </select>
                 </td>
             </tr>
-            							
-            <tr style='display:none'>
-                    <td>
-                        <label for="models">+mw on hit: </label>
-                    </td>
-                    <td type='left'>
-                        <input type="tableInputHalf" class="unitProcRoll" size="3" value="6+" />
-                        <label>make</label>
-                        <input type="tableInputHalf" class="unitProcValue" size="3" value="d6" />
-                        <label>attacks</label>
-                    </td>
-                </tr>
+            				
+			<tr oncontextmenu="remove(this);return false;" id='unitProcParent1' class='unitProcDescriptor' style='display:none' value=''>
+				<td>
+					<label id='unitProcDescriptor' for="models">mw_on_hit</label>
+				</td>
+				<td type='left'>
+					<label id='unitProcText1'>generates</label>
+					<input type="tableInputHalf" class="unitProcValue" size="3" value="0" />
+					<label id='unitProcText2'>attacks</label>
+					<input type="tableInputHalf" class="unitProcRoll" size="3" value="0" />
+				</td>
+			</tr>
         </table>
 		
 		</br>
@@ -496,11 +526,29 @@
 			let targetSaveModifier = document.querySelector('.targetSaveModifier');
 			let targetSaveRerolls = document.querySelector('.targetSaveRerolls');
 			
+			let unitBonusAttacks = document.querySelector('.unitBonusAttacks');
+			let unitHitModifier = document.querySelector('.unitHitModifier');
+			let unitWoundModifier = document.querySelector('.unitWoundModifier');
+			let unitHitRerolls = document.querySelector('.unitHitRerolls');
+			let unitWoundRerolls = document.querySelector('.unitWoundRerolls');
+			
+			let unitProcDescriptors = document.querySelectorAll("[id^='unitProcParent");
+			
 			let numProfiles = weaponNames.length;
 
 			s = 0;			
 			for (let j = 0; j < numProfiles; ++j)
 			{
+				if (hitRerolls[j].value == "none")
+				{
+					hitRerolls[j].value = unitHitRerolls.value;
+				}
+				
+				if (woundRerolls[j].value = "none")
+				{
+					woundRerolls[j].value = unitWoundRerolls.value;
+				}
+			
 				let clawsProfile = parseAttackString(`${attacks[j].value}/${toHits[j].value}/${toWounds[j].value}/${rends[j].value}/${damages[j].value}/${hitRerolls[j].value}/${woundRerolls[j].value}`);
 				
 				let procDescriptors = document.querySelectorAll("[id^='silentProc']");
@@ -519,6 +567,21 @@
 						{
 							clawsProfile.Procs.push(thisProc);
 						}
+					}
+				}
+				
+				for (let k = 0; k < unitProcDescriptors.length; ++k)
+				{
+					let procText = unitProcDescriptors[k].querySelector('[id=unitProcDescriptor').innerHTML;
+					
+					let procValue1 = unitProcDescriptors[k].querySelector('[class=unitProcValue').value;
+					let procValue2 = unitProcDescriptors[k].querySelector('[class=unitProcRoll').value;
+
+					let thisProc = parseProcString(`${procText}/${procValue2}/${procValue1}/1`);
+					
+					if (procValue1 > 0)
+					{
+						clawsProfile.Procs.push(thisProc);
 					}
 				}
 				
@@ -563,7 +626,7 @@
 			
 			seventieth = s.sort()[iters - Math.floor(iters * 0.7)];
 			
-			document.getElementById("damage_display_block").innerHTML = `70% chance of at least <font color=red>${seventieth}</font> wound(s).`;
+			document.getElementById("damage_display_block").innerHTML = '70% chance of at least <font color=red>'+`${seventieth}`+'</font> wound(s).';
 			
 			document.getElementById("damage_bars_display_block").innerHTML = fancyPrint(e);
 			
