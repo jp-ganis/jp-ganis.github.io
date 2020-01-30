@@ -351,7 +351,7 @@ function rollToHit(attackProfile, modifiers)
 // rollToWound
 function rollToWound(attackProfile, modifiers)
 {
-	attackProfile.RRW = parseRerolls(attackProfile.RRH, attackProfile.ToHit, modifiers.HitModifier);
+	attackProfile.RRW = parseRerolls(attackProfile.RRW, attackProfile.ToWound, modifiers.WoundModifier);
 	
 	let roll = rollWithRerolls(d6, attackProfile.RRW);
 	return modifyHitWoundRoll(roll, modifiers.WoundModifier);

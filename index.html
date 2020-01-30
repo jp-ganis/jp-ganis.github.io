@@ -20,7 +20,7 @@
 	<!--         -->
     <!------------->
    <div id='WEAPONS'>
-		<div><font size="4"><i>Weapons</i></font></div>
+		<div><font size="4"><i>Weapons <font size="2">(right click on proc to remove)</font></i></font></div>
         
         <table type='profilesTable' id='profileParent'>
 			<tr id='kingsRow'>
@@ -144,7 +144,14 @@
 								</td>
 							</tr>
 							
-							<tr id='silentProc1' class='procDescriptor' style='display:none' value=''>
+							<script>
+								function remove(el)
+								{
+								  var element = el;
+								  element.remove();
+								}
+							</script>
+							<tr oncontextmenu="remove(this);return false;" id='silentProc1' class='procDescriptor' style='display:none' value=''>
 								<td>
 									<label id='procDescriptor' for="models">mw_on_hit</label>
 								</td>
@@ -162,75 +169,6 @@
 		</table>
     </div>
 
-		<script>
-			function sigmulateAttacks()
-			{
-				let weaponNames = document.querySelectorAll('.weaponNameX');
-				let models = document.querySelectorAll('.numModels');
-				let attacks = document.querySelectorAll('.numAttacks');
-				let toHits = document.querySelectorAll('.toHit');
-				let toWounds = document.querySelectorAll('.toWound');
-				let rends = document.querySelectorAll('.rend');
-				let damages = document.querySelectorAll('.damage');
-				let hitRerolls = document.querySelectorAll('.hitRerolls');
-				let woundRerolls = document.querySelectorAll('.woundRerolls');
-				
-				let targetSave = document.querySelector('.targetSave');
-				let targetWardSave = document.querySelector('.targetWardSave');
-				let targetSaveModifier = document.querySelector('.targetSaveModifier');
-				let targetSaveRerolls = document.querySelector('.targetSaveRerolls');
-				
-				let numProfiles = weaponNames.length;
-				
-				for (let j = 0; j < numProfiles; ++j)
-				{
-					let clawsProfile = parseAttackString(`${attacks[j].value}/${toHits[j].value}/${toWounds[j].value}/${rends[j].value}/${damages[j].value}/${hitRerolls[j].value}/${woundRerolls[j].value}`);
-					
-					let procDescriptors = document.querySelectorAll("[id^='silentProc']");
-					for (let k = 0; k < procDescriptors.length; ++k)
-					{
-						// check if this proc is associated with this weapon
-						if (procDescriptors[k].parentNode == attacks[j].parentNode.parentNode.parentNode)
-						{
-							let procText = procDescriptors[k].querySelector('[id=procDescriptor').innerHTML;
-							let procValue1 = procDescriptors[k].querySelector('[class=procValue').value;
-							let procValue2 = procDescriptors[k].querySelector('[class=procRoll').value;
-
-							let thisProc = parseProcString(`${procText}/${procValue2}/${procValue1}/1`);
-							
-							if (procValue1 > 0)
-							{
-								clawsProfile.Procs.push(thisProc);
-							}
-						}
-					}
-					
-					let defenceProfile = parseDefenceString(`${targetSave.value}/${targetSaveModifier.value}/${targetSaveRerolls.value}/${targetWardSave.value}/0/[]`);
-					let modifiers = parseModifierString('0/0/0/0');
-
-					s = 0;
-					for (m = 0; m < models[j].value; ++m)
-					{
-						s += rollAttacks([clawsProfile], defenceProfile, modifiers);
-					}
-					
-					return s;
-				}
-			}
-		
-			function getThousandSimAverage()
-			{
-				let iters = 1000;
-				let s = 0;
-				for (let i = 0; i < iters; ++i)
-				{
-					s += sigmulateAttacks();
-				}
-				
-				return s/iters;
-			}
-		</script>
-        
     <button onclick="addWeapon()">Add Profile</button>
     <button onclick="removeWeapon()">Remove Profile</button>
     </br>
@@ -330,6 +268,9 @@
     <!-- MODS/RRS-->
 	<!--         -->
 	<!------------->
+	<table>
+	<tr>
+	<td>
 	<div id='UNITBUFFS'>
 		<div><font size="4"><i>Unit-wide Effects</i></font></div>
         <table type='modifierTable'>
@@ -503,7 +444,14 @@
             </tr>
         </table>
     </div>
+	</td>
+	<td>
+    <div><font size="4"><p id="damage_display_block"></p></font></div>
+    <div><font size="4"><p id="damage_bars_display_block"></p></font></div>
 	
+	</td>
+	</tr>
+	</table>
     <!-- Help -->
     <!-- Help -->
     <!-- Help -->
@@ -517,8 +465,8 @@
 
     <!-- buttons -->
     <button onclick="getThousandSimAverage()" style="font-size : 12px; width: 80px; height: 40px;">Sigmulate</button>
-    <button onclick="sigmulateAttacks()" style="font-size : 12px; width: 80px; height: 40px;">Single Roll</button>
-    <button onclick="onCompare()" style="font-size : 12px; width: 80px; height: 40px;">Compare</button>
+    <button onclick="getSingleRoll()" style="font-size : 12px; width: 80px; height: 40px;">Single Roll</button>
+    <!-- <button onclick="onCompare()" style="font-size : 12px; width: 80px; height: 40px;">Compare</button> -->
     <button onclick="onSum()" style="font-size : 12px; width: 80px; height: 40px;">Add To Last</button>
     <button onclick="onClear()" style="font-size : 12px; width: 80px; height: 40px;">Clear Stack</button>
 
@@ -529,6 +477,131 @@
     </font>
 
     <!-- scripts -->
+	
+	<script>
+		function sigmulateAttacks()
+		{
+			let weaponNames = document.querySelectorAll('.weaponNameX');
+			let models = document.querySelectorAll('.numModels');
+			let attacks = document.querySelectorAll('.numAttacks');
+			let toHits = document.querySelectorAll('.toHit');
+			let toWounds = document.querySelectorAll('.toWound');
+			let rends = document.querySelectorAll('.rend');
+			let damages = document.querySelectorAll('.damage');
+			let hitRerolls = document.querySelectorAll('.hitRerolls');
+			let woundRerolls = document.querySelectorAll('.woundRerolls');
+			
+			let targetSave = document.querySelector('.targetSave');
+			let targetWardSave = document.querySelector('.targetWardSave');
+			let targetSaveModifier = document.querySelector('.targetSaveModifier');
+			let targetSaveRerolls = document.querySelector('.targetSaveRerolls');
+			
+			let numProfiles = weaponNames.length;
+
+			s = 0;			
+			for (let j = 0; j < numProfiles; ++j)
+			{
+				let clawsProfile = parseAttackString(`${attacks[j].value}/${toHits[j].value}/${toWounds[j].value}/${rends[j].value}/${damages[j].value}/${hitRerolls[j].value}/${woundRerolls[j].value}`);
+				
+				let procDescriptors = document.querySelectorAll("[id^='silentProc']");
+				for (let k = 0; k < procDescriptors.length; ++k)
+				{
+					// check if this proc is associated with this weapon
+					if (procDescriptors[k].parentNode == attacks[j].parentNode.parentNode.parentNode)
+					{
+						let procText = procDescriptors[k].querySelector('[id=procDescriptor').innerHTML;
+						let procValue1 = procDescriptors[k].querySelector('[class=procValue').value;
+						let procValue2 = procDescriptors[k].querySelector('[class=procRoll').value;
+
+						let thisProc = parseProcString(`${procText}/${procValue2}/${procValue1}/1`);
+						
+						if (procValue1 > 0)
+						{
+							clawsProfile.Procs.push(thisProc);
+						}
+					}
+				}
+				
+				let defenceProfile = parseDefenceString(`${targetSave.value}/${targetSaveModifier.value}/${targetSaveRerolls.value}/${targetWardSave.value}/0/[]`);
+				let modifiers = parseModifierString('0/0/0/0');
+
+				for (m = 0; m < models[j].value; ++m)
+				{
+					s += rollAttacks([clawsProfile], defenceProfile, modifiers);
+				}
+				
+			}
+			return s;
+		}
+	
+		function getThousandSimAverage()
+		{
+			let iters = 2000;
+			let s = [];
+			let d = [];
+			let e = [];
+			
+			// initialize empty damage array
+			for (let a = 0; a < 500; a++) d[a] = 0;
+			
+			for (let i = 0; i < iters; ++i)
+			{
+				let dmg = sigmulateAttacks();
+				s.push(dmg);
+				for (let j = 0; j < dmg; ++j)
+				{
+					d[j]++;
+				}
+			}
+			
+			for (let i = 0; i < d.length; i++)
+			{
+				d[i] = Math.floor(d[i]/iters*100);
+				if (d[i] == 0) continue;
+				e[i] = d[i];
+			}
+			
+			seventieth = s.sort()[iters - Math.floor(iters * 0.7)];
+			
+			document.getElementById("damage_display_block").innerHTML = `70% chance of at least <font color=red>${seventieth}</font> wound(s).`;
+			
+			document.getElementById("damage_bars_display_block").innerHTML = fancyPrint(e);
+			
+			return s/iters;
+		}
+		
+		function getSingleRoll()
+		{
+			s = sigmulateAttacks();
+			
+			document.getElementById("damage_display_block").innerHTML = `This single set of rolls did ${s} wound(s).`;
+			
+			return s;
+		}
+		
+		function atLeast(attack) {
+			let iterations = getIterations();
+			let d = [];
+			let e = [];
+			for (let a = 0; a < 500; a++) d[a] = 0;
+			
+			for (let i = 0; i < iterations; i++)
+			{
+				dmg = attack.resolve();
+				for (let j = 0; j < dmg; j++) d[j]++;
+			}
+			for (let i = 0; i < d.length; i++)
+			{
+				d[i] = Math.floor(d[i]/iterations*100);
+				if (d[i] == 0) continue;
+				e[i] = d[i];
+			}
+			return e;
+		}
+		
+	</script>
+	
+	
     <script src="sigmulator.js"></script>
     <script type="text/javascript">
         let comparatives = [];
@@ -567,6 +640,36 @@
 			
             comparatives.push(attack);
         }
+		function fancyPrint(d) {
+			let retString = "";
+			let s = getSymbols()[0];
+			for (let i = 0; i < d.length; i++)
+			{
+				let damage = pad(i + 1, 2);
+				let lines = Array(d[i] + 1).join(s);
+				let percent = d[i].toString();
+				retString = retString.concat(damage);
+				retString = retString.concat(" ");
+				retString = retString.concat(lines);
+				retString = retString.concat(" ");
+				retString = retString.concat(percent);
+				retString = retString.concat("%");
+				retString = retString.concat("<br>");
+			}
+			return retString;
+		}
+		
+		function getSymbols()
+		{
+			symbols = ["<span style=\"color: blue\">|</span>", "<span style=\"color: red\">|</span>", "<span style=\"color: green\">|</span>", "<span style=\"color: indigo\">|</span>", "<span style=\"color: slategray\">|</span>"];
+			return symbols;
+		}
+		
+		function pad(num, size) {
+			let s = num+"";
+			while (s.length < size) s = "0" + s;
+			return s;
+		}
     </script>
 
     <footer>
