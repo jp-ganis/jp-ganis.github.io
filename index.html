@@ -12,6 +12,7 @@
 <body bgcolor='#35342F' text='#FEF7DB'>
     <!--name-->
     <div><font size="6">Age of Sigmulator</font></div>
+    <div><font size="2"><i>New and (?)improved! If you have any questions hit me up on twitter @jpganis or find me on Whatsapp!</i></font></div>
     <br />
 	
 	<!------------->
@@ -424,6 +425,7 @@
 	<!------------->
 	<div id='TARGET'>
         <div><font size="4"><i>Target Profile</i></font></div>
+        <div><font size="2"><i>Multiple ward saves can be entered with slashes, e.g. 5/5/6 for Hagg Nar on Mystical.</i></font></div>
         <table type='modifierTable'>
             <tr>
                 <td type='lower'>
@@ -436,7 +438,7 @@
             
             <tr type='procRow' type='lower'>
                 <td>
-                    <label for="hitmod">ward save: </label>
+                    <label for="hitmod">ward saves: </label>
                 </td>
                 <td>
                     <input type="tableInput" class="targetWardSave" size="2" />
@@ -461,22 +463,6 @@
                 </td>
                 <td>
                     <select class="targetSaveRerolls" type='select2'>
-                        <option value="none">none</option>
-                        <option value="rerollOnes">reroll 1s</option>	
-                        <option value="rerollFailed">reroll failed</option>
-                        <option value="rerollFailedAll">reroll failed (all)</option>
-                        <option value="rerollSixes">reroll 6s</option>
-                        <option value="custom">custom</option>
-                    </select>
-                </td>	
-            </tr>
-			
-            <tr>
-                <td type='lower'>
-                    <label for="hitmod">ward rerolls: </label>
-                </td>
-                <td>
-                    <select class="targetWardSaveRerolls" type='select2'>
                         <option value="none">none</option>
                         <option value="rerollOnes">reroll 1s</option>	
                         <option value="rerollFailed">reroll failed</option>
@@ -532,7 +518,7 @@
 			let woundRerolls = document.querySelectorAll('.woundRerolls');
 			
 			let targetSave = document.querySelector('.targetSave');
-			let targetWardSave = document.querySelector('.targetWardSave');
+			let targetWardSaves = document.querySelector('.targetWardSave');
 			let targetSaveModifier = document.querySelector('.targetSaveModifier');
 			let targetSaveRerolls = document.querySelector('.targetSaveRerolls');
 			
@@ -595,7 +581,17 @@
 					}
 				}
 				
-				let defenceProfile = parseDefenceString(`${targetSave.value}/${targetSaveModifier.value}/${targetSaveRerolls.value}/${targetWardSave.value}/0/[]`);
+				let saveString = `${targetSave.value}/${targetSaveModifier.value}/${targetSaveRerolls.value}`;
+				
+				let wards = targetWardSaves.value.split('/');
+				
+				for (let k = 0; k < wards.length; ++k)
+				{
+					saveString = saveString + `/${wards[k]}/0/[]`
+				}
+				
+				console.log(saveString);
+				let defenceProfile = parseDefenceString(saveString);
 				let modifiers = parseModifierString(`${unitHitModifier}/${unitWoundModifier}/0/${unitBonusAttacks}`);
 				console.log(modifiers)
 
