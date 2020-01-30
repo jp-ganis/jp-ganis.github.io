@@ -290,13 +290,27 @@
 			}
         }
     </script>
-
+	
+	<style type="text/css">
+	#wrap {
+	   width:600px;
+	   margin:0 auto;
+	}
+	#left_col {
+	   float:left;
+	   width:400px;
+	}
+	#right_col {
+	   float:left;
+	   width:auto;
+	}
+	</style>
 	<!------------->
 	<!--         -->
     <!-- MODS/RRS-->
 	<!--         -->
 	<!------------->
-	<table>
+	<div id='left_col'>
 	<tr>
 	<td>
 	<div id='UNITBUFFS'>
@@ -304,7 +318,7 @@
         <table type='modifierTable'>
             <tr>
                 <td type='lower'>
-                    <label for="attackmod">bonus attacks: </label>
+                    <label for="attackmod">attacks modifier: </label>
                 </td>
                 <td>
                     <input type="tableInput" class="unitBonusAttacks" size="2" />
@@ -476,29 +490,25 @@
     </div>
 	</td>
 	<td>
+	</div> 
+	
+	<div id='right_col'>
+	<br/>
+    <button onclick="getThousandSimAverage()" style="font-size : 12px; width: 80px; height: 40px;">Sigmulate</button>
+    <button onclick="getSingleRoll()" style="font-size : 12px; width: 80px; height: 40px;">Single Roll</button>
     <div><font size="4"><p id="damage_display_block"></p></font></div>
     <div><font size="4"><p id="damage_bars_display_block"></p></font></div>
+	</div>
 	
 	</td>
 	</tr>
-	</table>
-    <!-- Help -->
-    <!-- Help -->
-    <!-- Help -->
-    <!-- Help -->
-    <!-- Help -->
-    <!-- Help -->
-    <!-- Help -->
-    <!-- Help -->
-	
+
     <br />
 
     <!-- buttons -->
-    <button onclick="getThousandSimAverage()" style="font-size : 12px; width: 80px; height: 40px;">Sigmulate</button>
-    <button onclick="getSingleRoll()" style="font-size : 12px; width: 80px; height: 40px;">Single Roll</button>
     <!-- <button onclick="onCompare()" style="font-size : 12px; width: 80px; height: 40px;">Compare</button> -->
-    <button onclick="onSum()" style="font-size : 12px; width: 80px; height: 40px;">Add To Last</button>
-    <button onclick="onClear()" style="font-size : 12px; width: 80px; height: 40px;">Clear Stack</button>
+    <!-- <button onclick="onSum()" style="font-size : 12px; width: 80px; height: 40px;">Add To Last</button> -->
+    <!-- <button onclick="onClear()" style="font-size : 12px; width: 80px; height: 40px;">Clear Stack</button> -->
 
     <!-- output -->
     <font size="3">
@@ -526,9 +536,9 @@
 			let targetSaveModifier = document.querySelector('.targetSaveModifier');
 			let targetSaveRerolls = document.querySelector('.targetSaveRerolls');
 			
-			let unitBonusAttacks = document.querySelector('.unitBonusAttacks');
-			let unitHitModifier = document.querySelector('.unitHitModifier');
-			let unitWoundModifier = document.querySelector('.unitWoundModifier');
+			let unitBonusAttacks = document.querySelector('.unitBonusAttacks').value;
+			let unitHitModifier = nanIsZero(document.querySelector('.unitHitModifier').value);
+			let unitWoundModifier = nanIsZero(document.querySelector('.unitWoundModifier').value);
 			let unitHitRerolls = document.querySelector('.unitHitRerolls');
 			let unitWoundRerolls = document.querySelector('.unitWoundRerolls');
 			
@@ -586,7 +596,8 @@
 				}
 				
 				let defenceProfile = parseDefenceString(`${targetSave.value}/${targetSaveModifier.value}/${targetSaveRerolls.value}/${targetWardSave.value}/0/[]`);
-				let modifiers = parseModifierString('0/0/0/0');
+				let modifiers = parseModifierString(`${unitHitModifier}/${unitWoundModifier}/0/${unitBonusAttacks}`);
+				console.log(modifiers)
 
 				for (m = 0; m < models[j].value; ++m)
 				{
@@ -637,7 +648,7 @@
 		{
 			s = sigmulateAttacks();
 			
-			document.getElementById("damage_display_block").innerHTML = `This single set of rolls did ${s} wound(s).`;
+			document.getElementById("damage_display_block").innerHTML = 'This single roll did <font color=red>'+`${s}`+'</font> wound(s).';
 			
 			return s;
 		}
@@ -735,11 +746,11 @@
 		}
     </script>
 
-    <footer>
-        <font size="2">
-            <p>Copyright &copy; James Ganis</p>
-        </font>
-    </footer>
+    <!-- <footer> -->
+        <!-- <font size="2"> -->
+            <!-- <p>Copyright &copy; James Ganis</p> -->
+        <!-- </font> -->
+    <!-- </footer> -->
 
     <script>
         (function (i, s, o, g, r, a, m) {
