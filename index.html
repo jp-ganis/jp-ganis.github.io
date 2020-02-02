@@ -13,6 +13,8 @@
     <!--name-->
     <div><font size="6">Age of Sigmulator</font></div>
     <div><font size="2"><i>New and (?)improved! If you have find any bugs or have any questions hit me up on twitter @jpganis or find me on WhatsApp!</i></font></div>
+	    <br />
+	<div>For procs, the first number is the proc <i>value</i> (e.g. 2 mortal wounds, 2 hits, 2 damage) and the second value is the roll required (e.g. a 6). So for 2 mortal wounds on a hit roll of a 6, you would select "+MW on hit" and then fill in "2" mw on a "6".</div>
     <br />
 	
 	<!------------->
@@ -180,7 +182,7 @@
         {
             let labels = ["", "mw on a"];
 
-            if (procType.includes('damage'))
+            if (procType.includes('damage') || procType.includes('dmg'))
             {
                 labels = ["","damage on a"];
             }
