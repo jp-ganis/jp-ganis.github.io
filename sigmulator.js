@@ -21,6 +21,11 @@ function nanIsZero(n) {
 // encoding for things like 2d3 or 3d6
 function parseDiceNumber(s)
 {
+	if (s == "")
+	{
+		return 0;
+	}
+	
 	s = s.toLowerCase();
 	var regEx = /(\d*)d(\d+)(\+(\d+))*/;
 	var match = regEx.exec(s);
