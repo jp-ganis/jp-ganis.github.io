@@ -606,7 +606,7 @@
 	
 		function getThousandSimAverage()
 		{
-			let iters = 2000;
+			let iters = 1500;
 			let s = [];
 			let d = [];
 			let e = [];
@@ -631,7 +631,7 @@
 				e[i] = d[i];
 			}
 			
-			seventieth = s.sort()[iters - Math.floor(iters * 0.7)];
+			seventieth = s.sort(function(a,b){return a - b})[iters - Math.floor(iters * 0.7)];
 			
 			document.getElementById("damage_display_block").innerHTML = '70% chance of at least <font color=red>'+`${seventieth}`+'</font> wound(s).';
 			
