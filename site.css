@@ -1,0 +1,111 @@
+:root {
+  color-scheme: light;
+  --bg: #f6f5f1;
+  --panel: #fcfcfb;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --ink-3: #85847e;
+  --rule: #dddcd6;
+  --accent: #2a78d6;
+  --radius: 10px;
+  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #121211;
+    --panel: #1a1a19;
+    --ink: #f0efec;
+    --ink-2: #c3c2b7;
+    --ink-3: #8f8e86;
+    --rule: #333330;
+    --accent: #3987e5;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.6 var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.wrap {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 72px 16px 32px;
+}
+
+.intro h1 {
+  margin: 0 0 8px;
+  font-size: 2.25rem;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.lede {
+  margin: 0 0 16px;
+  color: var(--ink-2);
+  font-size: 1.125rem;
+}
+
+.links { display: flex; flex-wrap: wrap; gap: 4px 20px; }
+
+section { margin-top: 56px; }
+
+h2 {
+  margin: 0 0 16px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.entries { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+
+.entry {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  color: inherit;
+  transition: border-color 0.15s;
+}
+.entry:hover { text-decoration: none; border-color: var(--accent); }
+.entry:hover .entry-title { color: var(--accent); }
+
+.entry-body { display: flex; flex-direction: column; gap: 4px; }
+.entry-title { font-weight: 600; font-size: 1.05rem; }
+.entry-desc { color: var(--ink-2); }
+.entry-meta { color: var(--ink-3); font-size: 0.85rem; margin-top: 4px; }
+
+.feature { padding: 0; overflow: hidden; }
+.feature img {
+  display: block;
+  width: 100%;
+  height: auto;
+  padding: 12px 8px;
+  background: #fff;
+  border-bottom: 1px solid var(--rule);
+}
+.feature .entry-body { padding: 16px 18px; }
+
+.foot {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  color: var(--ink-3);
+  font-size: 0.85rem;
+}
+.foot p { margin: 0; }
