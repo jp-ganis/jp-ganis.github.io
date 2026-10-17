@@ -109,3 +109,16 @@ h2 {
   font-size: 0.85rem;
 }
 .foot p { margin: 0; }
+
+.cv {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr;
+  gap: 8px 16px;
+  margin: 0;
+}
+.cv dt { color: var(--ink-3); }
+.cv dd { margin: 0; }
+@media (max-width: 480px) {
+  .cv { grid-template-columns: 1fr; gap: 0; }
+  .cv dd { margin-bottom: 10px; }
+}
