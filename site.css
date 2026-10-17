@@ -122,3 +122,5 @@ h2 {
   .cv { grid-template-columns: 1fr; gap: 0; }
   .cv dd { margin-bottom: 10px; }
 }
+
+.aside { border-style: dashed; }
