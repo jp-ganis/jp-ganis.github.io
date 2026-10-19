@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Building a Tiny LLM</title>
+  <meta name="author" content="James Ganis">
+  <meta name="description" content="By James Ganis. Building a tiny language model from scratch, one concept at a time: my explanation of each idea, then an interactive visual of it.">
+  <link rel="canonical" href="https://jpganis.com/slm/">
+  <meta property="og:title" content="Building a Tiny LLM">
+  <meta property="og:description" content="A learning log: tokens to a 10.8M-parameter transformer that writes fake Shakespeare, with a live visual for every step.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://jpganis.com/slm/">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%232a78d6' stroke-width='3'/%3E%3Ccircle cx='27' cy='16' r='3' fill='%23eb6834'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    try { const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <p class="eyebrow">Learning log · language models from scratch</p>
+      <h1>Building a tiny LLM, one idea at a time</h1>
+      <p class="lede">
+        I built a very small language model from scratch. Each step is a concept I had to
+        understand first: my explanation of it, then a visual built once that explanation held up.
+      </p>
+      <div class="hero-links">
+        <a href="/">jp ganis</a>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle dark mode">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg>
+          <span>Theme</span>
+        </button>
+      </div>
+
+      <div class="method">
+        <p><strong>How this was made.</strong> Claude tutored me. It explained each concept,
+        I explained it back, and a step only got its visual once my explanation held up. Quotes
+        are my spoken answers, condensed. Claude's corrections are noted underneath.</p>
+      </div>
+    </header>
+
+    <nav class="roadmap" aria-labelledby="roadmap-h">
+      <h2 id="roadmap-h">The route</h2>
+      <ol>
+        <li class="done"><a href="#tokens"><span class="n">01</span> Tokens</a></li>
+        <li class="done"><a href="#embeddings"><span class="n">02</span> Embeddings</a></li>
+        <li class="done"><a href="#next-token"><span class="n">03</span> Next-token prediction</a></li>
+        <li class="done"><a href="#bigram"><span class="n">04</span> A bigram model</a></li>
+        <li class="done"><a href="#training"><span class="n">05</span> Loss &amp; training</a></li>
+        <li class="done"><a href="#attention"><span class="n">06</span> Attention</a></li>
+        <li class="done"><a href="#block"><span class="n">07</span> The transformer block</a></li>
+        <li class="done"><a href="#generation"><span class="n">08</span> Generating text</a></li>
+      </ol>
+    </nav>
+
+    <main class="journey" aria-labelledby="journey-h">
+      <h2 id="journey-h">The journey</h2>
+
+      <section class="step done" id="tokens">
+        <p class="step-num">Step 01</p>
+        <h3>Text becomes tokens</h3>
+        <blockquote class="in-my-words">
+          <p>Tokenization "digitises" language: words have to become numbers before they can go
+          through all the matrix multiplications. The main design choice is where to draw the line
+          between characters and words. BPE finds common chunks and forms a middle ground.</p>
+          <cite>In my words</cite>
+        </blockquote>
+        <p class="refined"><strong>Sharpened:</strong> IDs are labels, not quantities. Token 39
+        isn't "near" token 40, any more than locker 39 is. It also runs both ways: the model reads
+        and writes IDs, and decoding turns them back into text.</p>
+
+        <figure class="figure" id="tok-demo">
+          <label class="tok-label" for="tok-input">Type anything</label>
+          <textarea id="tok-input" rows="2" spellcheck="false">To be, or not to be, that is the tokenizer.</textarea>
+
+          <div class="tok-controls">
+            <div class="seg" role="group" aria-label="Tokenization scheme">
+              <button type="button" data-mode="chars">Characters</button>
+              <button type="button" data-mode="bpe">BPE</button>
+              <button type="button" data-mode="words">Words</button>
+            </div>
+            <label class="tok-slider">
+              <span>Merges learned: <b id="tok-merges-val">0</b></span>
+              <input id="tok-merges" type="range" min="0" max="185" value="60">
+            </label>
+          </div>
+
+          <div id="tok-chips" class="chips" aria-live="polite"></div>
+          <p id="tok-stats" class="tok-stats"></p>
+          <code id="tok-ids" class="tok-ids"></code>
+
+          <figcaption>BPE starts from 65 characters and repeatedly merges the most frequent
+          adjacent pair, learned live here from about 40 lines of Shakespeare. At 0 merges it's a
+          character tokenizer; slide right and chunks like <code>·the</code> become single tokens.
+          Words mode can't handle a word it hasn't seen, so it falls back to <code>UNK</code>.</figcaption>
+        </figure>
+      </section>
+
+      <section class="step done" id="embeddings">
+        <p class="step-num">Step 02</p>
+        <h3>Tokens become vectors</h3>
+        <blockquote class="in-my-words">
+          <p>We can't use token IDs directly because they imply false relationships: if ING is 39
+          and A is 40, they look close on the number line but aren't. Instead each token gets a
+          vector, a row in a matrix, which starts random and is learned in training. The vector
+          size is a training parameter: bigger captures more nuance but needs more parameters;
+          smaller is easier to train but loses information. It gives us a vector database of
+          tokens, I guess, and relationships between them.</p>
+          <cite>In my words</cite>
+        </blockquote>
+        <p class="refined"><strong>Sharpened:</strong> vector size is a
+        <em>hyperparameter</em>, fixed before training. The <em>parameters</em> are the numbers
+        in the table, which training adjusts. And it's a lookup table inside the model, not a
+        database: token 39 means "take row 39".</p>
+
+        <figure class="figure" id="emb-demo">
+          <div class="emb-top">
+            <div class="seg" role="group" aria-label="Embedding table state">
+              <button type="button" data-emb="init">Before training</button>
+              <button type="button" data-emb="trained">After training</button>
+            </div>
+            <ul class="legend" aria-label="Legend">
+              <li><span class="sw vowel"></span>vowels</li>
+              <li><span class="sw consonant"></span>consonants</li>
+              <li><span class="sw upper"></span>capitals</li>
+              <li><span class="sw other"></span>punctuation &amp; space</li>
+            </ul>
+          </div>
+
+          <div class="emb-grid">
+            <div class="emb-table-wrap">
+              <p class="mini-label">The table<br>65 × 16</p>
+              <svg id="emb-table" role="img" aria-label="Embedding table heatmap, one row per token"></svg>
+            </div>
+            <svg id="emb-plot" viewBox="0 0 400 320" role="group" aria-label="Every token's vector, projected to 2D"></svg>
+          </div>
+
+          <div class="emb-row">
+            <p class="mini-label" id="emb-row-label">Row</p>
+            <div id="emb-row-cells" class="emb-row-cells"></div>
+            <p class="emb-nbrs">Nearest in all 16 dimensions: <span id="emb-nbrs"></span></p>
+          </div>
+
+          <figcaption>Real embeddings from a tiny model trained on Shakespeare
+          (<code>train/step02_embeddings.py</code>). Hover or tap a character to see its row:
+          16 learned numbers, blue negative and red positive, with lines to its five nearest
+          neighbours. Before training it's noise. After, with nobody telling it what a vowel is,
+          <code>a</code> sits next to <code>u o e</code>, <code>.</code> next to
+          <code>? ! ; :</code>, and capitals cluster. Characters that behave alike move together.
+          The 2D view is a PCA projection that discards most of the 16 dimensions, so trust the
+          neighbour list.</figcaption>
+        </figure>
+      </section>
+
+      <section class="step done" id="next-token">
+        <p class="step-num">Step 03</p>
+        <h3>The whole job: predict the next token</h3>
+        <blockquote class="in-my-words">
+          <p>The model outputs a probability distribution over all tokens. You'd pick the max, or
+          maybe use some epsilon strategy so you don't always take the top one. It actually outputs
+          logits, which can be anything, and softmax squashes them between 0 and 1 so they sum to
+          1. The nice part is you train on the text itself: in "to be or not to be", T should be
+          followed by O, O by a space, and so on. You get lots of training from each sentence, with
+          no labelling or grammar rules, unlike the NLP I did at university.</p>
+          <cite>In my words</cite>
+        </blockquote>
+        <p class="refined"><strong>Sharpened:</strong> each example is "given <em>everything
+        so far</em>, what's next?", not "T is followed by o". The input grows at every position:
+        <code>T→o</code>, <code>To→·</code>, <code>To·→b</code>. Using that whole prefix well is
+        what separates a dumb model from a smart one. And my epsilon hunch has a name:
+        <em>sampling</em> from the distribution (Step 08).</p>
+
+        <figure class="figure" id="nt-demo">
+          <p class="mini-label">Pick a cut point: everything before it is the input, the character at it is the answer.</p>
+          <div id="nt-strip" class="nt-strip"></div>
+          <div class="nt-controls">
+            <button id="nt-play" class="nt-play" type="button">Play</button>
+            <input id="nt-pos" type="range" min="0" value="4" aria-label="Cut point">
+          </div>
+
+          <p class="nt-example" id="nt-example" aria-live="polite"></p>
+          <div id="nt-rows" class="nt-rows"></div>
+          <p class="nt-ctx" id="nt-ctx"></p>
+
+          <figcaption>One 42-character sentence is 42 training examples, no labelling needed.
+          There's no network yet: these probabilities come from counting what followed the same
+          few characters in tiny-Shakespeare (<code>train/step03_next_token.py</code>). A trained
+          model has to produce numbers like these itself. Watch <code>To be</code> →
+          <code>,</code>: the comma gets 0.001 because "be" is nearly always followed by a space.
+          Surprises like that are what training penalises.</figcaption>
+        </figure>
+      </section>
+
+      <section class="step done" id="bigram">
+        <p class="step-num">Step 04</p>
+        <h3>The simplest possible model</h3>
+        <blockquote class="in-my-words">
+          <p>A bigram model predicts the second token from the first. With 65 tokens that's a
+          65 × 65 lookup table of co-occurrence counts. Or a neural net with random values, trained
+          with gradient descent and Adam. Either way there's no memory or attention.</p>
+          <cite>In my words</cite>
+        </blockquote>
+
+        <div class="exchange">
+          <p class="ask"><span>Claude pushed back</span> That's the what, not the why. If counting
+          works, why use a net? Try predicting from the last 10 characters instead of 1.</p>
+          <blockquote class="in-my-words">
+            <p>That'd be a 10-dimensional grid, 65 × 65 × 65 and so on. Absolutely massive.</p>
+          </blockquote>
+          <p class="ask"><span>Claude nudged</span> Size is one problem. The other is that almost
+          every cell would be empty. How does a net cope? Think back to Step 02.</p>
+          <blockquote class="in-my-words">
+            <p>Its embeddings learn which characters are similar. So even with sparse data it can
+            say: A is close to E, they're both vowels, so both come between consonants.</p>
+            <cite>In my words</cite>
+          </blockquote>
+        </div>
+
+        <p class="refined"><strong>Sharpened:</strong> generation <em>samples</em> from the row
+        instead of always taking the top character, which gets stuck in loops. And the two
+        versions really do converge: counting scores a loss of 2.455, the trained table 2.459.</p>
+
+        <figure class="figure" id="bg-demo">
+          <div class="emb-top">
+            <div class="seg" role="group" aria-label="How the table was built">
+              <button type="button" data-bg="count">Counted</button>
+              <button type="button" data-bg="neural">Learned by gradient descent</button>
+            </div>
+          </div>
+
+          <svg id="bg-heat" class="bg-heat" role="img" aria-label="65 by 65 grid of next-character probabilities"></svg>
+          <p class="bg-readout" id="bg-readout" aria-live="polite"></p>
+          <p class="bg-loss" id="bg-loss"></p>
+
+          <div class="bg-gen-head">
+            <p class="mini-label">Sampled from the table, one character at a time</p>
+            <button id="bg-generate" class="nt-play" type="button">Generate again</button>
+          </div>
+          <pre id="bg-gen" class="bg-gen"></pre>
+
+          <p class="mini-label bg-sparse-label">Why a lookup table can't just get longer</p>
+          <div class="bg-sparse-wrap">
+            <table class="bg-sparse">
+              <thead><tr><th>Context length</th><th>Contexts in Shakespeare</th><th>Possible</th><th>Share ever seen</th></tr></thead>
+              <tbody id="bg-sparse"></tbody>
+            </table>
+          </div>
+
+          <figcaption>Rows are the current character, columns the next; darker is more likely.
+          Hover a row: <code>q</code> is almost always followed by <code>u</code>, and
+          <code>.</code> by a space or newline. The generated text has Shakespeare's
+          <em>shape</em> (word lengths, punctuation, capitals after line breaks) but no sense,
+          since each step remembers one character. The table shows where counting breaks: at 10
+          characters of context, almost every possible context has never occurred. Embeddings let
+          a network handle them by reusing what it learned from similar ones
+          (<code>train/step04_bigram.py</code>).</figcaption>
+        </figure>
+      </section>
+
+      <section class="step done" id="training">
+        <p class="step-num">Step 05</p>
+        <h3>Measuring wrongness, then fixing it</h3>
+        <blockquote class="in-my-words">
+          <p>Loss measures the gap between a probability of 1 for the right answer and the
+          probability the model actually gave it. If it gave the space after "to" a probability of
+          0.001, loss is −log(0.001) = 6.9. We use log because it scales up exponentially (I think)
+          the more wrong you are. Backprop gives the gradient, the slope towards zero loss, and step
+          size is a hyperparameter. Then mini-batches for speed, Adam, and train/test splits plus a
+          holdout set, as in standard ML.</p>
+          <cite>In my words</cite>
+        </blockquote>
+        <p class="refined"><strong>Sharpened:</strong> the log isn't exponential, it's
+        <em>unbounded</em>. Every 10× drop in probability adds the same 2.3, all the way to
+        infinity, so a confident mistake can't hide. And the gradient doesn't point at zero loss.
+        It's the local slope under your feet in fog, one number per parameter, so we take
+        thousands of small steps and re-measure each time.</p>
+
+        <figure class="figure" id="loss-demo">
+          <div class="emb-top">
+            <label class="loss-slider">
+              <span id="loss-out" class="loss-out"></span>
+              <input id="loss-p" type="range" min="-3.3" max="0" step="0.01" value="-2"
+                aria-label="Probability given to the right answer (log scale)">
+            </label>
+            <div class="seg" role="group" aria-label="x-axis scale">
+              <button type="button" data-axis="linear">Linear</button>
+              <button type="button" data-axis="log">Log axis</button>
+            </div>
+          </div>
+          <svg id="loss-plot" class="ch" viewBox="0 0 400 200" role="img" aria-label="Loss equals minus log of the probability given to the correct token"></svg>
+          <figcaption>Loss is −log(p), where p is the probability given to the right answer. On a
+          linear axis it shoots up near zero. On a log axis it's a straight line: each 10× less
+          probability costs the same +2.3.</figcaption>
+        </figure>
+
+        <figure class="figure" id="train-demo">
+          <div class="emb-top">
+            <div class="train-buttons">
+              <button id="train-run" class="nt-play primary" type="button">Train</button>
+              <button id="train-reset" class="nt-play" type="button">Reset</button>
+            </div>
+            <div class="lr-pick">
+              <span class="mini-label">Learning rate</span>
+              <div class="seg" role="group" aria-label="Learning rate">
+                <button type="button" data-lr="0.001">0.001</button>
+                <button type="button" data-lr="0.03">0.03</button>
+                <button type="button" data-lr="3">3</button>
+              </div>
+            </div>
+          </div>
+
+          <ul class="legend" aria-label="Legend">
+            <li><span class="ln series-1"></span>training loss (one mini-batch)</li>
+            <li><span class="ln series-2"></span>validation loss (held-out 10%)</li>
+            <li><span class="ln ghost"></span>previous run</li>
+          </ul>
+          <div class="ch-wrap">
+            <svg id="train-plot" class="ch" viewBox="0 0 400 220" role="img" aria-label="Loss over training steps"></svg>
+            <div id="train-tip" class="ch-tip" hidden></div>
+          </div>
+          <p id="train-stats" class="bg-loss" aria-live="polite"></p>
+
+          <p class="mini-label" id="train-sample-head"></p>
+          <div id="train-sample" class="bg-gen train-sample"></div>
+
+          <figcaption>A real model training in your browser: a random 65 × 65 table of logits,
+          improved by Adam on mini-batches of 512 character pairs from the first 90% of
+          tiny-Shakespeare (<code>js/bigram-trainer.js</code>). Each step is a forward pass, a
+          gradient for all 4,225 numbers, and a small step downhill. Blue is noisy because every
+          mini-batch differs; orange is the exact loss on the held-out 10%. Try 0.001 (crawls),
+          then 3 (overshoots and never settles).</figcaption>
+        </figure>
+      </section>
+
+      <section class="step done" id="attention">
+        <p class="step-num">Step 06</p>
+        <h3>Letting tokens look at each other</h3>
+        <blockquote class="in-my-words">
+          <p>Attention is a smart way to use the context before a token. Averaging it gives a murky
+          blob; instead we learn which tokens should attend to each other. Each token gets three
+          vectors, Q, K and V, from learned weights W<sub>Q</sub>, W<sub>K</sub>, W<sub>V</sub>.
+          Q is what I'm looking for, K is what I offer, V is what I give when attended to. For
+          every earlier token (with a position embedding to keep the order), the dot product of
+          my Q with its K says how well they match, and a weighted sum of the V vectors gives a
+          "context-aware" vector.</p>
+          <cite>In my words</cite>
+        </blockquote>
+
+        <div class="exchange">
+          <p class="ask"><span>Claude asked</span> Why only earlier tokens? In training the whole
+          sequence goes in at once. What goes wrong if position 5 can see position 6?</p>
+          <blockquote class="in-my-words">
+            <p>You can't predict the next token if you can see it. So we mask to only the tokens
+            that came earlier.</p>
+            <cite>In my words</cite>
+          </blockquote>
+        </div>
+
+        <p class="refined"><strong>Sharpened:</strong> between the dot products and the weighted
+        sum, the scores go through softmax (Step 03), so each token splits exactly 100% of its
+        attention across the past. Without the mask the model would learn to copy the answer, a
+        skill that's useless at generation time, when there's no future to see.</p>
+
+        <figure class="figure" id="attn-demo">
+          <div class="emb-top">
+            <div class="seg" role="group" aria-label="Attention head">
+              <button type="button" data-head="avg">Plain average</button>
+              <button type="button" data-head="0">Head 1</button>
+              <button type="button" data-head="1">Head 2</button>
+              <button type="button" data-head="2">Head 3</button>
+              <button type="button" data-head="3">Head 4</button>
+            </div>
+          </div>
+
+          <p class="mini-label">Hover a character to make it the query. Shading shows where its attention goes; greyed characters are the masked future.</p>
+          <div id="attn-strip" class="attn-strip"></div>
+          <p id="attn-readout" class="bg-readout attn-readout" aria-live="polite"></p>
+
+          <div class="attn-lower">
+            <svg id="attn-matrix" class="attn-matrix" role="img" aria-label="Attention matrix: rows are queries, columns are keys; the upper triangle is masked"></svg>
+            <p class="attn-matrix-note">One row per query, one column per key, and every row sums
+            to 1. The empty upper triangle is the causal mask.</p>
+          </div>
+
+          <figcaption>Real attention weights from a one-layer, four-head model
+          (<code>train/step06_attention.py</code>, 29k parameters). Validation loss fell from 2.48
+          for the bigram to <b>2.02</b>. <em>Plain average</em> is the murky blob; the learned
+          heads are sharp. Honestly, though, one layer on characters mostly looks 1–3 characters
+          back, each head weighting that window differently. That's a learned 4-gram, not
+          reasoning across the sentence. Going further takes stacked layers.</figcaption>
+        </figure>
+      </section>
+
+      <section class="step done" id="block">
+        <p class="step-num">Step 07</p>
+        <h3>Stacking it into a transformer</h3>
+        <p class="step-note">This one took a while, and the page shows the confusion.</p>
+        <blockquote class="in-my-words">
+          <p>Stacked transformer blocks take a token embedding and add an attention component and
+          an MLP component. The MLP I'm not sure about: it expands the token through two layers
+          and shrinks it back. Is that just useful learning about the token itself? LayerNorm, I
+          think, keeps the numbers from blowing up across many blocks.</p>
+          <cite>My first attempt</cite>
+        </blockquote>
+
+        <div class="exchange">
+          <p class="ask"><span>Claude explained</span> Attention only blends; the MLP does the
+          "if this and that" computation. Then it asked about the parts I'd skipped: residual
+          connections and stacking.</p>
+          <blockquote class="in-my-words">
+            <p>&hellip; I still don't get the point of the MLP. It takes x, expands it and shrinks
+            it. But what does that vector represent?</p>
+          </blockquote>
+          <p class="ask"><span>Claude reframed it</span> <code>x</code> is each token's
+          <em>notepad</em>: one vector per position that every layer reads and adds to. An MLP
+          neuron is a pattern detector, like a CNN filter. Weights +1, +1, +1 and a bias of −2
+          under a ReLU fire only for <code>-eak</code>. Averaging can't express "only if all
+          three".</p>
+          <blockquote class="in-my-words">
+            <p>Without attention, the input is an n × 384 matrix with an MLP in each block. Is it
+            one MLP applied to each row, or a separately trained MLP per row? &hellip; And
+            W<sub>Q</sub>, W<sub>K</sub>, W<sub>V</sub> are three learned matrices that turn each
+            embedding into its own Q, K and V?</p>
+            <cite>Questions I asked</cite>
+          </blockquote>
+          <p class="ask"><span>Claude answered</span> One MLP per block, shared by every row, like
+          one conv filter sliding over an image. And with no attention, no row ever sees another,
+          so the whole stack collapses back into a bigram.</p>
+          <blockquote class="in-my-words">
+            <p>Attention learns relationships between tokens: a weighting over everything before.
+            The MLP learns nonlinear combinations within each token's own vector. A block needs
+            both, because attention only decides how much to weigh the context, not what to
+            output. [&hellip;] We add to the notepad rather than rewrite it, so one weird layer
+            can't wipe out what earlier layers learned; the combination of layers gives depth and
+            range. Layer 2 has more baked in, so it can learn more.</p>
+            <cite>Where I landed</cite>
+          </blockquote>
+        </div>
+
+        <p class="refined"><strong>Sharpened:</strong> attention <em>routes</em>, the MLP
+        <em>computes</em>. And "more baked in" is specific: by layer 2, <code>a</code>'s notepad
+        already holds notes about its neighbours, so when <code>k</code> reads <code>a</code> it
+        gets two hops of context. Each layer adds a hop.</p>
+
+        <figure class="figure" id="arch-demo">
+          <div class="arch-layout">
+            <svg id="arch" class="arch" viewBox="0 0 420 430" role="group" aria-label="Transformer architecture drawn as a residual stream"></svg>
+            <p id="arch-info" class="arch-info" aria-live="polite"></p>
+          </div>
+          <figcaption>The model I trained, drawn around the notepad. Hover any part. The vertical
+          line is the residual stream; each block branches off twice and adds its result back.
+          GPT-3 has the same architecture, with 96 blocks instead of 6.</figcaption>
+        </figure>
+
+        <figure class="figure" id="gpt-demo">
+          <p class="mini-label" id="gpt-final"></p>
+          <ul class="legend" aria-label="Legend">
+            <li><span class="ln series-1"></span>training loss</li>
+            <li><span class="ln series-2"></span>validation loss</li>
+          </ul>
+          <div class="ch-wrap">
+            <svg id="gpt-plot" class="ch" viewBox="0 0 400 230" role="img" aria-label="Transformer training loss compared with earlier models"></svg>
+            <div id="gpt-tip" class="ch-tip" hidden></div>
+          </div>
+
+          <div class="gpt-steps-row">
+            <span class="mini-label">Read a sample from step</span>
+            <div id="gpt-steps" class="seg seg-wrap" role="group" aria-label="Training step"></div>
+          </div>
+          <p class="mini-label" id="gpt-sample-head"></p>
+          <pre id="gpt-sample" class="bg-gen"></pre>
+          <p id="gpt-copied" class="gpt-copied"></p>
+          <div class="gpt-meter"><span id="gpt-copied-bar"></span></div>
+
+          <figcaption>The full model training (<code>train/step07_transformer.py</code>). Step
+          through the samples: noise, then letter frequencies, word shapes, names, line breaks and
+          the rhythm of a script. Then a surprise: after about 1,500 steps, validation loss turns
+          up while training loss keeps falling. That's Step 05's overfitting for real, as 10.8M
+          parameters on 1 MB of text start fitting the training set specifically. I expected
+          recited Shakespeare, but no sample copies more than about 24 characters, just common
+          phrases. The overfit model doesn't recite; it's overconfident on text it has seen. So I
+          kept the best-validation checkpoint (early stopping), which the rest of the page uses.
+          Dashed lines are the earlier models on the same held-out text.</figcaption>
+        </figure>
+
+        <figure class="figure">
+          <p class="mini-label">The journey so far: same seed, three models</p>
+          <div id="journey-compare" class="journey-compare"></div>
+        </figure>
+      </section>
+
+      <section class="step done" id="generation">
+        <p class="step-num">Step 08</p>
+        <h3>Making it talk</h3>
+
+        <blockquote class="in-my-words">
+          <p>The loop does a full forward pass per character, using a KV cache so it doesn't redo
+          the ones it's already done. The context window slides once we pass the max length. We
+          can't go back and try a different branch once we've committed. Temperature sets how far
+          we stray from greedy. A prompt is just the start of the text.</p>
+          <cite>In my words</cite>
+        </blockquote>
+
+        <div class="exchange">
+          <p class="ask"><span>Claude nudged</span> A KV cache is an optimisation real systems
+          add, not part of the loop; mine reruns the whole window for every character. Then it
+          asked which way temperature goes, and what top-k is for.</p>
+          <blockquote class="in-my-words">
+            <p>Temp 0 is ice cold, total greed; higher is more random. I don't know why 1 is the
+            "real" distribution. Top-k cuts the long tail in case it derails the whole thing.</p>
+          </blockquote>
+          <p class="ask"><span>Claude answered</span> Dividing by 1 changes nothing, so T = 1 is
+          what training produced: cross-entropy (Step 05) pushed <code>softmax(logits)</code> to
+          match how often each character really follows. Any other temperature is a distortion
+          chosen at generation time.</p>
+        </div>
+
+        <p class="refined"><strong>Sharpened:</strong> the long tail is a numbers game. Any one
+        rare character is unlikely, but together they're a few percent per step, over hundreds of
+        steps. In the replay below, the chance of 300 characters with no pick outside the top 10
+        is <span id="gen-survive">tiny</span>. And with no going back, one bad pick stays in the
+        context and steers everything after it.</p>
+
+        <figure class="figure" id="gen-demo">
+          <p class="mini-label" id="gen-head"></p>
+          <pre id="gen-text" class="bg-gen gen-text" aria-live="off"></pre>
+          <div class="nt-controls">
+            <button type="button" id="gen-play" class="nt-play primary">Play</button>
+            <button type="button" id="gen-next" class="nt-play">Step</button>
+            <input type="range" id="gen-pos" min="0" value="0" aria-label="Generation step">
+          </div>
+
+          <div class="tok-controls gen-dials">
+            <label class="tok-slider">
+              <span>Temperature <strong id="gen-t-out" class="loss-out">1.0</strong></span>
+              <input type="range" id="gen-t" min="0.1" max="2.5" step="0.1" value="1">
+            </label>
+            <div class="lr-pick">
+              <span class="mini-label">Top-k</span>
+              <div id="gen-k" class="seg" role="group" aria-label="Top-k"></div>
+            </div>
+          </div>
+
+          <div id="gen-rows" class="gen-rows"></div>
+          <p id="gen-risk" class="gen-risk"></p>
+
+          <figcaption>The real model's next-character probabilities at each step of one
+          generation, with temperature and top-k applied live to its actual logits. Faint marks
+          show the untouched T = 1 distribution. The text was sampled at T = 1 without top-k, so
+          you can spot where it went off-script, like the made-up words. Below about 0.5 the top
+          choice takes nearly everything (greedy); above 1.5 the rest of the alphabet gets a real
+          share. Near the end the prompt scrolls out of the 256-character window.</figcaption>
+        </figure>
+
+        <figure class="figure" id="dial-demo">
+          <div class="tok-controls">
+            <div class="lr-pick">
+              <span class="mini-label">Prompt</span>
+              <div id="dial-prompt" class="seg" role="group" aria-label="Prompt"></div>
+            </div>
+            <div class="lr-pick">
+              <span class="mini-label">Top-k</span>
+              <div id="dial-k" class="seg" role="group" aria-label="Top-k"></div>
+            </div>
+          </div>
+          <div class="gpt-steps-row">
+            <span class="mini-label">Temperature</span>
+            <div id="dial-t" class="seg seg-wrap" role="group" aria-label="Temperature"></div>
+          </div>
+          <pre id="dial-text" class="bg-gen"></pre>
+          <div class="dial-stats">
+            <div>
+              <p class="gpt-copied" id="dial-real"></p>
+              <div class="gpt-meter"><span id="dial-real-bar"></span></div>
+            </div>
+            <div>
+              <p class="gpt-copied" id="dial-copied"></p>
+              <div class="gpt-meter"><span id="dial-copied-bar"></span></div>
+            </div>
+          </div>
+          <figcaption>Finished 300-character generations (<code>train/step08_generate.py</code>),
+          all from one seed, so only the setting changes. Ice cold (0.1) is all real words going
+          nowhere: "the sea of the sea of the field". At 2.5 it's mostly noise. Top-k matters most
+          at the hot end, roughly doubling the share of real words. <code>HAMLET</code> never
+          appears in the training text, but the prompt is still the start of a script, so the
+          model writes one.</figcaption>
+        </figure>
+      </section>
+
+      <section class="closing" aria-labelledby="closing-h">
+        <h3 id="closing-h">Where I ended up</h3>
+        <p>Eight steps took me from "words need to become numbers" to a 10.8M-parameter
+        transformer that writes passable fake Shakespeare. Validation loss fell from
+        <b>4.17</b> (guessing) to <b>2.48</b> (bigram), <b>2.02</b> (one attention layer) and
+        <b>1.46</b> (the full model). Every gain came from the same idea: let the model use more
+        of its context, and learn which parts matter.</p>
+        <p>A chatbot is this scaled up: subword tokens, thousands of times more parameters and
+        text, then further training on conversations. The loop underneath doesn't change.
+        Predict the next token, sample, repeat.</p>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <p>© James Ganis</p>
+    </footer>
+  </div>
+
+  <script src="js/step01-tokens.js"></script>
+  <script src="data/embeddings.js"></script>
+  <script src="js/step02-embeddings.js"></script>
+  <script src="data/next_token.js"></script>
+  <script src="js/step03-next-token.js"></script>
+  <script src="data/bigram.js"></script>
+  <script src="js/step04-bigram.js"></script>
+  <script src="data/pairs.js"></script>
+  <script src="js/bigram-trainer.js"></script>
+  <script src="js/step05-training.js"></script>
+  <script src="data/attention.js"></script>
+  <script src="js/step06-attention.js"></script>
+  <script src="data/transformer.js"></script>
+  <script src="js/step07-transformer.js"></script>
+  <script src="data/generate.js"></script>
+  <script src="js/step08-generate.js"></script>
+  <script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+      const root = document.documentElement;
+      const dark = root.dataset.theme
+        ? root.dataset.theme === "dark"
+        : matchMedia("(prefers-color-scheme: dark)").matches;
+      root.dataset.theme = dark ? "light" : "dark";
+      try { localStorage.setItem("theme", root.dataset.theme); } catch (e) {}
+    });
+  </script>
+</body>
+</html>
