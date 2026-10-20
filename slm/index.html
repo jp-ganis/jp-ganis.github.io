@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Building a Tiny LLM</title>
   <meta name="author" content="James Ganis">
-  <meta name="description" content="By James Ganis. Building a tiny language model from scratch, one concept at a time: my explanation of each idea, then an interactive visual of it.">
+  <meta name="description" content="By James Ganis. Building a small language model from scratch, one concept at a time, with an interactive visual for each.">
   <link rel="canonical" href="https://jpganis.com/slm/">
   <meta property="og:title" content="Building a Tiny LLM">
-  <meta property="og:description" content="A learning log: tokens to a 10.8M-parameter transformer that writes fake Shakespeare, with a live visual for every step.">
+  <meta property="og:description" content="A learning log from tokens to a 10.8M-parameter transformer trained on Shakespeare, with an interactive visual for each step.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://jpganis.com/slm/">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%232a78d6' stroke-width='3'/%3E%3Ccircle cx='27' cy='16' r='3' fill='%23eb6834'/%3E%3C/svg%3E">
@@ -23,8 +23,8 @@
       <p class="eyebrow">Learning log · language models from scratch</p>
       <h1>Building a tiny LLM, one idea at a time</h1>
       <p class="lede">
-        I built a very small language model from scratch. Each step is a concept I had to
-        understand first: my explanation of it, then a visual built once that explanation held up.
+        A small language model built from scratch in eight steps. Each step has my explanation
+        of the concept and an interactive visual.
       </p>
       <div class="hero-links">
         <a href="/">jp ganis</a>
@@ -35,9 +35,9 @@
       </div>
 
       <div class="method">
-        <p><strong>How this was made.</strong> Claude tutored me. It explained each concept,
-        I explained it back, and a step only got its visual once my explanation held up. Quotes
-        are my spoken answers, condensed. Claude's corrections are noted underneath.</p>
+        <p><strong>Method.</strong> Claude acted as tutor. For each concept I gave my own
+        explanation, and Claude corrected it before we built the visual. Quotes are my spoken
+        answers, condensed; corrections follow each one.</p>
       </div>
     </header>
 
@@ -67,9 +67,8 @@
           between characters and words. BPE finds common chunks and forms a middle ground.</p>
           <cite>In my words</cite>
         </blockquote>
-        <p class="refined"><strong>Sharpened:</strong> IDs are labels, not quantities. Token 39
-        isn't "near" token 40, any more than locker 39 is. It also runs both ways: the model reads
-        and writes IDs, and decoding turns them back into text.</p>
+        <p class="refined"><strong>Correction:</strong> IDs are arbitrary labels, so their numeric
+        order carries no meaning. The model reads and writes IDs; decoding maps them back to text.</p>
 
         <figure class="figure" id="tok-demo">
           <label class="tok-label" for="tok-input">Type anything</label>
@@ -92,9 +91,9 @@
           <code id="tok-ids" class="tok-ids"></code>
 
           <figcaption>BPE starts from 65 characters and repeatedly merges the most frequent
-          adjacent pair, learned live here from about 40 lines of Shakespeare. At 0 merges it's a
-          character tokenizer; slide right and chunks like <code>·the</code> become single tokens.
-          Words mode can't handle a word it hasn't seen, so it falls back to <code>UNK</code>.</figcaption>
+          adjacent pair, learned here from about 40 lines of Shakespeare. At 0 merges it is a
+          character tokenizer; more merges turn chunks like <code>·the</code> into single tokens.
+          Words mode maps unseen words to <code>UNK</code>.</figcaption>
         </figure>
       </section>
 
@@ -110,10 +109,10 @@
           tokens, I guess, and relationships between them.</p>
           <cite>In my words</cite>
         </blockquote>
-        <p class="refined"><strong>Sharpened:</strong> vector size is a
+        <p class="refined"><strong>Correction:</strong> vector size is a
         <em>hyperparameter</em>, fixed before training. The <em>parameters</em> are the numbers
-        in the table, which training adjusts. And it's a lookup table inside the model, not a
-        database: token 39 means "take row 39".</p>
+        in the table, which training adjusts. The table is a lookup inside the model: token 39
+        selects row 39.</p>
 
         <figure class="figure" id="emb-demo">
           <div class="emb-top">
@@ -144,13 +143,12 @@
           </div>
 
           <figcaption>Real embeddings from a tiny model trained on Shakespeare
-          (<code>train/step02_embeddings.py</code>). Hover or tap a character to see its row:
-          16 learned numbers, blue negative and red positive, with lines to its five nearest
-          neighbours. Before training it's noise. After, with nobody telling it what a vowel is,
-          <code>a</code> sits next to <code>u o e</code>, <code>.</code> next to
-          <code>? ! ; :</code>, and capitals cluster. Characters that behave alike move together.
-          The 2D view is a PCA projection that discards most of the 16 dimensions, so trust the
-          neighbour list.</figcaption>
+          (<code>train/step02_embeddings.py</code>). Hover or tap a character to see its row
+          (16 numbers, blue negative, red positive) and its five nearest neighbours. Before
+          training the table is random. After training, without any labels, <code>a</code> sits
+          near <code>u o e</code>, <code>.</code> near <code>? ! ; :</code>, and capitals
+          cluster. The 2D view is a PCA projection and loses most of the 16 dimensions; the
+          neighbour list is exact.</figcaption>
         </figure>
       </section>
 
@@ -166,11 +164,10 @@
           no labelling or grammar rules, unlike the NLP I did at university.</p>
           <cite>In my words</cite>
         </blockquote>
-        <p class="refined"><strong>Sharpened:</strong> each example is "given <em>everything
-        so far</em>, what's next?", not "T is followed by o". The input grows at every position:
-        <code>T→o</code>, <code>To→·</code>, <code>To·→b</code>. Using that whole prefix well is
-        what separates a dumb model from a smart one. And my epsilon hunch has a name:
-        <em>sampling</em> from the distribution (Step 08).</p>
+        <p class="refined"><strong>Correction:</strong> each example conditions on the whole
+        prefix, so the input grows at every position: <code>T→o</code>, <code>To→·</code>,
+        <code>To·→b</code>. Better models make better use of that prefix. Picking randomly from
+        the distribution is called <em>sampling</em> (Step 08).</p>
 
         <figure class="figure" id="nt-demo">
           <p class="mini-label">Pick a cut point: everything before it is the input, the character at it is the answer.</p>
@@ -184,12 +181,11 @@
           <div id="nt-rows" class="nt-rows"></div>
           <p class="nt-ctx" id="nt-ctx"></p>
 
-          <figcaption>One 42-character sentence is 42 training examples, no labelling needed.
-          There's no network yet: these probabilities come from counting what followed the same
-          few characters in tiny-Shakespeare (<code>train/step03_next_token.py</code>). A trained
-          model has to produce numbers like these itself. Watch <code>To be</code> →
-          <code>,</code>: the comma gets 0.001 because "be" is nearly always followed by a space.
-          Surprises like that are what training penalises.</figcaption>
+          <figcaption>A 42-character sentence gives 42 training examples. These probabilities
+          are counts of what followed the same few characters in tiny-Shakespeare
+          (<code>train/step03_next_token.py</code>); a trained model must learn to produce them.
+          At <code>To be</code> → <code>,</code> the comma gets 0.001, because "be" is almost
+          always followed by a space. Training penalises low-probability answers like this.</figcaption>
         </figure>
       </section>
 
@@ -204,13 +200,13 @@
         </blockquote>
 
         <div class="exchange">
-          <p class="ask"><span>Claude pushed back</span> That's the what, not the why. If counting
-          works, why use a net? Try predicting from the last 10 characters instead of 1.</p>
+          <p class="ask"><span>Claude asked</span> If counting works, why use a net? Consider
+          predicting from the last 10 characters instead of 1.</p>
           <blockquote class="in-my-words">
             <p>That'd be a 10-dimensional grid, 65 × 65 × 65 and so on. Absolutely massive.</p>
           </blockquote>
-          <p class="ask"><span>Claude nudged</span> Size is one problem. The other is that almost
-          every cell would be empty. How does a net cope? Think back to Step 02.</p>
+          <p class="ask"><span>Claude asked</span> Almost every cell would also be empty. How
+          does a net handle that? See Step 02.</p>
           <blockquote class="in-my-words">
             <p>Its embeddings learn which characters are similar. So even with sparse data it can
             say: A is close to E, they're both vowels, so both come between consonants.</p>
@@ -218,9 +214,9 @@
           </blockquote>
         </div>
 
-        <p class="refined"><strong>Sharpened:</strong> generation <em>samples</em> from the row
-        instead of always taking the top character, which gets stuck in loops. And the two
-        versions really do converge: counting scores a loss of 2.455, the trained table 2.459.</p>
+        <p class="refined"><strong>Correction:</strong> generation <em>samples</em> from the row;
+        always taking the top character gets stuck in loops. Both versions reach the same loss:
+        2.455 counted, 2.459 trained.</p>
 
         <figure class="figure" id="bg-demo">
           <div class="emb-top">
@@ -250,11 +246,10 @@
 
           <figcaption>Rows are the current character, columns the next; darker is more likely.
           Hover a row: <code>q</code> is almost always followed by <code>u</code>, and
-          <code>.</code> by a space or newline. The generated text has Shakespeare's
-          <em>shape</em> (word lengths, punctuation, capitals after line breaks) but no sense,
-          since each step remembers one character. The table shows where counting breaks: at 10
-          characters of context, almost every possible context has never occurred. Embeddings let
-          a network handle them by reusing what it learned from similar ones
+          <code>.</code> by a space or newline. The generated text has Shakespeare's word lengths,
+          punctuation and line breaks, but no meaning, since each step sees one character. The
+          table shows the limit of counting: at 10 characters, almost no possible context has
+          ever occurred. A network generalises to unseen contexts through embeddings
           (<code>train/step04_bigram.py</code>).</figcaption>
         </figure>
       </section>
@@ -271,11 +266,10 @@
           holdout set, as in standard ML.</p>
           <cite>In my words</cite>
         </blockquote>
-        <p class="refined"><strong>Sharpened:</strong> the log isn't exponential, it's
-        <em>unbounded</em>. Every 10× drop in probability adds the same 2.3, all the way to
-        infinity, so a confident mistake can't hide. And the gradient doesn't point at zero loss.
-        It's the local slope under your feet in fog, one number per parameter, so we take
-        thousands of small steps and re-measure each time.</p>
+        <p class="refined"><strong>Correction:</strong> −log is <em>unbounded</em>: each 10×
+        drop in probability adds 2.3, so confident mistakes are heavily penalised. The gradient
+        is the local slope, one number per parameter, so training takes many small steps and
+        recomputes it each time.</p>
 
         <figure class="figure" id="loss-demo">
           <div class="emb-top">
@@ -291,8 +285,7 @@
           </div>
           <svg id="loss-plot" class="ch" viewBox="0 0 400 200" role="img" aria-label="Loss equals minus log of the probability given to the correct token"></svg>
           <figcaption>Loss is −log(p), where p is the probability given to the right answer. On a
-          linear axis it shoots up near zero. On a log axis it's a straight line: each 10× less
-          probability costs the same +2.3.</figcaption>
+          log axis it is a straight line: each 10× drop in p adds 2.3.</figcaption>
         </figure>
 
         <figure class="figure" id="train-demo">
@@ -325,12 +318,11 @@
           <p class="mini-label" id="train-sample-head"></p>
           <div id="train-sample" class="bg-gen train-sample"></div>
 
-          <figcaption>A real model training in your browser: a random 65 × 65 table of logits,
-          improved by Adam on mini-batches of 512 character pairs from the first 90% of
-          tiny-Shakespeare (<code>js/bigram-trainer.js</code>). Each step is a forward pass, a
-          gradient for all 4,225 numbers, and a small step downhill. Blue is noisy because every
-          mini-batch differs; orange is the exact loss on the held-out 10%. Try 0.001 (crawls),
-          then 3 (overshoots and never settles).</figcaption>
+          <figcaption>A bigram model training in the browser: a random 65 × 65 table of logits,
+          trained with Adam on mini-batches of 512 character pairs from the first 90% of
+          tiny-Shakespeare (<code>js/bigram-trainer.js</code>). Training loss is noisy because
+          each mini-batch differs; validation loss is exact on the held-out 10%. A learning rate
+          of 0.001 is slow; 3 overshoots.</figcaption>
         </figure>
       </section>
 
@@ -358,10 +350,9 @@
           </blockquote>
         </div>
 
-        <p class="refined"><strong>Sharpened:</strong> between the dot products and the weighted
-        sum, the scores go through softmax (Step 03), so each token splits exactly 100% of its
-        attention across the past. Without the mask the model would learn to copy the answer, a
-        skill that's useless at generation time, when there's no future to see.</p>
+        <p class="refined"><strong>Correction:</strong> the scores pass through softmax
+        (Step 03) before the weighted sum, so each token's attention weights sum to 1. Without
+        the mask the model would learn to copy the answer, which fails at generation time.</p>
 
         <figure class="figure" id="attn-demo">
           <div class="emb-top">
@@ -386,17 +377,15 @@
 
           <figcaption>Real attention weights from a one-layer, four-head model
           (<code>train/step06_attention.py</code>, 29k parameters). Validation loss fell from 2.48
-          for the bigram to <b>2.02</b>. <em>Plain average</em> is the murky blob; the learned
-          heads are sharp. Honestly, though, one layer on characters mostly looks 1–3 characters
-          back, each head weighting that window differently. That's a learned 4-gram, not
-          reasoning across the sentence. Going further takes stacked layers.</figcaption>
+          (bigram) to <b>2.02</b>. Compared with the plain average, the learned heads are
+          selective, but a single layer mostly attends 1–3 characters back, which amounts to a
+          learned 4-gram. Longer-range use of context needs more layers.</figcaption>
         </figure>
       </section>
 
       <section class="step done" id="block">
         <p class="step-num">Step 07</p>
         <h3>Stacking it into a transformer</h3>
-        <p class="step-note">This one took a while, and the page shows the confusion.</p>
         <blockquote class="in-my-words">
           <p>Stacked transformer blocks take a token embedding and add an attention component and
           an MLP component. The MLP I'm not sure about: it expands the token through two layers
@@ -439,19 +428,19 @@
           </blockquote>
         </div>
 
-        <p class="refined"><strong>Sharpened:</strong> attention <em>routes</em>, the MLP
-        <em>computes</em>. And "more baked in" is specific: by layer 2, <code>a</code>'s notepad
-        already holds notes about its neighbours, so when <code>k</code> reads <code>a</code> it
-        gets two hops of context. Each layer adds a hop.</p>
+        <p class="refined"><strong>Correction:</strong> attention moves information between
+        positions; the MLP processes it. By layer 2, <code>a</code>'s notepad already holds
+        information about its neighbours, so when <code>k</code> reads <code>a</code> it gets
+        two hops of context. Each layer adds one hop.</p>
 
         <figure class="figure" id="arch-demo">
           <div class="arch-layout">
             <svg id="arch" class="arch" viewBox="0 0 420 430" role="group" aria-label="Transformer architecture drawn as a residual stream"></svg>
             <p id="arch-info" class="arch-info" aria-live="polite"></p>
           </div>
-          <figcaption>The model I trained, drawn around the notepad. Hover any part. The vertical
-          line is the residual stream; each block branches off twice and adds its result back.
-          GPT-3 has the same architecture, with 96 blocks instead of 6.</figcaption>
+          <figcaption>The trained model. Hover any part. The vertical line is the residual
+          stream; each block reads from it twice and adds its output back. GPT-3 uses the same
+          design with 96 blocks instead of 6.</figcaption>
         </figure>
 
         <figure class="figure" id="gpt-demo">
@@ -474,19 +463,17 @@
           <p id="gpt-copied" class="gpt-copied"></p>
           <div class="gpt-meter"><span id="gpt-copied-bar"></span></div>
 
-          <figcaption>The full model training (<code>train/step07_transformer.py</code>). Step
-          through the samples: noise, then letter frequencies, word shapes, names, line breaks and
-          the rhythm of a script. Then a surprise: after about 1,500 steps, validation loss turns
-          up while training loss keeps falling. That's Step 05's overfitting for real, as 10.8M
-          parameters on 1 MB of text start fitting the training set specifically. I expected
-          recited Shakespeare, but no sample copies more than about 24 characters, just common
-          phrases. The overfit model doesn't recite; it's overconfident on text it has seen. So I
-          kept the best-validation checkpoint (early stopping), which the rest of the page uses.
-          Dashed lines are the earlier models on the same held-out text.</figcaption>
+          <figcaption>Training the full model (<code>train/step07_transformer.py</code>). Samples
+          progress from noise to letter frequencies, word shapes, names, line breaks and script
+          format. After about 1,500 steps validation loss rises while training loss keeps
+          falling: 10.8M parameters on 1 MB of text begin to overfit. No sample copies more than
+          about 24 characters from the training text; overfitting shows up as overconfidence
+          on seen text. The rest of the page uses the best-validation checkpoint (early
+          stopping). Dashed lines are earlier models on the same held-out text.</figcaption>
         </figure>
 
         <figure class="figure">
-          <p class="mini-label">The journey so far: same seed, three models</p>
+          <p class="mini-label">Same seed, three models</p>
           <div id="journey-compare" class="journey-compare"></div>
         </figure>
       </section>
@@ -504,24 +491,23 @@
         </blockquote>
 
         <div class="exchange">
-          <p class="ask"><span>Claude nudged</span> A KV cache is an optimisation real systems
-          add, not part of the loop; mine reruns the whole window for every character. Then it
-          asked which way temperature goes, and what top-k is for.</p>
+          <p class="ask"><span>Claude noted</span> A KV cache is an optional optimisation; this
+          model reruns the whole window for every character. It then asked which way temperature
+          goes, and what top-k is for.</p>
           <blockquote class="in-my-words">
             <p>Temp 0 is ice cold, total greed; higher is more random. I don't know why 1 is the
             "real" distribution. Top-k cuts the long tail in case it derails the whole thing.</p>
           </blockquote>
           <p class="ask"><span>Claude answered</span> Dividing by 1 changes nothing, so T = 1 is
-          what training produced: cross-entropy (Step 05) pushed <code>softmax(logits)</code> to
-          match how often each character really follows. Any other temperature is a distortion
-          chosen at generation time.</p>
+          the distribution training produced: cross-entropy (Step 05) fits
+          <code>softmax(logits)</code> to observed frequencies. Other temperatures adjust it at
+          generation time.</p>
         </div>
 
-        <p class="refined"><strong>Sharpened:</strong> the long tail is a numbers game. Any one
-        rare character is unlikely, but together they're a few percent per step, over hundreds of
-        steps. In the replay below, the chance of 300 characters with no pick outside the top 10
-        is <span id="gen-survive">tiny</span>. And with no going back, one bad pick stays in the
-        context and steers everything after it.</p>
+        <p class="refined"><strong>Correction:</strong> each rare character is unlikely, but
+        together they account for a few percent per step. In the replay below, the chance of 300
+        characters with no pick outside the top 10 is <span id="gen-survive">tiny</span>. A bad
+        pick stays in the context and affects everything after it.</p>
 
         <figure class="figure" id="gen-demo">
           <p class="mini-label" id="gen-head"></p>
@@ -547,11 +533,10 @@
           <p id="gen-risk" class="gen-risk"></p>
 
           <figcaption>The real model's next-character probabilities at each step of one
-          generation, with temperature and top-k applied live to its actual logits. Faint marks
-          show the untouched T = 1 distribution. The text was sampled at T = 1 without top-k, so
-          you can spot where it went off-script, like the made-up words. Below about 0.5 the top
-          choice takes nearly everything (greedy); above 1.5 the rest of the alphabet gets a real
-          share. Near the end the prompt scrolls out of the 256-character window.</figcaption>
+          generation, with temperature and top-k applied to its logits. Faint marks show the
+          T = 1 distribution. The text was sampled at T = 1 without top-k, which explains the
+          invented words. Below about 0.5 the top choice dominates; above 1.5 probability spreads
+          across the alphabet. Near the end the prompt leaves the 256-character window.</figcaption>
         </figure>
 
         <figure class="figure" id="dial-demo">
@@ -581,24 +566,21 @@
             </div>
           </div>
           <figcaption>Finished 300-character generations (<code>train/step08_generate.py</code>),
-          all from one seed, so only the setting changes. Ice cold (0.1) is all real words going
-          nowhere: "the sea of the sea of the field". At 2.5 it's mostly noise. Top-k matters most
-          at the hot end, roughly doubling the share of real words. <code>HAMLET</code> never
-          appears in the training text, but the prompt is still the start of a script, so the
-          model writes one.</figcaption>
+          all from one seed. At 0.1 the output is real words in repetitive loops: "the sea of the
+          sea of the field". At 2.5 it is mostly noise. Top-k has the most effect at high
+          temperatures, roughly doubling the share of real words. <code>HAMLET</code> does not
+          appear in the training text, but the model still continues it as a script.</figcaption>
         </figure>
       </section>
 
       <section class="closing" aria-labelledby="closing-h">
         <h3 id="closing-h">Where I ended up</h3>
-        <p>Eight steps took me from "words need to become numbers" to a 10.8M-parameter
-        transformer that writes passable fake Shakespeare. Validation loss fell from
-        <b>4.17</b> (guessing) to <b>2.48</b> (bigram), <b>2.02</b> (one attention layer) and
-        <b>1.46</b> (the full model). Every gain came from the same idea: let the model use more
-        of its context, and learn which parts matter.</p>
-        <p>A chatbot is this scaled up: subword tokens, thousands of times more parameters and
-        text, then further training on conversations. The loop underneath doesn't change.
-        Predict the next token, sample, repeat.</p>
+        <p>The result is a 10.8M-parameter transformer that writes plausible Shakespeare-style
+        text. Validation loss fell from <b>4.17</b> (uniform guessing) to <b>2.48</b> (bigram),
+        <b>2.02</b> (one attention layer) and <b>1.46</b> (full model). Each improvement came
+        from using more context.</p>
+        <p>Production chat models use the same loop at far larger scale, with subword tokens,
+        more parameters and data, and further training on conversations.</p>
       </section>
     </main>
 

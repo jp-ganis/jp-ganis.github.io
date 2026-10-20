@@ -33,7 +33,7 @@
       mlp: ["MLP: computation", d * 4 * d + 4 * d + 4 * d * d + d,
         "Expand to 1,536 pattern detectors, apply a nonlinearity, shrink back. Each position works on its own notepad, with the same weights everywhere, like a conv filter."],
       add: ["Residual add", 0,
-        "x = x + sublayer(x). Notes are added, never overwritten, so a clumsy layer can't erase earlier work, and gradients get a straight path back."],
+        "x = x + sublayer(x). Each sublayer's output is added to the stream, which preserves earlier work and gives gradients a direct path back."],
       out: ["Final LayerNorm + linear", 2 * d + d * V + V,
         "Turns each position's final notepad into 65 logits. Softmax gives the next-character probabilities (Step 03)."],
     };
