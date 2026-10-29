@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>jp-harness — James Ganis</title>
+<meta name="description" content="A local web app that turns Azure DevOps tickets into reviewed pull requests with Claude Code: plan, human approval, test-first build, test gate, pull request.">
+<meta name="author" content="James Ganis">
+<link rel="canonical" href="https://jpganis.com/jp-harness/">
+<meta property="og:title" content="jp-harness">
+<meta property="og:description" content="Azure DevOps tickets in, reviewed pull requests out: Claude Code plans, a person approves, Claude builds test-first, and the harness runs the tests and opens the PR.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://jpganis.com/jp-harness/">
+<meta property="og:image" content="https://jpganis.com/jp-harness/img/delivered.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%232a78d6' stroke-width='3'/%3E%3Ccircle cx='27' cy='16' r='3' fill='%23eb6834'/%3E%3C/svg%3E">
+<script>
+  try { const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #fbfbfa; --surface: #ffffff; --sunken: #f2f3f5; --line: #e4e6ea;
+  --text: #17202b; --muted: #5d6877; --accent: #2f6fed; --accent-soft: #e8effd;
+  --good: #1f8a5b; --good-soft: #e6f4ed; --warn: #a86b12; --warn-soft: #fbf1e1; --bad: #bf3a2b; --bad-soft: #fbe9e7;
+  --shadow: 0 1px 2px rgb(16 24 40 / .05), 0 8px 24px rgb(16 24 40 / .07);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1318; --surface: #161b22; --sunken: #1c222b; --line: #2a313b;
+    --text: #e6eaf0; --muted: #98a2b1; --accent: #6c9dff; --accent-soft: #1b2a47;
+    --good: #4cc38a; --good-soft: #13291f; --warn: #e0a54b; --warn-soft: #2d2313; --bad: #f07a6c; --bad-soft: #321a17;
+    --shadow: 0 1px 2px rgb(0 0 0 / .4), 0 8px 24px rgb(0 0 0 / .35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1318; --surface: #161b22; --sunken: #1c222b; --line: #2a313b;
+  --text: #e6eaf0; --muted: #98a2b1; --accent: #6c9dff; --accent-soft: #1b2a47;
+  --good: #4cc38a; --good-soft: #13291f; --warn: #e0a54b; --warn-soft: #2d2313; --bad: #f07a6c; --bad-soft: #321a17;
+  --shadow: 0 1px 2px rgb(0 0 0 / .4), 0 8px 24px rgb(0 0 0 / .35);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.65 Inter, system-ui, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+a { color: var(--accent); text-underline-offset: 3px; }
+code, .mono { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; font-size: .86em; }
+code { background: var(--sunken); border: 1px solid var(--line); padding: 1px 5px; border-radius: 4px; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+.narrow { max-width: 720px; }
+section { padding: 72px 0; border-top: 1px solid var(--line); }
+h1 { font-size: clamp(36px, 6vw, 56px); line-height: 1.08; letter-spacing: -.025em; margin: 0 0 20px; font-weight: 700; }
+h2 { font-size: clamp(26px, 3.4vw, 34px); line-height: 1.2; letter-spacing: -.02em; margin: 0 0 16px; }
+h3 { font-size: 19px; margin: 0 0 8px; letter-spacing: -.01em; }
+p { margin: 0 0 16px; }
+.eyebrow { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+.lede { font-size: 20px; color: var(--muted); max-width: 680px; }
+.muted { color: var(--muted); }
+
+/* hero */
+.hero { padding: 88px 0 56px; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 28px 0 0; padding: 0; list-style: none; }
+.meta li { font-size: 13px; padding: 5px 11px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); color: var(--muted); }
+.hero-shot { margin-top: 48px; }
+
+/* screenshots */
+figure { margin: 0; }
+.shot { display: block; width: 100%; padding: 0; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface); box-shadow: var(--shadow); cursor: zoom-in; }
+.shot img { display: block; width: 100%; height: auto; }
+.shot::before { content: ""; display: block; height: 26px; background: var(--sunken); border-bottom: 1px solid var(--line);
+  background-image: radial-gradient(circle at 16px 13px, #ff605c 4.5px, transparent 5px), radial-gradient(circle at 32px 13px, #ffbd44 4.5px, transparent 5px), radial-gradient(circle at 48px 13px, #00ca4e 4.5px, transparent 5px); }
+figcaption { font-size: 14px; color: var(--muted); margin-top: 12px; }
+figcaption b { color: var(--text); font-weight: 600; }
+
+/* stats */
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 32px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; }
+.stat b { display: block; font-size: 26px; letter-spacing: -.02em; }
+.stat span { font-size: 14px; color: var(--muted); }
+
+/* pipeline */
+.flow { list-style: none; padding: 0; margin: 36px 0 0; display: grid; grid-template-columns: repeat(6, 1fr); gap: 0; counter-reset: step; }
+.flow li { position: relative; padding: 40px 12px 0 0; }
+.flow li::before { counter-increment: step; content: counter(step); position: absolute; top: 0; left: 0; width: 28px; height: 28px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 13px; font-weight: 600; background: var(--accent); color: #fff; z-index: 1; }
+.flow li::after { content: ""; position: absolute; top: 13px; left: 28px; right: 0; height: 2px; background: var(--line); }
+.flow li:last-child::after { display: none; }
+.flow li.human::before { background: var(--warn); }
+.flow li.gate::before { background: var(--good); }
+.flow b { display: block; font-size: 15px; margin-bottom: 4px; }
+.flow span { display: block; font-size: 14px; color: var(--muted); line-height: 1.5; }
+.legend { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 28px; font-size: 13px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: 0; }
+
+/* two-column feature rows */
+.feature { display: grid; grid-template-columns: 5fr 7fr; gap: 48px; align-items: start; margin-top: 64px; }
+.feature:first-of-type { margin-top: 40px; }
+.feature.flip { grid-template-columns: 7fr 5fr; }
+.feature.flip .text { order: 2; }
+.feature .text { position: sticky; top: 24px; }
+.feature ul { padding-left: 20px; margin: 0 0 16px; }
+.feature li { margin-bottom: 6px; }
+.tag { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; margin-bottom: 12px; }
+.tag.blue { background: var(--accent-soft); color: var(--accent); }
+.tag.green { background: var(--good-soft); color: var(--good); }
+.tag.amber { background: var(--warn-soft); color: var(--warn); }
+.tag.red { background: var(--bad-soft); color: var(--bad); }
+
+/* integrations */
+.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 32px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 24px; }
+.card h3 { display: flex; align-items: center; gap: 10px; }
+.card .ico { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); flex: none; }
+.card .ico svg { width: 17px; height: 17px; }
+.card p { font-size: 15.5px; color: var(--muted); }
+.card ul { margin: 0; padding-left: 18px; font-size: 15px; }
+.card li { margin-bottom: 5px; }
+
+/* architecture diagram */
+.arch { margin-top: 32px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; overflow-x: auto; }
+.arch svg { display: block; width: 100%; min-width: 760px; height: auto; }
+.arch .box { fill: var(--sunken); stroke: var(--line); }
+.arch .core { fill: var(--accent-soft); stroke: var(--accent); }
+.arch .ext { fill: var(--surface); stroke: var(--muted); stroke-dasharray: 4 3; }
+.arch text { fill: var(--text); font: 600 13px Inter, system-ui, sans-serif; }
+.arch text.sub { fill: var(--muted); font-weight: 400; font-size: 11.5px; }
+.arch path { stroke: var(--muted); fill: none; stroke-width: 1.4; }
+.arch .lbl { fill: var(--muted); font-size: 11px; font-weight: 500; }
+
+/* guardrails */
+.rails { list-style: none; padding: 0; margin: 28px 0 0; display: grid; gap: 10px; }
+.rails li { display: grid; grid-template-columns: 28px 1fr; gap: 12px; align-items: start; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; font-size: 15.5px; }
+.rails li::before { content: ""; width: 22px; height: 22px; margin-top: 2px; border-radius: 6px; background: var(--good-soft)
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231f8a5b' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/14px no-repeat; }
+.rails b { font-weight: 600; }
+
+/* lessons */
+.lessons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 32px; }
+.lessons .card p { color: var(--text); }
+.lessons .card h3 { font-size: 16px; }
+
+.stack { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+.stack span { font-size: 14px; padding: 6px 12px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line); }
+
+footer { padding: 48px 0 64px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+
+/* lightbox */
+dialog { border: 0; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgb(8 12 18 / .82); }
+dialog img { display: block; max-width: 96vw; max-height: 94vh; width: auto; height: auto; border-radius: 8px; }
+dialog form { position: fixed; top: 14px; right: 18px; }
+dialog button { font: 600 15px Inter, sans-serif; background: #fff; color: #111; border: 0; border-radius: 999px; padding: 8px 14px; cursor: pointer; }
+
+@media (max-width: 900px) {
+  .feature, .feature.flip { grid-template-columns: 1fr; gap: 24px; }
+  .feature.flip .text { order: 0; }
+  .feature .text { position: static; }
+  .flow { grid-template-columns: 1fr 1fr 1fr; row-gap: 28px; }
+  .flow li:nth-child(3)::after { display: none; }
+  .lessons { grid-template-columns: 1fr; }
+  .stats { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+  body { font-size: 16px; }
+  .wrap { padding: 0 16px; }
+  section { padding: 52px 0; }
+  .hero { padding: 56px 0 40px; }
+  .lede { font-size: 18px; }
+  .grid { grid-template-columns: 1fr; }
+  .flow { grid-template-columns: 1fr; row-gap: 18px; }
+  .flow li { padding: 0 0 0 42px; }
+  .flow li::after { display: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow"><a href="/" style="color:inherit;text-decoration:none">jp ganis</a> · Project · AI-assisted delivery</div>
+    <h1>jp-harness</h1>
+    <p class="lede">A local web app that takes a ticket from Azure DevOps and turns it into a reviewed pull request. Claude Code writes the plan, a person approves it, and Claude builds it test-first. The harness runs the tests and opens the PR. You can watch every step live, written in plain English.</p>
+    <ul class="meta">
+      <li>Python · FastAPI · SQLite</li>
+      <li>Claude Code (headless)</li>
+      <li>Azure DevOps REST</li>
+      <li>git worktrees</li>
+      <li>Vanilla JS, server-sent events</li>
+    </ul>
+    <figure class="hero-shot">
+      <button class="shot" data-full="img/delivered.png" aria-label="Enlarge screenshot">
+        <img src="img/delivered.png" alt="jp-harness showing a finished ticket: a six-stage pipeline all complete, the approved plan, a live activity feed, 214 tests passed, and the files changed" width="2160" height="1980">
+      </button>
+      <figcaption><b>A delivered ticket.</b> The approved plan (version 2, after one round of feedback), the activity feed from pick-up to pull request, the full test run and the diff summary.</figcaption>
+    </figure>
+  </div>
+</header>
+
+<section id="why">
+  <div class="wrap narrow">
+    <div class="eyebrow">The problem</div>
+    <h2>AI coding agents are fast. Trusting them is the hard part.</h2>
+    <p>Running an agent in a terminal works for one developer. It doesn't work for a team that needs plans signed off, tests passing before anything is pushed, and an audit trail a manager can follow. It also had to be safe to point at a production .NET codebase that controls real cameras and winch equipment.</p>
+    <p>jp-harness is the layer around the agent. It decides when Claude runs and what Claude is allowed to do. It checks the work before anything leaves the machine, and it reports progress in language a non-technical viewer can follow.</p>
+    <div class="stats">
+      <div class="stat"><b>3</b><span>workflows: deliver, bug check, PR review</span></div>
+      <div class="stat"><b>1</b><span>human approval before any code is written</span></div>
+      <div class="stat"><b>0</b><span>pushes or merges by the AI</span></div>
+      <div class="stat"><b>~3 s</b><span>full test suite, no network, no AI</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="flow">
+  <div class="wrap">
+    <div class="eyebrow">How a ticket moves</div>
+    <h2>Tag a work item. Get a pull request.</h2>
+    <p class="muted" style="max-width:680px">Tagging a work item <code>jp-harness-task</code> in Azure DevOps is the only setup. The harness picks it up on its next poll and moves it through six stages, adding its own stage tags and comments to the work item as it goes.</p>
+    <ol class="flow">
+      <li><b>Picked up</b><span>Found by tag. A private git worktree is made on its own <code>feature/</code> branch.</span></li>
+      <li><b>Designing</b><span>Claude reads the ticket and code in read-only mode and writes a plan.</span></li>
+      <li class="human"><b>Approval</b><span>A person approves, rejects, or requests changes. A revised plan comes back as a new version.</span></li>
+      <li><b>Building</b><span>Claude writes failing tests from the acceptance criteria first, then the code.</span></li>
+      <li class="gate"><b>Testing</b><span>The harness runs the full suite itself. Claude gets one attempt to fix a failure.</span></li>
+      <li class="gate"><b>PR created</b><span>The harness pushes, opens the PR, links the work item and assigns a reviewer.</span></li>
+    </ol>
+    <div class="legend"><span><i style="background:var(--accent)"></i>Claude works</span><span><i style="background:var(--warn)"></i>A person decides</span><span><i style="background:var(--good)"></i>The harness verifies and acts</span></div>
+
+    <div class="feature">
+      <div class="text">
+        <span class="tag amber">Human in the loop</span>
+        <h3>Plans are approved before code is written</h3>
+        <p>The design run uses tools that can only read: Read, Glob and Grep. The plan lists the steps, one test per acceptance criterion, what is out of scope, and any questions for the approver. It is also posted as a comment on the work item.</p>
+        <p><b>Request changes</b> resumes the same Claude session with the feedback, so the revised plan builds on what Claude already read. Every version is kept.</p>
+      </div>
+      <figure>
+        <button class="shot" data-full="img/approval.png" aria-label="Enlarge screenshot"><img src="img/approval.png" alt="A ticket awaiting approval, showing the plan and Approve, Reject and Request changes controls" loading="lazy" width="2160" height="1620"></button>
+        <figcaption><b>Awaiting approval.</b> The plan includes a question about time zones, raised before any code exists.</figcaption>
+      </figure>
+    </div>
+
+    <div class="feature flip">
+      <div class="text">
+        <span class="tag blue">Live, in plain English</span>
+        <h3>A feed a manager can read</h3>
+        <p>Claude Code streams its work as JSON events. A narrator turns each event into a sentence such as <i>"Reading the device list page"</i> or <i>"Tests finished: 1 passed, 3 failed"</i>, and pushes it to every open browser over server-sent events.</p>
+        <p>File paths, commands and raw output stay behind <b>Show technical details</b>. Turn it on when something goes wrong mid-demo.</p>
+      </div>
+      <figure>
+        <button class="shot" data-full="img/building.png" aria-label="Enlarge screenshot"><img src="img/building.png" alt="A ticket in the Building stage with a live activity feed and failing tests written first" loading="lazy" width="2160" height="1140"></button>
+        <figcaption><b>Building, live.</b> The tests were written first and fail as expected. Next, Claude edits the page to make them pass.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section id="more">
+  <div class="wrap">
+    <div class="eyebrow">Two more workflows on the same engine</div>
+    <h2>Bug triage and pull request review</h2>
+    <p class="muted" style="max-width:680px">The engine (polling, a worker pool, state, the live feed) knows nothing about delivery. Each workflow is a class with <code>poll()</code>, <code>run()</code>, <code>act()</code> and <code>failed()</code>. That made it straightforward to add these two.</p>
+
+    <div class="feature">
+      <div class="text">
+        <span class="tag red">Bug check · read-only</span>
+        <h3>"Is this actually a software bug?"</h3>
+        <p>Tag a bug <code>jp-harness-bug</code>, then enter the branch or commit the site runs. Claude makes a one- to two-minute read-only pass over the code at that commit. It gives a verdict and a confidence level, file-and-line evidence, the most likely cause, and what to check next.</p>
+        <p>It writes nothing back to Azure DevOps. If the answer is yes, re-tag the bug as a task and it enters the delivery pipeline.</p>
+      </div>
+      <figure>
+        <button class="shot" data-full="img/bugcheck.png" aria-label="Enlarge screenshot"><img src="img/bugcheck.png" alt="Bug check result: looks like a software issue, high confidence, with the likely cause and file references" loading="lazy" width="2160" height="1350"></button>
+        <figcaption><b>A bug check.</b> An off-by-one end-of-month date, traced to two lines.</figcaption>
+      </figure>
+    </div>
+
+    <div class="feature flip">
+      <div class="text">
+        <span class="tag green">PR review · comments only</span>
+        <h3>Findings posted on the line they concern</h3>
+        <p>Label a pull request <code>jp-harness-review</code>. Claude reads the diff and the code around it, then returns structured JSON: an overall risk, a summary, and findings graded <i>Must fix</i>, <i>Should change</i> or <i>Suggestion</i>.</p>
+        <p>Each finding becomes an active comment thread on its file and line in Azure DevOps. The review never votes, completes or relabels a PR. If some comments fail to post, they stay on the page and <b>Post the rest</b> retries only those.</p>
+      </div>
+      <figure>
+        <button class="shot" data-full="img/review.png" aria-label="Enlarge screenshot"><img src="img/review.png" alt="PR review showing Needs attention, one Must fix, two Should change and one Suggestion finding cards" loading="lazy" width="2160" height="1860"></button>
+        <figcaption><b>A PR review.</b> It catches a retry loop that could send a device command twice.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section id="integrations">
+  <div class="wrap">
+    <div class="eyebrow">Integrations</div>
+    <h2>How the pieces connect</h2>
+
+    <div class="arch" role="img" aria-label="Architecture: browser connects to a FastAPI app over REST and server-sent events. The engine runs workflows on worker threads. Workflows call Azure DevOps over REST, run Claude Code as a subprocess in a git worktree, and store state in SQLite.">
+      <svg viewBox="0 0 960 330" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 10 5 0 10z" style="fill:var(--muted);stroke:none"/></marker></defs>
+        <rect class="ext" x="20" y="130" width="150" height="70" rx="10"/><text x="95" y="160" text-anchor="middle">Browser</text><text class="sub" x="95" y="180" text-anchor="middle">vanilla JS, no build</text>
+        <rect class="box" x="230" y="130" width="160" height="70" rx="10"/><text x="310" y="160" text-anchor="middle">FastAPI app</text><text class="sub" x="310" y="180" text-anchor="middle">/api/* · SSE stream</text>
+        <rect class="core" x="450" y="40" width="230" height="250" rx="12"/>
+        <text x="565" y="68" text-anchor="middle">Engine</text><text class="sub" x="565" y="86" text-anchor="middle">poll loop · scheduler · worker pool</text>
+        <rect class="box" x="472" y="104" width="186" height="44" rx="8"/><text x="565" y="131" text-anchor="middle">Delivery</text>
+        <rect class="box" x="472" y="158" width="186" height="44" rx="8"/><text x="565" y="185" text-anchor="middle">Bug check</text>
+        <rect class="box" x="472" y="212" width="186" height="44" rx="8"/><text x="565" y="239" text-anchor="middle">PR review</text>
+        <rect class="ext" x="750" y="20" width="190" height="70" rx="10"/><text x="845" y="50" text-anchor="middle">Azure DevOps</text><text class="sub" x="845" y="70" text-anchor="middle">WIQL · tags · comments · PRs</text>
+        <rect class="ext" x="750" y="130" width="190" height="70" rx="10"/><text x="845" y="160" text-anchor="middle">Claude Code</text><text class="sub" x="845" y="180" text-anchor="middle">claude -p · stream-json</text>
+        <rect class="ext" x="750" y="240" width="190" height="70" rx="10"/><text x="845" y="270" text-anchor="middle">git worktree</text><text class="sub" x="845" y="290" text-anchor="middle">one per ticket · test gate</text>
+        <rect class="box" x="230" y="250" width="160" height="56" rx="10"/><text x="310" y="275" text-anchor="middle">SQLite</text><text class="sub" x="310" y="293" text-anchor="middle">tickets · plans · events</text>
+        <path d="M170 158H228" marker-end="url(#a)"/><path d="M230 175H172" marker-end="url(#a)"/>
+        <text class="lbl" x="199" y="150" text-anchor="middle">REST</text><text class="lbl" x="199" y="192" text-anchor="middle">SSE</text>
+        <path d="M390 165H448" marker-end="url(#a)"/>
+        <path d="M450 270H392" marker-end="url(#a)"/>
+        <path d="M680 100C715 100 715 55 748 55" marker-end="url(#a)"/>
+        <path d="M680 165H748" marker-end="url(#a)"/>
+        <path d="M680 230C715 230 715 275 748 275" marker-end="url(#a)"/>
+        <path d="M845 200V238" marker-end="url(#a)"/><text class="lbl" x="855" y="223">edits</text>
+      </svg>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="M4 9h16M9 9v11"/></svg></span>Azure DevOps</h3>
+        <p>The source of work and the place results go. It is plain REST over <code>httpx</code>, signed in with an <code>az login</code> token, so there are no secrets in config.</p>
+        <ul>
+          <li>WIQL queries find work items by tag. The PR list finds PRs by label.</li>
+          <li>Stage tags (<code>jp-harness-planning</code>, <code>-building</code>, <code>-done</code>…) show progress on the board.</li>
+          <li>The plan, a build summary and any blocking reasons are posted as work item comments.</li>
+          <li>Pull requests are linked to the work item, with a reviewer assigned. Review findings become line-anchored comment threads.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 9-4 3 4 3M16 9l4 3-4 3M13 6l-2 12"/></svg></span>Claude Code, headless</h3>
+        <p>Each stage starts <code>claude -p --output-format stream-json</code> as a subprocess in the ticket's worktree. Every run has a time limit and is killed with its whole process tree.</p>
+        <ul>
+          <li>Two permission profiles. <b>Read-only</b> is for design, bug checks and reviews. <b>Build</b> allows edits and <code>dotnet test</code> but denies push, remotes, merges, rebases, branch switching and <code>dotnet run</code>.</li>
+          <li>Sessions are resumed for plan revisions and after a restart, so Claude keeps what it already read.</li>
+          <li>The event stream is parsed live into the activity feed, with test totals and cost.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="8" r="2.5"/><path d="M6 8.5v7M18 10.5c0 4-6 3-11 5.5"/></svg></span>git</h3>
+        <p>Each ticket gets its own worktree outside the harness folder, on a <code>feature/&lt;id&gt;-&lt;title&gt;</code> branch. Several tickets can run at once without stepping on each other.</p>
+        <ul>
+          <li>The harness, not Claude, commits and pushes, and only after its own run of the full test suite passes.</li>
+          <li>A guarded push refuses anything except the ticket's own <code>feature/*</code> branch.</li>
+          <li>Rejecting or abandoning a ticket removes the worktree and the local branch.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span>State &amp; live UI</h3>
+        <p>SQLite holds tickets, every plan version and the full event log. Each change goes through one <code>Engine.update</code> call, so the database and every open browser stay in sync.</p>
+        <ul>
+          <li>A ticket's <code>next_action</code> stays set while its work runs. If the process restarts, it simply resumes. Nothing else tracks "in progress".</li>
+          <li>Worker threads publish to asyncio queues, one per open browser tab, which are streamed as server-sent events.</li>
+          <li>The UI has no build step. It is about 370 lines of vanilla JS.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="safety">
+  <div class="wrap narrow">
+    <div class="eyebrow">Guardrails</div>
+    <h2>What the AI can never do</h2>
+    <p class="muted">These rules are enforced in code, and the project's agent instructions list them under "Must never change".</p>
+    <ul class="rails">
+      <li><span><b>Only the harness pushes or opens pull requests.</b> Claude's build profile denies <code>git push</code>, remotes, merge, rebase and branch switching.</span></li>
+      <li><span><b>Nothing is merged, and nothing is pushed to <code>main</code> or the base branch.</b> A person completes every PR.</span></li>
+      <li><span><b>Design, bug checks and reviews are read-only</b> at the tool level, not only in the prompt.</span></li>
+      <li><span><b>The target app is never started.</b> <code>dotnet run</code> is denied because the development machine can reach real hardware.</span></li>
+      <li><span><b>On a work item, the harness changes only its own tags and adds comments.</b> It never touches state, assignment or fields. A bug check writes nothing at all.</span></li>
+      <li><span><b>A failure late in the process never loses work.</b> If Azure DevOps or git fails after the plan or code exists, the error is logged and the work is kept.</span></li>
+    </ul>
+  </div>
+</section>
+
+<section id="lessons">
+  <div class="wrap">
+    <div class="eyebrow">Things that bit</div>
+    <h2>Lessons from the integration work</h2>
+    <div class="lessons">
+      <div class="card"><h3>Tag patches append</h3><p>A JSON-patch <code>add</code> on <code>System.Tags</code> appends instead of replacing. Finished tickets kept <code>jp-harness-task</code> and were picked up again as new. The fix was to use <code>replace</code>.</p></div>
+      <div class="card"><h3>Refusals are a different event</h3><p>A tool call refused by the permission profile doesn't arrive as a failed tool result. It arrives as a <code>system / permission_denied</code> event with a plain-string message, so the narrator needed a separate path for it.</p></div>
+      <div class="card"><h3>Plans that go missing</h3><p>In plan mode, Claude sometimes saves the plan to a file and only points to it. The runner captures that file's text, and the design step falls back to it.</p></div>
+      <div class="card"><h3>8.3 paths</h3><p>Claude Code refuses to edit under Windows short paths like <code>C:\Users\JAMES~1.GAN</code>. Worktree paths are always kept in long form.</p></div>
+      <div class="card"><h3>Token audience</h3><p>For this tenant, <code>az account get-access-token</code> only works with the <code>vssps</code> resource. The usual Azure DevOps resource GUID is refused.</p></div>
+      <div class="card"><h3>Testing without the world</h3><p>About 3 seconds of tests cover every workflow, using fakes for Azure DevOps, git and Claude. Git itself is tested against a temporary repository. No test touches the network.</p></div>
+    </div>
+
+    <div class="stack">
+      <span>Python 3.13</span><span>FastAPI</span><span>Uvicorn</span><span>httpx</span><span>SQLite (WAL)</span><span>pytest</span><span>Claude Code CLI</span><span>Azure DevOps REST</span><span>Azure CLI auth</span><span>git worktrees</span><span>Server-sent events</span><span>marked + DOMPurify</span><span>.NET test runner</span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">Built by James Ganis. The screenshots show the real UI running on invented demo data.</div>
+</footer>
+
+<dialog id="lightbox">
+  <form method="dialog"><button>Close ✕</button></form>
+  <img alt="">
+</dialog>
+
+<script>
+  const box = document.getElementById('lightbox');
+  const big = box.querySelector('img');
+  document.querySelectorAll('.shot').forEach((shot) => shot.addEventListener('click', () => {
+    big.src = shot.dataset.full;
+    big.alt = shot.querySelector('img').alt;
+    box.showModal();
+  }));
+  box.addEventListener('click', (e) => { if (e.target === box || e.target === big) box.close(); });
+</script>
+</body>
+</html>
