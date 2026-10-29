@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Little Q</title>
+  <meta name="author" content="James Ganis">
+  <meta name="description" content="By James Ganis. A small neural network learns, by trial and error, to cross procedurally generated maps while dodging slimes and beetles. Deep Q-learning trained live in your browser.">
+  <meta property="og:title" content="Little Q">
+  <meta property="og:description" content="Watch a tiny neural network teach itself to route across a pixel-art world and dodge monsters, with its weights glowing in 3D as it learns.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='15' cy='15' r='9' fill='none' stroke='%23f2553a' stroke-width='3'/%3E%3Cpath d='M20 20 L27 27' stroke='%23ffb199' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <header class="hero">
+    <p class="eyebrow">Deep Q-learning · a neural network trained live in your browser</p>
+    <h1>Little Q</h1>
+    <p class="lede">
+      Little Q has never seen this world before. Its brain is a small neural network that starts out
+      knowing nothing, and it gets better only by trying, failing, and remembering what happened.
+      Its goal is to reach the glowing exit by the shortest route without bumping into the slimes or
+      beetles. Turn the speed up and watch it figure that out.
+    </p>
+  </header>
+
+  <main>
+    <section class="stage" aria-label="Game and network">
+      <div class="game-col">
+        <div class="screen">
+          <canvas id="game" aria-label="Top-down game screen. The network controls the character."></canvas>
+          <div id="verdict" class="verdict" aria-live="polite"></div>
+        </div>
+
+        <div class="controls">
+          <div class="speed seg" role="group" aria-label="Speed">
+            <span class="seg-label">Speed</span>
+            <button type="button" data-speed="1" aria-pressed="false">1×</button>
+            <button type="button" data-speed="4" aria-pressed="true">4×</button>
+            <button type="button" data-speed="16" aria-pressed="false">16×</button>
+            <button type="button" data-speed="turbo" aria-pressed="false">Turbo</button>
+          </div>
+          <label class="slider">Mobs <input id="mobs" type="range" min="0" max="10" value="5"> <span id="mobs-n">5</span></label>
+        </div>
+        <div class="controls">
+          <button id="new-map" type="button">New map</button>
+          <button id="reset" type="button">Reset brain</button>
+          <label class="toggle"><input id="show-policy" type="checkbox" checked> Show its plan on every tile</label>
+        </div>
+      </div>
+
+      <div class="net-col">
+        <div id="net" class="net" aria-label="3D view of the neural network. Drag to rotate."></div>
+        <div class="under">
+          <div class="compass" aria-label="How good the network thinks each move is">
+            <span class="compass-title">Q-values now <span id="explore-badge" class="badge" hidden>random move</span></span>
+            <div class="cell" id="p-0"><span class="arrow">↑</span><span class="bar"></span><span class="num">—</span></div>
+            <div class="cell" id="p-3"><span class="arrow">←</span><span class="bar"></span><span class="num">—</span></div>
+            <div class="cell" id="p-1"><span class="arrow">→</span><span class="bar"></span><span class="num">—</span></div>
+            <div class="cell" id="p-2"><span class="arrow">↓</span><span class="bar"></span><span class="num">—</span></div>
+          </div>
+          <ul class="key">
+            <li><i class="k-pos"></i>Positive weight</li>
+            <li><i class="k-neg"></i>Negative weight</li>
+            <li><i class="k-flow"></i>Signal (forward pass)</li>
+            <li><i class="k-learn"></i>Learning (weights just changed)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="scores" aria-label="Scores">
+      <div class="stat"><span class="stat-label">Reaches the exit (last 20 runs)</span><span class="stat-num model" id="s-success">—</span></div>
+      <div class="stat"><span class="stat-label">Route efficiency</span><span class="stat-num" id="s-eff">—</span></div>
+      <div class="stat"><span class="stat-label">Caught by mobs</span><span class="stat-num" id="s-caught">—</span></div>
+      <div class="stat"><span class="stat-label">Random moves (ε)</span><span class="stat-num" id="s-explore">—</span></div>
+      <div class="stat"><span class="stat-label">Runs · steps</span><span class="stat-num small" id="s-count">0 · 0</span></div>
+      <figure class="chart-wrap">
+        <figcaption>Learning curve, rolling over the last 20 runs</figcaption>
+        <div class="chart-box">
+          <canvas id="chart" role="img" aria-label="Line chart of success rate and route efficiency over runs"></canvas>
+          <div id="chart-tip" class="chart-tip" hidden></div>
+        </div>
+        <ul class="legend"><li><i style="--c:#f2553a"></i>Success rate</li><li><i style="--c:#4a8fe0"></i>Route efficiency (shortest route ÷ steps taken)</li></ul>
+      </figure>
+    </section>
+
+    <article class="notes" id="notes">
+      <h2>What's going on</h2>
+
+      <h3>1. Learning from rewards</h3>
+      <p>
+        Nobody shows Little Q the right way to go. This is <em>reinforcement learning</em>: the agent
+        acts, the world responds, and a number called the <em>reward</em> says how that went. Here it
+        is small and simple:
+      </p>
+      <ul>
+        <li><b>+2</b> for reaching the exit</li>
+        <li><b>−2</b> for getting caught by a mob</li>
+        <li><b>+0.1</b> for a step that gets closer to the exit, <b>−0.15</b> for one that doesn't</li>
+      </ul>
+      <p>
+        The small per-step rewards are <em>reward shaping</em>. Without them the only feedback would
+        come at the very end of a run, and early on, when it's moving at random, it would almost never
+        get there. The shaping tells it it's warm or cold on every step.
+      </p>
+
+      <h3>2. What it senses</h3>
+      <p>
+        It never sees the map. It gets 28 numbers about the four tiles around it, shown as the little
+        four-node crosses on the left of the 3D view. There are seven questions, each asked once for
+        up, right, down and left:
+      </p>
+      <ul>
+        <li><b>open</b>: can it step there?</li>
+        <li><b>closer to exit</b>: would that step shorten the shortest remaining route? Think of it as
+          a sense of smell for the exit. The network still has to learn to trust it.</li>
+        <li><b>mob on it</b>, <b>mob next to it</b>, <b>mob 2 away</b>: how close the nearest danger is
+          to that tile</li>
+        <li><b>been there</b>: has it already walked on that tile this run?</li>
+        <li><b>last move</b>: which way it just went</li>
+      </ul>
+      <p>
+        Because these features describe the world relative to where it's standing, the same small
+        network works on every new map.
+      </p>
+
+      <h3>3. Q-values: how good is each move?</h3>
+      <p>
+        The network's four outputs are <em>Q-values</em>: its estimate of the total future reward it
+        will collect after making that move. That isn't just the next step, it's everything after,
+        with later rewards counting a little less (each step ahead is discounted by 0.95). It simply
+        takes the move with the highest Q. You can see the live values under the network, and the
+        arrows on the map show which move it would choose from every tile right now.
+      </p>
+      <p>
+        Learning comes from the <em>Bellman equation</em>. After a move, the network compares its
+        prediction with what it actually got plus its own estimate for where it ended up:
+      </p>
+      <p class="eq">Q(here, move) ← reward + 0.95 × max Q(next tile, any move)</p>
+      <p>
+        The gap between the two is the error. Backpropagation nudges every weight to shrink it: the
+        gold sparks in the 3D view run backwards along the weights that changed most. Do this
+        thousands of times and the value of reaching the exit slowly flows backwards through the map,
+        one step at a time, until the arrows point the right way from everywhere.
+      </p>
+
+      <h3>4. The tricks that make it work</h3>
+      <ul>
+        <li><b>Exploration (ε-greedy).</b> At first it moves completely at random, then less and less,
+          bottoming out at 3%. If it always took the move it currently thinks is best, it would never
+          discover anything better. The "random move" badge shows when it's exploring.</li>
+        <li><b>Experience replay.</b> Every step goes into a memory of up to 30,000 moments, and each
+          update trains on 32 picked at random. Consecutive steps are almost identical, and learning
+          only from them makes the network lurch around.</li>
+        <li><b>A target network.</b> The "estimate for where it ended up" comes from a second copy of
+          the network that is only refreshed every 300 steps. Otherwise the network is chasing its
+          own moving tail.</li>
+        <li><b>Double DQN.</b> The live network picks the next move but the frozen copy scores it.
+          Using the same network for both makes it systematically over-optimistic.</li>
+      </ul>
+
+      <h3>5. Things to try</h3>
+      <ul>
+        <li>Hit <b>Turbo</b> for twenty seconds, then drop back to 1× and watch how differently it
+          moves.</li>
+        <li>Drag the <b>Mobs</b> slider to 10. Success rate drops and route efficiency falls, because
+          the shortest route is no longer the safest one and it has to learn to go around.</li>
+        <li>Set mobs to 0 and reset the brain: with nothing to dodge, it finds near-perfect routes
+          (about 97% efficient) as soon as it stops exploring, after a few thousand steps.</li>
+        <li>Watch the arrows near a slime. They bend away from it, and that's the network trading a
+          longer route against the risk of losing everything.</li>
+      </ul>
+
+      <h3>The size of it</h3>
+      <p>
+        28 → 16 → 12 → 4 with ReLU: 688 weights plus 32 biases. That's the whole brain. Every
+        connection in the 3D view is a real weight, drawn brighter the bigger it is. It's plain
+        JavaScript with no ML library. It's a pocket-sized version of DQN, the algorithm DeepMind
+        used in 2015 to learn Atari games straight from the screen.
+      </p>
+    </article>
+  </main>
+
+  <footer class="foot">
+    <a href="/">← jpganis.com</a>
+  </footer>
+</body>
+</html>
