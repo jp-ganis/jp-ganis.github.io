@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Toy Superposition</title>
+  <meta name="author" content="James Ganis">
+  <meta name="description" content="By James Ganis. An interactive toy model of superposition: train a tiny network in your browser and watch it pack five features into two dimensions.">
+  <link rel="canonical" href="https://jpganis.com/superposition/">
+  <meta property="og:title" content="More features than dimensions">
+  <meta property="og:description" content="An interactive replication of Toy Models of Superposition (Elhage et al., 2022), trained live in the browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://jpganis.com/superposition/">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%232a78d6' stroke-width='3'/%3E%3Ccircle cx='27' cy='16' r='3' fill='%23eb6834'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    try { const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <p class="eyebrow">Interactive · Interpretability</p>
+      <h1>More features than dimensions</h1>
+      <p class="lede">
+        A toy model of superposition in which five features have to share two dimensions.
+      </p>
+      <div class="hero-links">
+        <a href="/">jp ganis</a>
+        <a href="https://transformer-circuits.pub/2022/toy_model/index.html">Elhage et al. (2022)</a>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle dark mode">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg>
+          <span>Theme</span>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section class="prose">
+        <h2>The puzzle</h2>
+        <p>If every neuron in a network meant one thing, interpretability would be easy: read off
+        the neurons. They don't. Real neurons fire for mixtures of unrelated concepts. One
+        explanation is <em>superposition</em>. The world has more useful features than the model
+        has dimensions, so the model stores them as directions that are <em>almost</em>
+        orthogonal and puts up with some interference between them.</p>
+        <p>The toy model below is the smallest setting where this happens. An input
+        <code>x</code> has <code>n</code> features. It is squeezed into <code>m = 2</code> hidden
+        dimensions and then reconstructed:</p>
+        <p class="eq"><code>h = W x</code> &nbsp;·&nbsp; <code>x′ = ReLU(Wᵀ h + b)</code></p>
+        <p>Each column <code>W<sub>i</sub></code> is a 2D arrow: the direction where feature
+        <code>i</code> lives. The loss is reconstruction error weighted by each feature's
+        <em>importance</em>. We have two controls here: <strong>density</strong>, which is how often
+        each feature is non-zero, and <strong>importance</strong>, which decays from feature 1 to
+        feature <code>n</code>.</p>
+      </section>
+
+      <figure class="figure" id="toy">
+        <div class="controls">
+          <label class="slider">
+            <span>Feature density <b id="p-val"></b></span>
+            <input id="p" type="range" min="0" max="10" step="1" value="0" aria-describedby="p-hint">
+            <span class="hint" id="p-hint"><span>dense</span><span>sparse</span></span>
+          </label>
+          <label class="slider">
+            <span>Importance decay <b id="imp-val"></b></span>
+            <input id="imp" type="range" min="0.5" max="1" step="0.05" value="0.9">
+            <span class="hint"><span>steep</span><span>all equal</span></span>
+          </label>
+        </div>
+        <div class="controls">
+          <div class="seg" role="group" aria-label="Number of features" id="n-seg">
+            <button type="button" data-n="3">3</button>
+            <button type="button" data-n="4">4</button>
+            <button type="button" data-n="5">5</button>
+            <button type="button" data-n="6">6</button>
+            <button type="button" data-n="8">8</button>
+          </div>
+          <span class="ctl-label">features</span>
+          <button type="button" class="btn" id="retrain">Retrain from scratch</button>
+        </div>
+
+        <div class="toy-grid">
+          <div>
+            <p class="mini-label">Feature directions, the columns of W</p>
+            <svg id="plane" viewBox="0 0 320 320" role="img" aria-label="Each feature's direction in the 2D hidden space"></svg>
+            <p class="status" id="status" aria-live="polite"></p>
+          </div>
+          <div>
+            <p class="mini-label">WᵀW and bias b</p>
+            <svg id="gram" viewBox="0 0 260 230" role="img" aria-label="Heatmap of WᵀW, how much each feature's direction overlaps with each other's"></svg>
+            <div class="scale" aria-hidden="true"><span>−1</span><i></i><span>+1</span></div>
+          </div>
+        </div>
+
+        <div class="probe">
+          <p class="mini-label">Probe: switch on one feature (x<sub>i</sub> = 1, others 0) and read the output</p>
+          <div class="seg" role="group" aria-label="Feature to probe" id="probe-seg"></div>
+          <div class="bars" id="bars"></div>
+        </div>
+
+        <figcaption>Training runs live with Adam, about 4,000 steps on batches of 512. Arrow
+        shade shows importance; darker arrows are more important. Each setting change trains a
+        fresh model. Some runs get stuck with a dead feature; retraining usually fixes it.</figcaption>
+      </figure>
+
+      <section class="prose">
+        <h2>What to try</h2>
+        <ol>
+          <li><strong>Dense (density 1).</strong> The model keeps the two most important
+          features at right angles and drops the rest. This is just PCA. WᵀW has two
+          bright diagonal cells.</li>
+          <li><strong>Drag density down.</strong> Around 0.1, a third and fourth feature appear.
+          They point in <em>opposite</em> directions to the existing ones (antipodal pairs). Two
+          features on one line interfere only when both are active, which is rare.</li>
+          <li><strong>Very sparse (0.03 or below).</strong> All five spread into a pentagon
+          72° apart. WᵀW gains off-diagonal entries; that is the interference.</li>
+          <li><strong>Probe a feature in the pentagon.</strong> Its neighbours light up
+          slightly. Features pointing the other way get a negative pre-activation, and the
+          negative bias plus ReLU clips it to zero. The nonlinearity makes this work. Without
+          the ReLU, no superposition.</li>
+          <li><strong>Steep importance (0.5).</strong> Even when sparse, the model may still
+          ignore the least important features. Superposition happens only when a feature is
+          worth the interference it adds.</li>
+        </ol>
+      </section>
+
+      <section class="prose">
+        <h2>A bigger sweep</h2>
+        <p>The same experiment with 20 features in 5 dimensions. Each point is a fresh model
+        trained in your browser at one density. A feature counts as stored if
+        <code>‖W<sub>i</sub>‖ &gt; 0.5</code>.</p>
+      </section>
+
+      <figure class="figure" id="sweep">
+        <div class="controls">
+          <button type="button" class="btn" id="sweep-run">Run sweep</button>
+          <span class="ctl-label" id="sweep-progress"></span>
+        </div>
+        <div class="chart-wrap">
+          <svg id="sweep-plot" viewBox="0 0 640 300" role="img" aria-label="Features stored against feature density"></svg>
+          <div class="tip" id="sweep-tip" hidden></div>
+        </div>
+        <figcaption>n = 20, m = 5, importance 0.9<sup>i</sup>, 3,000 steps per model. When
+        dense, the model stores 5 features, one per dimension. When sparse, it stores all 20, at
+        about a quarter of a dimension each. Hover a point for dimensions per feature,
+        m / ‖W‖²<sub>F</sub>.</figcaption>
+        <table class="sr-only" id="sweep-table"><thead><tr><th>Density</th><th>Features stored</th><th>Dims per feature</th></tr></thead><tbody></tbody></table>
+      </figure>
+
+      <section class="prose">
+        <h2>Why it matters</h2>
+        <p>If real models do this at scale, individual neurons are the wrong unit of analysis.
+        A neuron is a basis direction, and features need not line up with the basis. That is
+        the motivation behind sparse autoencoders and dictionary learning: they try to recover
+        the overcomplete set of feature directions that the model packed into its activations.</p>
+        <p class="ref">Based on Elhage et al., <a href="https://transformer-circuits.pub/2022/toy_model/index.html">Toy Models of
+        Superposition</a>, Anthropic, 2022. The model, loss and metrics follow the paper; the
+        training code is ~100 lines of plain JavaScript in <a href="js/model.js">model.js</a>.</p>
+      </section>
+    </main>
+  </div>
+
+  <footer class="foot"><p>© James Ganis</p></footer>
+
+  <script src="js/model.js"></script>
+  <script src="js/toy.js"></script>
+  <script src="js/sweep.js"></script>
+  <script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+      const root = document.documentElement;
+      const dark = root.dataset.theme
+        ? root.dataset.theme === "dark"
+        : matchMedia("(prefers-color-scheme: dark)").matches;
+      root.dataset.theme = dark ? "light" : "dark";
+      try { localStorage.setItem("theme", root.dataset.theme); } catch (e) {}
+    });
+  </script>
+</body>
+</html>

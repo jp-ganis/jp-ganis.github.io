@@ -1,0 +1,249 @@
+/* ==========================================================================
+   Toy superposition
+   Tokens match jpganis.com (site.css / slm). Dark mode swaps tokens only.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+  --bg: #f6f5f1;
+  --panel: #fcfcfb;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --ink-3: #85847e;
+  --rule: #dddcd6;
+  --grid: #ebeae5;
+  --accent: #2a78d6;
+  --warm: #eb6834;
+  --div-neg: #2a78d6;
+  --div-pos: #e34948;
+  --div-mid: #f0efec;
+  --radius: 10px;
+  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #121211;
+    --panel: #1a1a19;
+    --ink: #f0efec;
+    --ink-2: #c3c2b7;
+    --ink-3: #8f8e86;
+    --rule: #333330;
+    --grid: #2a2a28;
+    --accent: #3987e5;
+    --warm: #d95926;
+    --div-neg: #3987e5;
+    --div-pos: #e66767;
+    --div-mid: #383835;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #121211;
+  --panel: #1a1a19;
+  --ink: #f0efec;
+  --ink-2: #c3c2b7;
+  --ink-3: #8f8e86;
+  --rule: #333330;
+  --grid: #2a2a28;
+  --accent: #3987e5;
+  --warm: #d95926;
+  --div-neg: #3987e5;
+  --div-pos: #e66767;
+  --div-mid: #383835;
+}
+
+/* --- Base ---------------------------------------------------------------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.6 var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); text-underline-offset: 2px; }
+code { font-family: var(--mono); font-size: 0.88em; }
+
+.wrap { max-width: 720px; margin: 0 auto; padding: 0 16px; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+/* --- Hero ---------------------------------------------------------------- */
+
+.hero { padding: 72px 0 8px; }
+.eyebrow {
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.hero h1 {
+  margin: 0 0 12px;
+  font-size: 2.25rem;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+.lede { margin: 0 0 16px; color: var(--ink-2); font-size: 1.125rem; }
+.hero-links { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 20px; }
+
+.theme-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 0; border: 0; background: none;
+  color: var(--ink-3); font: inherit; cursor: pointer;
+}
+.theme-toggle svg { width: 16px; height: 16px; fill: currentColor; }
+.theme-toggle:hover { color: var(--ink); }
+
+/* --- Prose --------------------------------------------------------------- */
+
+.prose { margin-top: 48px; }
+.prose h2 {
+  margin: 0 0 16px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.prose p { margin: 0 0 12px; }
+.prose ol { margin: 0; padding-left: 1.3em; }
+.prose li { margin-bottom: 8px; }
+.prose li::marker { color: var(--ink-3); }
+.eq { text-align: center; font-size: 1.05rem; }
+.ref { font-size: 0.9rem; color: var(--ink-2); }
+
+/* --- Figures ------------------------------------------------------------- */
+
+.figure {
+  margin: 24px 0 0;
+  padding: 16px 18px;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+.figure figcaption { margin-top: 12px; font-size: 0.85rem; color: var(--ink-3); }
+.mini-label { margin: 0 0 6px; font-size: 0.75rem; line-height: 1.3; color: var(--ink-3); }
+
+.controls {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px;
+  margin-bottom: 12px;
+}
+.slider { display: flex; flex-direction: column; gap: 2px; flex: 1 1 220px; font-size: 0.85rem; color: var(--ink-2); }
+.slider b { font-family: var(--mono); font-weight: 600; color: var(--ink); }
+.slider input { width: 100%; accent-color: var(--accent); }
+.hint { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--ink-3); }
+.ctl-label { font-size: 0.85rem; color: var(--ink-3); }
+
+.seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
+.seg button {
+  min-width: 34px;
+  padding: 5px 10px;
+  border: 0; border-right: 1px solid var(--rule);
+  background: none; color: var(--ink-2);
+  font: inherit; font-size: 0.9rem; cursor: pointer;
+}
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+
+.btn {
+  margin-left: auto;
+  padding: 5px 12px; border: 1px solid var(--rule); border-radius: 8px;
+  background: none; color: var(--ink-2); font: inherit; font-size: 0.85rem; cursor: pointer;
+}
+.btn:hover { border-color: var(--accent); color: var(--ink); }
+.btn:disabled { opacity: 0.5; cursor: default; }
+#sweep .btn { margin-left: 0; }
+
+/* --- Toy model ----------------------------------------------------------- */
+
+.toy-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+  margin-top: 8px;
+}
+.toy-grid svg { display: block; width: 100%; height: auto; overflow: visible; }
+
+#plane .ring { fill: none; stroke: var(--rule); stroke-width: 1; }
+#plane .axis { stroke: var(--grid); stroke-width: 1; }
+#plane .arrow { stroke-width: 2.5; stroke-linecap: round; }
+#plane .tip-dot { stroke: var(--panel); stroke-width: 2; }
+#plane .lbl { font: 600 12px var(--mono); fill: var(--ink); text-anchor: middle; dominant-baseline: central; }
+#plane .feat.probed .arrow { stroke-width: 4; }
+#plane .feat.probed .lbl { text-decoration: underline; }
+
+#gram text { font: 11px var(--mono); fill: var(--ink-3); text-anchor: middle; dominant-baseline: central; }
+#gram rect { stroke: var(--panel); stroke-width: 2; }
+
+.scale { display: flex; align-items: center; gap: 6px; margin-top: 6px; font: 0.72rem var(--mono); color: var(--ink-3); }
+.scale i {
+  flex: 0 1 140px; height: 8px; border-radius: 4px;
+  background: linear-gradient(90deg, var(--div-neg), var(--div-mid), var(--div-pos));
+}
+
+.status { margin: 6px 0 0; font-size: 0.85rem; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+.probe { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--rule); }
+.probe .seg { margin-bottom: 10px; }
+.bars { display: grid; gap: 3px; }
+.bar-row { display: grid; grid-template-columns: 2.2em 1fr 3.4em; align-items: center; gap: 8px; font: 0.8rem var(--mono); }
+.bar-row .k { color: var(--ink-3); text-align: right; }
+.bar-row .v { color: var(--ink-2); text-align: right; font-variant-numeric: tabular-nums; }
+.bar-row.on .k, .bar-row.on .v { color: var(--ink); font-weight: 600; }
+.track { position: relative; height: 16px; background: linear-gradient(var(--grid), var(--grid)) 50% 50% / 1px 100% no-repeat; }
+.track .fill { position: absolute; top: 2px; bottom: 2px; border-radius: 3px; }
+.track .fill.out { background: var(--accent); }
+.track .fill.clipped { background: none; border: 1.5px dashed var(--ink-3); }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 8px 0 0; padding: 0; list-style: none; font-size: 0.75rem; color: var(--ink-3); }
+.legend li { display: inline-flex; align-items: center; gap: 6px; }
+.legend .sw { width: 14px; height: 9px; border-radius: 2px; background: var(--accent); }
+.legend .sw.clipped { background: none; border: 1.5px dashed var(--ink-3); }
+
+@media (max-width: 560px) {
+  .toy-grid { grid-template-columns: 1fr; }
+  .btn { margin-left: 0; }
+}
+
+/* --- Sweep chart --------------------------------------------------------- */
+
+.chart-wrap { position: relative; }
+#sweep-plot { display: block; width: 100%; height: auto; overflow: visible; }
+#sweep-plot .gridline { stroke: var(--grid); stroke-width: 1; }
+#sweep-plot .ref-line { stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 4 4; }
+#sweep-plot text { font: 11px var(--font); fill: var(--ink-3); }
+#sweep-plot .ref-label { fill: var(--ink-2); }
+#sweep-plot .line { fill: none; stroke: var(--accent); stroke-width: 2; }
+#sweep-plot .pt { fill: var(--accent); stroke: var(--panel); stroke-width: 2; }
+#sweep-plot .pt.hover { stroke: var(--ink); }
+#sweep-plot .hit { fill: transparent; cursor: default; }
+#sweep-plot .ghost { fill: none; stroke: var(--rule); stroke-width: 1.5; stroke-dasharray: 2 3; }
+
+.tip {
+  position: absolute; pointer-events: none;
+  padding: 6px 10px; border: 1px solid var(--rule); border-radius: 8px;
+  background: var(--panel); color: var(--ink);
+  font-size: 0.8rem; line-height: 1.4; white-space: nowrap;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.08);
+  transform: translate(-50%, calc(-100% - 12px));
+}
+.tip .m { color: var(--ink-3); }
+
+/* --- Footer -------------------------------------------------------------- */
+
+.foot {
+  max-width: 720px;
+  margin: 48px auto 0;
+  padding: 24px 16px 48px;
+  color: var(--ink-3);
+  font-size: 0.85rem;
+}
+.foot p { margin: 0; }
