@@ -203,7 +203,7 @@ dialog button { font: 600 15px Inter, sans-serif; background: #fff; color: #111;
   <div class="wrap narrow">
     <div class="eyebrow">The problem</div>
     <h2>AI coding agents are fast. Trusting them is the hard part.</h2>
-    <p>Running an agent in a terminal works for one developer. It doesn't work for a team that needs plans signed off, tests passing before anything is pushed, and an audit trail a manager can follow. It also had to be safe to point at a production .NET codebase that controls real cameras and winch equipment.</p>
+    <p>Running an agent in a terminal works for one developer. It doesn't work for a team that needs plans signed off, tests passing before anything is pushed, and an audit trail a manager can follow. It also had to be safe to point at a real codebase.</p>
     <p>jp-harness is the layer around the agent. It decides when Claude runs and what Claude is allowed to do. It checks the work before anything leaves the machine, and it reports progress in language a non-technical viewer can follow.</p>
     <div class="stats">
       <div class="stat"><b>3</b><span>workflows: deliver, bug check, PR review</span></div>
@@ -267,7 +267,7 @@ dialog button { font: 600 15px Inter, sans-serif; background: #fff; color: #111;
       <div class="text">
         <span class="tag red">Bug check · read-only</span>
         <h3>"Is this actually a software bug?"</h3>
-        <p>Tag a bug <code>jp-harness-bug</code>, then enter the branch or commit the site runs. Claude makes a one- to two-minute read-only pass over the code at that commit. It gives a verdict and a confidence level, file-and-line evidence, the most likely cause, and what to check next.</p>
+        <p>Tag a bug <code>jp-harness-bug</code>, then enter the branch or commit that is deployed. Claude makes a one- to two-minute read-only pass over the code at that commit. It gives a verdict and a confidence level, file-and-line evidence, the most likely cause, and what to check next.</p>
         <p>It writes nothing back to Azure DevOps. If the answer is yes, re-tag the bug as a task and it enters the delivery pipeline.</p>
       </div>
       <figure>
@@ -285,7 +285,7 @@ dialog button { font: 600 15px Inter, sans-serif; background: #fff; color: #111;
       </div>
       <figure>
         <button class="shot" data-full="img/review.png" aria-label="Enlarge screenshot"><img src="img/review.png" alt="PR review showing Needs attention, one Must fix, two Should change and one Suggestion finding cards" loading="lazy" width="2160" height="1860"></button>
-        <figcaption><b>A PR review.</b> It catches a retry loop that could send a device command twice.</figcaption>
+        <figcaption><b>A PR review.</b> It catches a retry loop that could send the same command twice.</figcaption>
       </figure>
     </div>
   </div>
@@ -372,7 +372,7 @@ dialog button { font: 600 15px Inter, sans-serif; background: #fff; color: #111;
       <li><span><b>Only the harness pushes or opens pull requests.</b> Claude's build profile denies <code>git push</code>, remotes, merge, rebase and branch switching.</span></li>
       <li><span><b>Nothing is merged, and nothing is pushed to <code>main</code> or the base branch.</b> A person completes every PR.</span></li>
       <li><span><b>Design, bug checks and reviews are read-only</b> at the tool level, not only in the prompt.</span></li>
-      <li><span><b>The target app is never started.</b> <code>dotnet run</code> is denied because the development machine can reach real hardware.</span></li>
+      <li><span><b>The target app is never started.</b> <code>dotnet run</code> is denied, so Claude can test the code but never run it.</span></li>
       <li><span><b>On a work item, the harness changes only its own tags and adds comments.</b> It never touches state, assignment or fields. A bug check writes nothing at all.</span></li>
       <li><span><b>A failure late in the process never loses work.</b> If Azure DevOps or git fails after the plan or code exists, the error is logged and the work is kept.</span></li>
     </ul>
@@ -387,8 +387,8 @@ dialog button { font: 600 15px Inter, sans-serif; background: #fff; color: #111;
       <div class="card"><h3>Tag patches append</h3><p>A JSON-patch <code>add</code> on <code>System.Tags</code> appends instead of replacing. Finished tickets kept <code>jp-harness-task</code> and were picked up again as new. The fix was to use <code>replace</code>.</p></div>
       <div class="card"><h3>Refusals are a different event</h3><p>A tool call refused by the permission profile doesn't arrive as a failed tool result. It arrives as a <code>system / permission_denied</code> event with a plain-string message, so the narrator needed a separate path for it.</p></div>
       <div class="card"><h3>Plans that go missing</h3><p>In plan mode, Claude sometimes saves the plan to a file and only points to it. The runner captures that file's text, and the design step falls back to it.</p></div>
-      <div class="card"><h3>8.3 paths</h3><p>Claude Code refuses to edit under Windows short paths like <code>C:\Users\JAMES~1.GAN</code>. Worktree paths are always kept in long form.</p></div>
-      <div class="card"><h3>Token audience</h3><p>For this tenant, <code>az account get-access-token</code> only works with the <code>vssps</code> resource. The usual Azure DevOps resource GUID is refused.</p></div>
+      <div class="card"><h3>8.3 paths</h3><p>Claude Code refuses to edit under Windows short paths like <code>C:\Users\LONGNA~1</code>. Worktree paths are always kept in long form.</p></div>
+      <div class="card"><h3>Token audience</h3><p>In some Azure DevOps organisations, <code>az account get-access-token</code> only works with the <code>vssps</code> resource. The usual Azure DevOps resource GUID is refused.</p></div>
       <div class="card"><h3>Testing without the world</h3><p>About 3 seconds of tests cover every workflow, using fakes for Azure DevOps, git and Claude. Git itself is tested against a temporary repository. No test touches the network.</p></div>
     </div>
 
